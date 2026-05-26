@@ -1,4 +1,5 @@
 const { JsonWebTokenError } = require("jsonwebtoken");
+const { httpCodes } = require("@/config/constants");
 
 const exceptionHandler = (err, req, res, next) => {
   if (res.headersSent) {
@@ -10,7 +11,7 @@ const exceptionHandler = (err, req, res, next) => {
     return res.error("Không được phép");
   }
 
-  const statusCode = err.statusCode || err.status || 500;
+  const statusCode = err.statusCode || err.status || httpCodes.internalServerError;
   const message = err.message || "Internal Server Error";
   const error =
     process.env.NODE_ENV === "development"

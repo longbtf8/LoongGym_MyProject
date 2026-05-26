@@ -1,3 +1,5 @@
+const { httpCodes } = require("@/config/constants");
+
 const validate = (schema) => {
   return (req, res, next) => {
     const result = schema.safeParse({
@@ -14,7 +16,7 @@ const validate = (schema) => {
       }
       formattedErrors[fieldName].push(error.message);
       });
-      return res.status(400).json({
+      return res.status(httpCodes.badRequest).json({
         success: false,
         message: "Dữ liệu không hợp lệ",
         errors: formattedErrors,

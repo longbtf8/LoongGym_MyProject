@@ -1,5 +1,7 @@
+const { httpCodes } = require("@/config/constants");
+
 function responseFormat(req, res, next) {
-  res.success = function (data, statusCode = 200, message = "OK") {
+  res.success = function (data, statusCode = httpCodes.success, message = "OK") {
     const response = { success: true, message };
     if (data !== null && data !== undefined) {
       response.data = data;
@@ -8,7 +10,7 @@ function responseFormat(req, res, next) {
   };
   res.error = (
     message = "Something went wrong",
-    statusCode = 500,
+    statusCode = httpCodes.internalServerError,
     error = null,
   ) => {
     const response = { success: false, message };

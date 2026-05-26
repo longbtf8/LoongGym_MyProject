@@ -1,4 +1,5 @@
 const { rateLimit } = require("express-rate-limit");
+const { httpCodes } = require("@/config/constants");
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -9,7 +10,7 @@ const apiLimiter = rateLimit({
   // store: ... , // Redis, Memcached, etc. See below.
 
   handler: (req, res) => {
-    return res.error("Too many requests, please try again later", 429);
+    return res.error("Too many requests, please try again later", httpCodes.tooManyRequests);
   },
 });
 const authLimiter = rateLimit({
@@ -18,7 +19,7 @@ const authLimiter = rateLimit({
   standardHeaders: "draft-8",
   legacyHeaders: false,
   handler: (req, res) => {
-    return res.error("Too many login attempts, please try again later", 429);
+    return res.error("Too many login attempts, please try again later", httpCodes.tooManyRequests);
   },
 });
 module.exports = { apiLimiter, authLimiter };

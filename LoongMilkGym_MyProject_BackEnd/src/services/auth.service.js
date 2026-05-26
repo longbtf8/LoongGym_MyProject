@@ -3,13 +3,14 @@ const { prisma } = require("@/lib/prisma");
 const { signAccessToken, createRefreshToken } = require("@/utils/jwt");
 const randomRefreshToken = require("@/utils/randomRefreshToken");
 const authConfig = require("@/config/auth.config");
+const { httpCodes } = require("@/config/constants");
 const register = async ({ email, password, fullname }) => {
   const existedUser = await prisma.user.findUnique({
     where: { email },
   });
   if (existedUser) {
     const error = new Error("The email already exists.");
-    error.statusCode = 409;
+    error.statusCode = httpCodes.conflict;
     throw error;
   }
   const passwordHash = await bcrypt.hash(password, 10);
@@ -58,25 +59,30 @@ const login = async ({ email, password }) => {
       settings: true,
     },
   });
+  console.log(user);
   if (!user) {
     const error = new Error("Email hoặc mật khẩu không đúng");
-    error.statusCode = 401;
+    error.statusCode = httpCodes.unauthorized;
     throw error;
   }
 
   if (user.status !== "ACTIVE") {
     const error = new Error("Tài khoản đã bị khóa hoặc không hoạt động");
-    error.statusCode = 403;
+    error.statusCode = httpCodes.forbidden;
     throw error;
   }
   const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
   if (!isPasswordValid) {
     const error = new Error("Email hoặc mật khẩu không đúng");
-    error.statusCode = 401;
+    error.statusCode = httpCodes.unauthorized;
     throw error;
   }
-
+  if (!user.emailVerifiedAt) {
+    const error = new Error("Vui lòng xác thực email");
+    error.statusCode = httpCodes.unauthorized;
+    throw error;
+  }
   await prisma.user.update({
     where: { id: user.id },
     data: {
@@ -137,7 +143,7 @@ const refreshToken = async (refresh_token) => {
   });
   if (!refreshTokenDB) {
     const error = new Error("Unauthorized");
-    error.statusCode = 401;
+    error.statusCode = httpCodes.unauthorized;
     throw error;
   }
   await prisma.refreshTokens.delete({

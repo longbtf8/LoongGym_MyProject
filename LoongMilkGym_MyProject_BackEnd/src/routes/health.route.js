@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { httpCodes } = require("@/config/constants");
 
 router.get("/", (req, res) => {
   res.success(
@@ -7,7 +8,7 @@ router.get("/", (req, res) => {
       status: "ok",
       service: "gymlife-api",
     },
-    200,
+    httpCodes.success,
     "Health check successfully",
   );
 });
