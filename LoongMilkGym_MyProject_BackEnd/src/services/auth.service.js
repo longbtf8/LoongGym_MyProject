@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const { prisma } = require("@/lib/prisma");
-const { signAccessToken, createRefreshToken } = require("@/utils/jwt");
+const { generateAuthTokens } = require("@/utils/jwt");
 const randomRefreshToken = require("@/utils/randomRefreshToken");
 const authConfig = require("@/config/auth.config");
 const { httpCodes } = require("@/config/constants");
@@ -41,13 +41,14 @@ const register = async ({ email, password, fullname }) => {
       settings: true,
     },
   });
-  const token = signAccessToken({ userId: user.id, role: user.role });
+  const { accessToken, refreshToken } = await generateAuthTokens(user);
 
   //sendMail
 
   return {
     user,
-    token,
+    access_token: accessToken,
+    refresh_token: refreshToken,
   };
 };
 
@@ -89,11 +90,7 @@ const login = async ({ email, password }) => {
       lastLoginAt: new Date(),
     },
   });
-  const token = await signAccessToken({
-    userId: user.id,
-    role: user.role,
-  });
-  const refreshToken = await createRefreshToken(user);
+  const { accessToken, refreshToken } = await generateAuthTokens(user);
 
   const safeUser = {
     id: user.id,
@@ -110,7 +107,7 @@ const login = async ({ email, password }) => {
 
   return {
     user: safeUser,
-    access_token: token,
+    access_token: accessToken,
     refresh_token: refreshToken,
   };
 };
@@ -155,11 +152,7 @@ const refreshToken = async (refresh_token) => {
     id: refreshTokenDB.userId,
     role: refreshTokenDB.user.role,
   };
-  const accessToken = await signAccessToken({
-    userId: user.id,
-    role: user.role,
-  });
-  const refreshTokenNew = await createRefreshToken(user);
+  const { accessToken, refreshToken: refreshTokenNew } = await generateAuthTokens(user);
   return { accessToken, refreshTokenNew, userId: refreshTokenDB.userId };
 };
 

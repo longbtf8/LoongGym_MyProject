@@ -25,4 +25,14 @@ const createRefreshToken = async (user) => {
   });
   return refreshToken;
 };
-module.exports = { signAccessToken, verifyAccessToken, createRefreshToken };
+const generateAuthTokens = async (user) => {
+  const accessToken = signAccessToken({ userId: user.id, role: user.role });
+  const refreshToken = await createRefreshToken(user);
+  return { accessToken, refreshToken };
+};
+module.exports = {
+  signAccessToken,
+  verifyAccessToken,
+  createRefreshToken,
+  generateAuthTokens,
+};
