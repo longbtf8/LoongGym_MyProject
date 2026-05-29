@@ -1,9 +1,10 @@
 const bcrypt = require("bcrypt");
 const { prisma } = require("@/lib/prisma");
 const { generateAuthTokens } = require("@/utils/jwt");
-const randomRefreshToken = require("@/utils/randomRefreshToken");
-const authConfig = require("@/config/auth.config");
 const { httpCodes } = require("@/config/constants");
+const jwt = require("jsonwebtoken");
+const authConfig = require("@/config/auth.config");
+
 const register = async ({ email, password, fullname }) => {
   const existedUser = await prisma.user.findUnique({
     where: { email },
@@ -152,8 +153,29 @@ const refreshToken = async (refresh_token) => {
     id: refreshTokenDB.userId,
     role: refreshTokenDB.user.role,
   };
-  const { accessToken, refreshToken: refreshTokenNew } = await generateAuthTokens(user);
+  const { accessToken, refreshToken: refreshTokenNew } =
+    await generateAuthTokens(user);
   return { accessToken, refreshTokenNew, userId: refreshTokenDB.userId };
 };
+const generateVerificationLink = (user) => {
+  const token = jwt.sign(
+    { userId: user.id, role: user.role },
+    authConfig.verificationJwtSecret,
+    { expiresIn: authConfig.verificationExpiresIn },
+  );
+  const verificationLink = `http://localhost:5173?token=${token}`;
+  return verificationLink;
+};
+const verifyEmail = (token) => {
+  const payload = jwt.verify(token, authConfig.verificationJwtSecret);
+  return payload;
+};
 
-module.exports = { register, login, logout, refreshToken };
+module.exports = {
+  register,
+  login,
+  logout,
+  refreshToken,
+  generateVerificationLink,
+  verifyEmail,
+};

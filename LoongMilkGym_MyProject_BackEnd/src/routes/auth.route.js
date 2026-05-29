@@ -17,4 +17,5 @@ router.post("/login", validate(loginSchema), authController.login);
 router.get("/me", authRequire, authController.infoMe);
 router.post("/logout", authRequire, authController.logout);
 router.post("/refresh-token", authController.refreshToken);
+router.post("/verify-email", authController.verifyEmail);
 module.exports = router;

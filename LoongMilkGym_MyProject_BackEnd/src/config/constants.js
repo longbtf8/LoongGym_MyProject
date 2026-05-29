@@ -28,6 +28,12 @@ const constants = {
     serviceUnavailable: 503, // Server quá tải / Bảo trì
     gatewayTimeout: 504, // Hết thời gian chờ phản hồi
   },
+  jobStatus: {
+    pending: "pending",
+    inprogress: "inprogress",
+    complete: "complete",
+    failed: "failed",
+  },
 };
 
 module.exports = constants;

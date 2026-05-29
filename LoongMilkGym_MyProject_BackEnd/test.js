@@ -1,7 +1,7 @@
-const crypto = require("crypto");
-const generateKey = () => {
-  const key = crypto.randomBytes(32).toString("hex");
-  console.log(key);
-  return key;
-};
-generateKey();
+const ejs = require("ejs");
+const path = require("path");
+require("module-alias/register");
+require("dotenv/config");
+const job = require("./src/jobs");
+
+console.log(job);

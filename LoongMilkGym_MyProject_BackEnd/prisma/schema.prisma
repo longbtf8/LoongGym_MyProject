@@ -14,115 +14,128 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  role         String   @default("USER")
-  status       String   @default("ACTIVE")
-  emailVerifiedAt DateTime? @map("email_verified_at") 
-  lastLoginAt     DateTime? @map("last_login_at")
-  profile      UserProfile?
-  settings     UserSetting?
-  sessions     AuthSession[]
-  resetTokens  PasswordResetToken[]
-  revokedTokens RevokedTokens[]
-  refreshTokens RefreshTokens[]
+  id              String               @id @default(uuid())
+  email           String               @unique
+  passwordHash    String               @map("password_hash")
+  role            String               @default("USER")
+  status          String               @default("ACTIVE")
+  emailVerifiedAt DateTime?            @map("email_verified_at")
+  lastLoginAt     DateTime?            @map("last_login_at")
+  profile         UserProfile?
+  settings        UserSetting?
+  sessions        AuthSession[]
+  resetTokens     PasswordResetToken[]
+  revokedTokens   RevokedTokens[]
+  refreshTokens   RefreshTokens[]
 
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("users")
 }
 
-model UserProfile{
-  id        String  @id @default(uuid())
-  userId    String @unique @map("user_id")
+model UserProfile {
+  id     String @id @default(uuid())
+  userId String @unique @map("user_id")
 
-  fullName String? @map("full_name")
-  username String?  @unique
-  avatarUrl String? @map("avatar_url")
-  gender String?
-  birthDate DateTime? @map("birth_date")
-  heightCm  Float? @map("height_cm")
-  weightKg  Float? @map("weight_kg")
-  fitnessLevel String? @map("fitness_level")
-  goal     String?
-  bio      String?
-  
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName     String?   @map("full_name")
+  username     String?   @unique
+  avatarUrl    String?   @map("avatar_url")
+  gender       String?
+  birthDate    DateTime? @map("birth_date")
+  heightCm     Float?    @map("height_cm")
+  weightKg     Float?    @map("weight_kg")
+  fitnessLevel String?   @map("fitness_level")
+  goal         String?
+  bio          String?
 
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@map("user_profile")
 }
 
-model UserSetting{
-  id        String  @id @default(uuid())
-  userId    String @unique @map("user_id")
+model UserSetting {
+  id     String @id @default(uuid())
+  userId String @unique @map("user_id")
 
-  language String @default("vi")
+  language   String @default("vi")
   unitSystem String @default("metric") @map("unit_system") //imperial đơn vị đo khác 
-  theme       String @default("dark")
-  
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme      String @default("dark")
 
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@map("user_settings")
 }
 
-
 model AuthSession {
-  id           String   @id @default(uuid())
-  userId       String   @map("user_id")
-  refreshToken String?  @map("refresh_token")
-  userAgent    String?  @map("user_agent")
-  ipAddress    String?  @map("ip_address")
-  expiresAt    DateTime @map("expires_at")
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  refreshToken String?   @map("refresh_token")
+  userAgent    String?   @map("user_agent")
+  ipAddress    String?   @map("ip_address")
+  expiresAt    DateTime  @map("expires_at")
   revokedAt    DateTime? @map("revoked_at")
 
-  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt    DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@map("auth_sessions")
 }
+
 model PasswordResetToken {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  tokenHash String   @map("token_hash")
-  expiresAt DateTime @map("expires_at")
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
   usedAt    DateTime? @map("used_at")
 
-  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("password_reset_tokens")
 }
 
-model RevokedTokens{
-  id        String   @id @default(uuid())
-  userId    String?   @map("user_id")
+model RevokedTokens {
+  id     String  @id @default(uuid())
+  userId String? @map("user_id")
 
   tokenHash String   @map("token_hash") @db.VarChar(512)
   expiresAt DateTime @map("expires_at")
-  reason   String?
-  user      User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reason    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map("created_at")
-  @@map("revoked_tokens")
 
+  @@map("revoked_tokens")
 }
 
-model RefreshTokens{
+model RefreshTokens {
   id        String   @id @default(uuid())
-  userId    String?   @map("user_id")
-  token   String   @map("token_hash") @db.VarChar(512)
+  userId    String?  @map("user_id")
+  token     String   @map("token_hash") @db.VarChar(512)
   expiresAt DateTime @map("expires_at")
   createdAt DateTime @default(now()) @map("created_at")
-  user      User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("refresh_tokens")
+}
+
+model Queues {
+  id        String   @id @default(uuid())
+  type      String
+  payload   String?  @db.VarChar(512)
+  status    String   @default("pending")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("queues")
 }

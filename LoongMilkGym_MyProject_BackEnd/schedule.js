@@ -2,5 +2,11 @@ require("module-alias/register");
 require("dotenv/config");
 const { CronJob } = require("cron");
 const cleanupExpiredTokens = require("@/schedulers/cleanupExpiredTokens");
+const cleanupProcessedJobs = require("@/schedulers/cleanupProcessedJobs");
 
-new CronJob("0 0 * * * *", cleanupExpiredTokens).start();
+const runAllCleanups = async () => {
+  await cleanupExpiredTokens();
+  await cleanupProcessedJobs();
+};
+
+new CronJob("0 0 * * * *", runAllCleanups).start();
