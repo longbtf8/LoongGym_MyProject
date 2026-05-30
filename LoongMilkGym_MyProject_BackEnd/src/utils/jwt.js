@@ -1,8 +1,13 @@
 const authConfig = require("@/config/auth.config");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const randomRefreshToken = require("./randomRefreshToken");
 const { prisma } = require("@/lib/prisma");
 require("module-alias/register");
+
+const hashToken = (token) => {
+  return crypto.createHash("sha256").update(token).digest("hex");
+};
 
 const signAccessToken = (payload) => {
   return jwt.sign(payload, authConfig.jwtSecret, {
@@ -14,12 +19,13 @@ const verifyAccessToken = (token) => {
 };
 const createRefreshToken = async (user) => {
   const refreshToken = randomRefreshToken();
+  const refreshTokenHash = hashToken(refreshToken);
   const date = new Date();
   date.setDate(date.getDate() + authConfig.refreshTokenExpires);
   await prisma.refreshTokens.create({
     data: {
       userId: user.id,
-      token: refreshToken,
+      token: refreshTokenHash,
       expiresAt: date,
     },
   });

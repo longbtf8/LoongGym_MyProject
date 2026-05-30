@@ -127,9 +127,10 @@ const logout = async ({ accessToken, tokenPayload }) => {
 };
 
 const refreshToken = async (refresh_token) => {
+  const tokenHash = crypto.createHash("sha256").update(refresh_token).digest("hex");
   const refreshTokenDB = await prisma.refreshTokens.findFirst({
     where: {
-      token: refresh_token,
+      token: tokenHash,
       expiresAt: {
         gt: new Date(),
       },
@@ -170,15 +171,28 @@ const generateVerificationLink = (user) => {
 };
 const verifyEmail = async (token) => {
   const payload = jwt.verify(token, authConfig.verificationJwtSecret);
-  
-  // Cập nhật trạng thái xác thực email vào Database
+
+  const user = await prisma.user.findUnique({
+    where: { id: payload.userId },
+  });
+  if (!user) {
+    const error = new Error("Người dùng không tồn tại");
+    error.statusCode = httpCodes.notFound;
+    throw error;
+  }
+  if (user.emailVerifiedAt) {
+    const error = new Error("Email đã được xác thực trước đó");
+    error.statusCode = httpCodes.badRequest;
+    throw error;
+  }
+
   await prisma.user.update({
     where: { id: payload.userId },
     data: {
       emailVerifiedAt: new Date(),
     },
   });
-  
+
   return payload;
 };
 const changePassword = async ({ userId, oldPassword, newPassword }) => {
