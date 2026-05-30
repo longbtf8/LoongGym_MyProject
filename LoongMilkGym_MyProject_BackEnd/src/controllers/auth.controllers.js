@@ -93,6 +93,56 @@ const changePassword = async (req, res, next) => {
     next(error);
   }
 };
+
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.validated.body;
+    const { email: userEmail, token } = await authService.forgotPassword({ email });
+    const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+    await queueService.push("sendForgotPasswordEmail", { email: userEmail, resetLink });
+    return res.success(
+      null,
+      httpCodes.success,
+      "Liên kết đặt lại mật khẩu đã được gửi đến email của bạn",
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+const resetPassword = async (req, res, next) => {
+  try {
+    const { token, password } = req.validated.body;
+
+    await authService.resetPassword({
+      token,
+      newPassword: password,
+    });
+
+    return res.success(null, httpCodes.success, "Đặt lại mật khẩu thành công");
+  } catch (error) {
+    next(error);
+  }
+};
+
+const resendVerification = async (req, res, next) => {
+  try {
+    const { email } = req.validated.body;
+    const user = await authService.resendVerification({ email });
+    const infoVerification = {
+      id: user.id,
+      email: user.email,
+    };
+    await queueService.push("sendVerificationEmail", infoVerification);
+    return res.success(
+      null,
+      httpCodes.success,
+      "Gửi lại email xác thực thành công. Vui lòng kiểm tra hộp thư.",
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -101,4 +151,7 @@ module.exports = {
   refreshToken,
   verifyEmail,
   changePassword,
+  resetPassword,
+  forgotPassword,
+  resendVerification,
 };

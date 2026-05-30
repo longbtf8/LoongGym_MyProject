@@ -40,5 +40,20 @@ class MailService {
       },
     });
   }
+
+  async sendForgotPassword({ email, resetLink }) {
+    const { fromAddress, fromName } = mailConfig;
+
+    await this.send({
+      from: `"${fromName}" <${fromAddress}>`,
+      to: email,
+      subject: "Đặt lại mật khẩu của bạn - LoongMilkGym",
+      text: "Vui lòng sử dụng liên kết dưới đây để đặt lại mật khẩu.",
+      template: "auth/forgotPasswordEmail",
+      templateData: {
+        reset_link: resetLink,
+      },
+    });
+  }
 }
 module.exports = new MailService();

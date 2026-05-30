@@ -6,6 +6,9 @@ const {
   registerSchema,
   loginSchema,
   changePasswordSchema,
+  forgotPasswordSchema,
+  restPasswordSchema,
+  resendVerificationSchema,
 } = require("@/validations/auth.validation");
 const express = require("express");
 const router = express.Router();
@@ -19,5 +22,25 @@ router.get("/me", authRequire, authController.infoMe);
 router.post("/logout", authRequire, authController.logout);
 router.post("/refresh-token", authController.refreshToken);
 router.post("/verify-email", authController.verifyEmail);
-router.post("/change-password", authRequire, validate(changePasswordSchema), authController.changePassword);
+router.post(
+  "/change-password",
+  authRequire,
+  validate(changePasswordSchema),
+  authController.changePassword,
+);
+router.post(
+  "/forgot-password",
+  validate(forgotPasswordSchema),
+  authController.forgotPassword,
+);
+router.post(
+  "/reset-password",
+  validate(restPasswordSchema),
+  authController.resetPassword,
+);
+router.post(
+  "/resend-verification",
+  validate(resendVerificationSchema),
+  authController.resendVerification,
+);
 module.exports = router;

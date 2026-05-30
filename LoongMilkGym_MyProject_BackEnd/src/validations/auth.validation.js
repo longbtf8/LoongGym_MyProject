@@ -1,4 +1,4 @@
-const { z } = require("zod");
+const { z, email } = require("zod");
 
 const registerSchema = z.object({
   body: z
@@ -64,4 +64,39 @@ const changePasswordSchema = z.object({
     }),
 });
 
-module.exports = { registerSchema, loginSchema, changePasswordSchema };
+const forgotPasswordSchema = z.object({
+  body: z.object({
+    email: z
+      .string()
+      .trim()
+      .pipe(z.email({ message: "Email không hợp lệ" })),
+  }),
+});
+
+const restPasswordSchema = z.object({
+  body: z.object({
+    token: z.string().min(20, "Token không hợp lệ"),
+
+    password: z
+      .string()
+      .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
+      .max(100, "Mật khẩu quá dài"),
+  }),
+});
+const resendVerificationSchema = z.object({
+  body: z.object({
+    email: z
+      .string({ message: "Vui lòng nhập email" })
+      .trim()
+      .pipe(z.email({ message: "Email không hợp lệ" })),
+  }),
+});
+
+module.exports = {
+  registerSchema,
+  loginSchema,
+  changePasswordSchema,
+  forgotPasswordSchema,
+  restPasswordSchema,
+  resendVerificationSchema,
+};
