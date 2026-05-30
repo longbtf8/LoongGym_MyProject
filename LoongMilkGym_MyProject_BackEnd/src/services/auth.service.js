@@ -168,8 +168,17 @@ const generateVerificationLink = (user) => {
   const verificationLink = `http://localhost:5173?token=${token}`;
   return verificationLink;
 };
-const verifyEmail = (token) => {
+const verifyEmail = async (token) => {
   const payload = jwt.verify(token, authConfig.verificationJwtSecret);
+  
+  // Cập nhật trạng thái xác thực email vào Database
+  await prisma.user.update({
+    where: { id: payload.userId },
+    data: {
+      emailVerifiedAt: new Date(),
+    },
+  });
+  
   return payload;
 };
 const changePassword = async ({ userId, oldPassword, newPassword }) => {
