@@ -31,7 +31,11 @@ const login = async (req, res, next) => {
 const infoMe = async (req, res, next) => {
   try {
     const user = req?.user;
-    return res.success(user, httpCodes.success, "Lấy thông tin user thành công");
+    return res.success(
+      user,
+      httpCodes.success,
+      "Lấy thông tin user thành công",
+    );
   } catch (error) {
     next(error);
   }
@@ -78,4 +82,23 @@ const verifyEmail = async (req, res) => {
     );
   }
 };
-module.exports = { register, login, infoMe, logout, refreshToken, verifyEmail };
+
+const changePassword = async (req, res, next) => {
+  try {
+    const { oldPassword, newPassword } = req.validated.body;
+    const userId = req.user.id;
+    await authService.changePassword({ userId, oldPassword, newPassword });
+    return res.success(null, httpCodes.success, "Đổi mật khẩu thành công");
+  } catch (error) {
+    next(error);
+  }
+};
+module.exports = {
+  register,
+  login,
+  infoMe,
+  logout,
+  refreshToken,
+  verifyEmail,
+  changePassword,
+};

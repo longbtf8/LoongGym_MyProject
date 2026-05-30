@@ -5,6 +5,7 @@ const validate = require("@/middlewares/validate");
 const {
   registerSchema,
   loginSchema,
+  changePasswordSchema,
 } = require("@/validations/auth.validation");
 const express = require("express");
 const router = express.Router();
@@ -18,4 +19,5 @@ router.get("/me", authRequire, authController.infoMe);
 router.post("/logout", authRequire, authController.logout);
 router.post("/refresh-token", authController.refreshToken);
 router.post("/verify-email", authController.verifyEmail);
+router.post("/change-password", authRequire, validate(changePasswordSchema), authController.changePassword);
 module.exports = router;

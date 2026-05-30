@@ -170,6 +170,29 @@ const verifyEmail = (token) => {
   const payload = jwt.verify(token, authConfig.verificationJwtSecret);
   return payload;
 };
+const changePassword = async ({ userId, oldPassword, newPassword }) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user) {
+    const error = new Error("Người dùng không tồn tại");
+    error.statusCode = httpCodes.notFound;
+    throw error;
+  }
+  const isPasswordValid = await bcrypt.compare(oldPassword, user.passwordHash);
+  if (!isPasswordValid) {
+    const error = new Error("Mật khẩu cũ không chính xác");
+    error.statusCode = httpCodes.badRequest;
+    throw error;
+  }
+  const newPasswordHash = await bcrypt.hash(newPassword, 10);
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      passwordHash: newPasswordHash,
+    },
+  });
+};
 
 module.exports = {
   register,
@@ -178,4 +201,5 @@ module.exports = {
   refreshToken,
   generateVerificationLink,
   verifyEmail,
+  changePassword,
 };

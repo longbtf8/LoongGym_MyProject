@@ -44,4 +44,24 @@ const loginSchema = z.object({
   }),
 });
 
-module.exports = { registerSchema, loginSchema };
+const changePasswordSchema = z.object({
+  body: z
+    .object({
+      oldPassword: z
+        .string({ message: "Vui lòng nhập mật khẩu cũ" })
+        .min(1, "Vui lòng nhập mật khẩu cũ"),
+      newPassword: z
+        .string({ message: "Vui lòng nhập mật khẩu mới" })
+        .min(6, "Mật khẩu mới phải có ít nhất 6 ký tự")
+        .max(100, "Mật khẩu mới quá dài"),
+      confirmPassword: z
+        .string({ message: "Vui lòng xác nhận mật khẩu mới" })
+        .min(1, "Vui lòng xác nhận mật khẩu mới"),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+      message: "Mật khẩu xác nhận không khớp",
+      path: ["confirmPassword"],
+    }),
+});
+
+module.exports = { registerSchema, loginSchema, changePasswordSchema };
