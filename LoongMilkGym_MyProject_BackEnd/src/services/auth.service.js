@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const { prisma } = require("@/lib/prisma");
 const { generateAuthTokens } = require("@/utils/jwt");
+const randomRefreshToken = require("@/utils/randomRefreshToken");
 const { httpCodes } = require("@/config/constants");
 const jwt = require("jsonwebtoken");
 const authConfig = require("@/config/auth.config");
@@ -205,8 +206,8 @@ const forgotPassword = async ({ email }) => {
     throw error;
   }
   
-  // Generate random token
-  const token = crypto.randomBytes(32).toString("hex");
+  // Generate random token using utility helper
+  const token = randomRefreshToken();
   // Hash token to save in DB
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
   
@@ -234,10 +235,8 @@ const forgotPassword = async ({ email }) => {
 };
 
 const resetPassword = async ({ token, newPassword }) => {
-  // Hash incoming token to match with DB
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
   
-  // Find correct token
   const resetTokenRecord = await prisma.passwordResetToken.findFirst({
     where: {
       tokenHash,
