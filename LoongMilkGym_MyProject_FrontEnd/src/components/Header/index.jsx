@@ -111,8 +111,9 @@ function Header() {
                 </button>
 
                 {/* Dropdown Menu khi click Avatar */}
+                {/* Dropdown Menu khi click Avatar */}
                 {showUserMenu && (
-                  <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.15)] overflow-hidden animate-slide-down z-50">
+                  <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.35)] overflow-hidden animate-slide-down z-50">
                     {/* Thông tin user */}
                     <div className="px-4 py-3 border-b border-[var(--border-color)]">
                       <p className="text-sm font-bold text-[var(--text-color)] m-0 truncate">{userName}</p>
@@ -157,64 +158,42 @@ function Header() {
       {/* ═══ MOBILE SLIDE DRAWER (Trượt từ bên phải sang) ═══ */}
       {mobileMenuOpen && (
         <>
-          {/* Backdrop tối mờ mịn phía sau */}
+          {/* Backdrop tối mờ mịn phía sau - Đồng bộ sáng tối */}
           <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99] lg:hidden animate-fade-in"
+            className="fixed inset-0 bg-black/35 dark:bg-black/70 backdrop-blur-[3px] z-[99] lg:hidden animate-fade-in animate-duration-300"
             onClick={() => setMobileMenuOpen(false)}
           />
 
-          {/* Drawer trượt chính */}
-          <div className="fixed top-0 right-0 h-screen w-[320px] max-w-[85vw] bg-[var(--bg-secondary)] border-l border-[var(--border-color)] z-[100] lg:hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col justify-between p-6 animate-slide-left">
+          {/* Drawer trượt chính - Đồng bộ shadow sáng tối */}
+          <div className="fixed top-0 right-0 h-screen w-[320px] max-w-[85vw] bg-[var(--bg-secondary)] border-l border-[var(--border-color)] z-[100] lg:hidden shadow-[0_0_50px_rgba(0,0,0,0.06)] dark:shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col p-6 animate-slide-left">
             
-            <div className="flex flex-col gap-6 overflow-y-auto">
-              
-              {/* Drawer Header: Logo + Nút Đóng */}
-              <div className="flex items-center justify-between pb-4 border-b border-[var(--border-color)]">
-                <Logo className="text-xl" />
-                <button
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-9 h-9 flex items-center justify-center rounded-full border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-color)] hover:bg-[var(--border-color)]/50 active:scale-90 transition-all duration-200 cursor-pointer"
-                  aria-label="Đóng menu"
-                >
-                  <X className="w-4 h-4 transition-transform duration-300 hover:rotate-90" />
-                </button>
-              </div>
-
-              {/* Drawer Body: Navigation Links */}
-              <nav className="flex flex-col gap-1.5">
-                {NAV_ITEMS.map((item) => {
-                  const isActive = location.pathname === item.path;
-                  return (
-                    <Link
-                      key={item.label}
-                      to={item.path}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`px-4 py-3 text-sm font-bold no-underline rounded-2xl transition-all duration-200 ${
-                        isActive
-                          ? "text-primary bg-primary/10 border-l-4 border-primary pl-3"
-                          : "text-[var(--text-muted)] hover:text-[var(--text-color)] hover:bg-[var(--border-color)]/30"
-                      }`}
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </nav>
+            {/* Drawer Header: Logo + Nút Đóng */}
+            <div className="flex items-center justify-between pb-4 border-b border-[var(--border-color)]">
+              <Logo className="text-xl" />
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-9 h-9 flex items-center justify-center rounded-full border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-color)] hover:bg-[var(--border-color)]/50 active:scale-90 transition-all duration-200 cursor-pointer"
+                aria-label="Đóng menu"
+              >
+                <X className="w-4 h-4 transition-transform duration-300 hover:rotate-90" />
+              </button>
             </div>
 
-            {/* Drawer Footer: User Section hoặc Auth CTA */}
-            <div className="pt-4 border-t border-[var(--border-color)]">
+            {/* Drawer Scrollable Content */}
+            <div className="flex-1 flex flex-col gap-6 overflow-y-auto pt-4 pr-1">
+              
+              {/* ═══ PHẦN TÀI KHOẢN (Đưa lên trên đầu) ═══ */}
               {isLoggedIn ? (
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-2">
                   
                   {/* Card thông tin user */}
-                  <div className="flex items-center gap-3 px-3 py-2 rounded-2xl bg-[var(--bg-color)] border border-[var(--border-color)]">
+                  <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl bg-[var(--bg-color)] border border-[var(--border-color)] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
                     <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-primary to-[#00f5d4] text-black font-black text-sm shrink-0">
                       {userInitial}
                     </div>
                     <div className="overflow-hidden">
-                      <p className="text-sm font-bold text-[var(--text-color)] m-0 truncate">{userName}</p>
-                      <p className="text-xs text-[var(--text-muted)] m-0 truncate">{userInfo?.email || ""}</p>
+                      <p className="text-sm font-black text-[var(--text-color)] m-0 truncate leading-none mb-1">{userName}</p>
+                      <p className="text-xs text-[var(--text-muted)] m-0 truncate leading-none">{userInfo?.email || ""}</p>
                     </div>
                   </div>
 
@@ -240,25 +219,55 @@ function Header() {
                     Đăng xuất
                   </button>
 
+                  {/* Divider ngăn cách */}
+                  <div className="h-[1px] bg-[var(--border-color)] my-1" />
+
                 </div>
               ) : (
                 <div className="flex flex-col gap-2.5">
-                  <Link
-                    to={paths.register}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full py-3 text-center text-sm font-bold no-underline rounded-full text-[var(--text-color)] border border-[var(--border-color)] bg-transparent hover:bg-[var(--border-color)]/30 transition-all duration-200"
-                  >
-                    Đăng ký
-                  </Link>
-                  <Link
-                    to={paths.login}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full py-3 text-center text-sm font-extrabold no-underline rounded-full bg-primary text-black border border-primary shadow-[0_4px_12px_rgba(204,255,0,0.2)] hover:bg-primary-hover active:bg-primary-active transition-all duration-200"
-                  >
-                    Đăng nhập
-                  </Link>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <Link
+                      to={paths.register}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="py-2.5 text-center text-xs font-bold no-underline rounded-full text-[var(--text-color)] border border-[var(--border-color)] bg-transparent hover:bg-[var(--border-color)]/30 transition-all duration-200"
+                    >
+                      Đăng ký
+                    </Link>
+                    <Link
+                      to={paths.login}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="py-2.5 text-center text-xs font-black no-underline rounded-full bg-primary text-black border border-primary shadow-[0_4px_12px_rgba(204,255,0,0.15)] hover:bg-primary-hover active:bg-primary-active transition-all duration-200"
+                    >
+                      Đăng nhập
+                    </Link>
+                  </div>
+                  
+                  {/* Divider ngăn cách */}
+                  <div className="h-[1px] bg-[var(--border-color)] my-1" />
                 </div>
               )}
+
+              {/* ═══ DANH SÁCH MENU ĐIỀU HƯỚNG BÊN DƯỚI ═══ */}
+              <nav className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider px-4 mb-1 block">Điều hướng</span>
+                {NAV_ITEMS.map((item) => {
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <Link
+                      key={item.label}
+                      to={item.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`px-4 py-3 text-sm font-bold no-underline rounded-2xl transition-all duration-200 ${
+                        isActive
+                          ? "text-primary bg-primary/10 border-l-4 border-primary pl-3"
+                          : "text-[var(--text-muted)] hover:text-[var(--text-color)] hover:bg-[var(--border-color)]/30"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
             </div>
 
           </div>
