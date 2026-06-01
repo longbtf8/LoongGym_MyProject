@@ -6,6 +6,7 @@ import * as z from "zod";
 import { useRegisterMutation } from "@/services/auth/authApi";
 import PasswordInput from "@/components/PasswordInput";
 import { useState } from "react";
+import { parseApiError } from "@/utils/errorParser";
 
 // Khai báo schema validate bằng Zod tiếng Việt khớp hoàn toàn với Backend
 const registerSchema = z
@@ -68,30 +69,9 @@ function Register() {
       }
     } catch (err) {
       console.error("Lỗi đăng ký:", err);
-      // Hiển thị lỗi trả về từ Backend validation
-      if (err?.data?.errors) {
-        // Lấy thông báo lỗi đầu tiên từ object errors của backend
-        const firstErrorKey = Object.keys(err.data.errors)[0];
-        const errorMsg = err.data.errors[firstErrorKey][0];
-        setErrorMessage(errorMsg || "Dữ liệu không hợp lệ.");
-      } else {
-        const msg = err?.data?.message || "";
-        const lowerMsg = msg.toLowerCase();
-        
-        // Phát hiện lỗi hệ thống/cơ sở dữ liệu thô hoặc lỗi status 500
-        if (
-          err?.status === 500 ||
-          lowerMsg.includes("prisma") ||
-          lowerMsg.includes("sql") ||
-          lowerMsg.includes("database") ||
-          lowerMsg.includes("column") ||
-          lowerMsg.includes("table")
-        ) {
-          setErrorMessage("Đã xảy ra lỗi kết nối hệ thống. Vui lòng thử lại sau ít phút.");
-        } else {
-          setErrorMessage(msg || "Không thể kết nối đến máy chủ.");
-        }
-      }
+      // Sử dụng helper dùng chung để parse lỗi đăng ký
+      const parsedError = parseApiError(err, "Không thể kết nối đến máy chủ.");
+      setErrorMessage(parsedError.message);
     }
   };
 

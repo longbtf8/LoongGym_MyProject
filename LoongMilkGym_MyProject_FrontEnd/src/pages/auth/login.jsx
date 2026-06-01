@@ -7,6 +7,7 @@ import { useLoginMutation, useResendVerificationMutation } from "@/services/auth
 import { STORAGE_KEYS } from "@/services/api";
 import PasswordInput from "@/components/PasswordInput";
 import { useState } from "react";
+import { parseApiError } from "@/utils/errorParser";
 
 // Khai báo schema validate với Zod bằng tiếng Việt
 const loginSchema = z.object({
@@ -69,32 +70,16 @@ function Login() {
     } catch (err) {
       console.error("Lỗi đăng nhập:", err);
       
-      // Kiểm tra lỗi từ backend
-      if (err?.data?.errors) {
-        const firstErrorKey = Object.keys(err.data.errors)[0];
-        const errorMsg = err.data.errors[firstErrorKey][0];
-        setErrorMessage(errorMsg || "Dữ liệu đăng nhập không hợp lệ.");
-      } else {
-        const msg = err?.data?.message || "";
-        const lowerMsg = msg.toLowerCase();
-        
-        // Phát hiện lỗi hệ thống/cơ sở dữ liệu thô hoặc lỗi status 500
-        if (
-          err?.status === 500 ||
-          lowerMsg.includes("prisma") ||
-          lowerMsg.includes("sql") ||
-          lowerMsg.includes("database") ||
-          lowerMsg.includes("column") ||
-          lowerMsg.includes("table")
-        ) {
-          setErrorMessage("Đã xảy ra lỗi kết nối hệ thống. Vui lòng thử lại sau ít phút.");
-        } else if (msg.includes("xác thực email") || lowerMsg.includes("verify")) {
-          setErrorMessage("Tài khoản của bạn chưa được kích hoạt. Vui lòng xác thực email để đăng nhập.");
-          setShowVerifyButton(true);
-          setTypedEmail(data.email);
-        } else {
-          setErrorMessage(msg || "Email hoặc mật khẩu không chính xác.");
-        }
+      // Sử dụng helper dùng chung để parse lỗi
+      const parsedError = parseApiError(err, "Email hoặc mật khẩu không chính xác.");
+      setErrorMessage(parsedError.message);
+
+      // Logic riêng biệt cho luồng gửi lại email kích hoạt
+      const msg = err?.data?.message || "";
+      if (msg.includes("xác thực email") || msg.toLowerCase().includes("verify")) {
+        setErrorMessage("Tài khoản của bạn chưa được kích hoạt. Vui lòng xác thực email để đăng nhập.");
+        setShowVerifyButton(true);
+        setTypedEmail(data.email);
       }
     }
   };

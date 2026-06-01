@@ -17,8 +17,8 @@ function SecuritySection() {
 
   const devices = response?.data || [];
 
-  const getDeviceIcon = (deviceName = "") => {
-    const name = deviceName.toLowerCase();
+  const getDeviceIcon = (deviceName) => {
+    const name = (deviceName || "").toLowerCase();
     if (name.includes("iphone") || name.includes("android") || name.includes("mobile") || name.includes("phone")) {
       return Smartphone;
     }
