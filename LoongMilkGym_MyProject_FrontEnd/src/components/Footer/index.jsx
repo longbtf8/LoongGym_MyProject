@@ -84,38 +84,41 @@ function Footer() {
             </ul>
           </div>
 
-          {/* Cột 4: Kết nối mạng xã hội */}
+          {/* Cột 4: Kết nối mạng xã hội (Chữ nằm ngang kèm icon tinh tế) */}
           <div className="flex flex-col gap-4">
             <h4 className="text-sm font-extrabold text-[var(--text-color)] tracking-wider uppercase">
               Kết nối
             </h4>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mt-1">
               <a
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-[var(--bg-color)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-primary hover:border-primary hover:-translate-y-1 transition-all duration-200 shadow-sm"
+                className="flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-primary no-underline transition-all duration-200 hover:translate-y-[-1px]"
                 aria-label="Facebook"
               >
-                <Facebook className="w-[18px] h-[18px]" />
+                <Facebook className="w-4 h-4 shrink-0" />
+                <span className="font-medium">Facebook</span>
               </a>
               <a
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-[var(--bg-color)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-primary hover:border-primary hover:-translate-y-1 transition-all duration-200 shadow-sm"
+                className="flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-primary no-underline transition-all duration-200 hover:translate-y-[-1px]"
                 aria-label="Twitter"
               >
-                <Twitter className="w-[18px] h-[18px]" />
+                <Twitter className="w-4 h-4 shrink-0" />
+                <span className="font-medium">Twitter</span>
               </a>
               <a
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-[var(--bg-color)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-primary hover:border-primary hover:-translate-y-1 transition-all duration-200 shadow-sm"
+                className="flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-primary no-underline transition-all duration-200 hover:translate-y-[-1px]"
                 aria-label="Instagram"
               >
-                <Instagram className="w-[18px] h-[18px]" />
+                <Instagram className="w-4 h-4 shrink-0" />
+                <span className="font-medium">Instagram</span>
               </a>
             </div>
           </div>
