@@ -320,7 +320,7 @@ const resendVerification = async ({ email }) => {
   };
 };
 
-const getDevices = async (userId) => {
+const getDevices = async (userId, currentRefreshToken = null) => {
   const tokens = await prisma.refreshTokens.findMany({
     where: {
       userId,
@@ -332,7 +332,22 @@ const getDevices = async (userId) => {
       lastActiveAt: "desc",
     },
   });
-  return tokens;
+
+  let currentTokenHash = "";
+  if (currentRefreshToken) {
+    currentTokenHash = crypto
+      .createHash("sha256")
+      .update(currentRefreshToken)
+      .digest("hex");
+  }
+
+  return tokens.map((t) => ({
+    id: t.id,
+    deviceName: t.deviceName,
+    ipAddress: t.ipAddress,
+    lastActiveAt: t.lastActiveAt,
+    isCurrent: t.token === currentTokenHash,
+  }));
 };
 
 const revokeDevice = async ({ userId, tokenId }) => {

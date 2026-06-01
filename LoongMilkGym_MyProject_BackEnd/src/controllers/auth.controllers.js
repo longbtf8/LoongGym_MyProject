@@ -7,8 +7,11 @@ const { UAParser } = require("ua-parser-js");
 
 const getRequestMetadata = (req) => {
   const userAgentStr = req.headers["user-agent"] || "";
-  // Lấy IP chính xác từ headers hoặc express client IP
-  const ipAddress = req.headers["x-forwarded-for"] || req.ip || "";
+  // Lấy IP chính xác từ headers (xử lý danh sách IP đi qua proxy) hoặc express client IP
+  let ipAddress = req.headers["x-forwarded-for"] || req.ip || "";
+  if (ipAddress.includes(",")) {
+    ipAddress = ipAddress.split(",")[0].trim();
+  }
   
   const parser = new UAParser(userAgentStr);
   const ua = parser.getResult();
@@ -175,7 +178,8 @@ const resendVerification = async (req, res, next) => {
 const getDevices = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const devices = await authService.getDevices(userId);
+    const currentRefreshToken = req.headers["x-refresh-token"] || null;
+    const devices = await authService.getDevices(userId, currentRefreshToken);
     return res.success(devices, httpCodes.success, "Lấy danh sách thiết bị thành công");
   } catch (error) {
     next(error);

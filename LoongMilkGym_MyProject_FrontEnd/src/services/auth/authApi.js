@@ -1,5 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "../baseQuery";
+import { STORAGE_KEYS } from "../api";
 
 export const authApi = createApi({
   reducerPath: "authApi",
@@ -75,9 +76,13 @@ export const authApi = createApi({
       }),
     }),
     getDevices: builder.query({
-      query: () => ({
-        url: "/auth/devices",
-      }),
+      query: () => {
+        const token = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+        return {
+          url: "/auth/devices",
+          headers: token ? { "x-refresh-token": token } : {},
+        };
+      },
       providesTags: ["Devices"],
     }),
     revokeDevice: builder.mutation({

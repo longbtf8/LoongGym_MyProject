@@ -1,12 +1,19 @@
 import React, { useState } from "react";
-import { Laptop, Smartphone, Globe, Lock, Shield, Check, RefreshCw } from "lucide-react";
-import { useGetDevicesQuery, useRevokeDeviceMutation } from "@/services/auth/authApi";
+import { Laptop, Smartphone, Globe, Lock, Shield, Check, RefreshCw, Eye, EyeOff } from "lucide-react";
+import { useGetDevicesQuery, useRevokeDeviceMutation, useChangePasswordMutation } from "@/services/auth/authApi";
+import { parseApiError } from "@/utils/errorParser";
 
 function SecuritySection() {
   const { data: response, isLoading, refetch, isFetching } = useGetDevicesQuery();
   const [revokeDevice] = useRevokeDeviceMutation();
+  const [changePassword, { isLoading: isUpdating }] = useChangePasswordMutation();
   const [revokingId, setRevokingId] = useState(null);
   
+  // State ẩn/hiện mật khẩu
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   // State cho đổi mật khẩu
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
@@ -43,10 +50,14 @@ function SecuritySection() {
     setPasswordData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleUpdatePassword = (e) => {
+  const handleUpdatePassword = async (e) => {
     e.preventDefault();
     if (!passwordData.oldPassword || !passwordData.newPassword) {
       setMessage({ type: "error", text: "Vui lòng nhập đầy đủ thông tin" });
+      return;
+    }
+    if (passwordData.newPassword.length < 6) {
+      setMessage({ type: "error", text: "Mật khẩu mới phải có ít nhất 6 ký tự" });
       return;
     }
     if (passwordData.newPassword !== passwordData.confirmPassword) {
@@ -54,10 +65,27 @@ function SecuritySection() {
       return;
     }
     
-    // Giả lập đổi mật khẩu thành công (Sau này kết nối API changePassword nếu cần)
-    setMessage({ type: "success", text: "Cập nhật mật khẩu thành công!" });
-    setPasswordData({ oldPassword: "", newPassword: "", confirmPassword: "" });
-    setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+    try {
+      setMessage({ type: "", text: "" });
+      const res = await changePassword({
+        oldPassword: passwordData.oldPassword,
+        newPassword: passwordData.newPassword,
+      }).unwrap();
+
+      if (res?.success) {
+        setMessage({ type: "success", text: "Cập nhật mật khẩu thành công!" });
+        setPasswordData({ oldPassword: "", newPassword: "", confirmPassword: "" });
+        // Tự động tắt ẩn hiện sau khi cập nhật thành công
+        setShowOldPassword(false);
+        setShowNewPassword(false);
+        setShowConfirmPassword(false);
+      } else {
+        setMessage({ type: "error", text: res?.message || "Cập nhật mật khẩu thất bại" });
+      }
+    } catch (err) {
+      const parsed = parseApiError(err, "Không thể đổi mật khẩu. Vui lòng kiểm tra lại mật khẩu cũ.");
+      setMessage({ type: "error", text: parsed.message });
+    }
   };
 
   return (
@@ -104,45 +132,73 @@ function SecuritySection() {
         <form onSubmit={handleUpdatePassword} className="flex flex-col gap-4 max-w-md">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Mật khẩu hiện tại</label>
-            <input 
-              type="password" 
-              name="oldPassword"
-              value={passwordData.oldPassword}
-              onChange={handlePasswordChange}
-              placeholder="••••••••"
-              className="w-full px-4 py-2.5 text-sm font-semibold rounded-xl border-2 border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-color)] outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-            />
+            <div className="relative flex items-center">
+              <input 
+                type={showOldPassword ? "text" : "password"} 
+                name="oldPassword"
+                value={passwordData.oldPassword}
+                onChange={handlePasswordChange}
+                placeholder="••••••••"
+                className="w-full pl-4 pr-11 py-2.5 text-sm font-semibold rounded-xl border-2 border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-color)] outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+              />
+              <button
+                type="button"
+                onClick={() => setShowOldPassword(!showOldPassword)}
+                className="absolute right-3 text-[var(--text-muted)] hover:text-[var(--text-color)] transition-colors cursor-pointer bg-none border-none p-0 flex items-center justify-center"
+              >
+                {showOldPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
           
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Mật khẩu mới</label>
-            <input 
-              type="password" 
-              name="newPassword"
-              value={passwordData.newPassword}
-              onChange={handlePasswordChange}
-              placeholder="••••••••"
-              className="w-full px-4 py-2.5 text-sm font-semibold rounded-xl border-2 border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-color)] outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-            />
+            <div className="relative flex items-center">
+              <input 
+                type={showNewPassword ? "text" : "password"} 
+                name="newPassword"
+                value={passwordData.newPassword}
+                onChange={handlePasswordChange}
+                placeholder="••••••••"
+                className="w-full pl-4 pr-11 py-2.5 text-sm font-semibold rounded-xl border-2 border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-color)] outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 text-[var(--text-muted)] hover:text-[var(--text-color)] transition-colors cursor-pointer bg-none border-none p-0 flex items-center justify-center"
+              >
+                {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Xác nhận mật khẩu mới</label>
-            <input 
-              type="password" 
-              name="confirmPassword"
-              value={passwordData.confirmPassword}
-              onChange={handlePasswordChange}
-              placeholder="••••••••"
-              className="w-full px-4 py-2.5 text-sm font-semibold rounded-xl border-2 border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-color)] outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-            />
+            <div className="relative flex items-center">
+              <input 
+                type={showConfirmPassword ? "text" : "password"} 
+                name="confirmPassword"
+                value={passwordData.confirmPassword}
+                onChange={handlePasswordChange}
+                placeholder="••••••••"
+                className="w-full pl-4 pr-11 py-2.5 text-sm font-semibold rounded-xl border-2 border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-color)] outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 text-[var(--text-muted)] hover:text-[var(--text-color)] transition-colors cursor-pointer bg-none border-none p-0 flex items-center justify-center"
+              >
+                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           <button 
             type="submit"
-            className="self-start mt-2 px-6 py-2.5 rounded-full bg-primary text-black text-xs font-black transition-all duration-200 cursor-pointer shadow-md hover:bg-primary-hover active:bg-primary-active hover:-translate-y-0.5"
+            disabled={isUpdating}
+            className="self-start mt-2 px-6 py-2.5 rounded-full bg-primary text-black text-xs font-black transition-all duration-200 cursor-pointer shadow-md hover:bg-primary-hover active:bg-primary-active hover:-translate-y-0.5 disabled:opacity-50"
           >
-            Cập nhật mật khẩu
+            {isUpdating ? "Đang cập nhật..." : "Cập nhật mật khẩu"}
           </button>
         </form>
       </div>
@@ -169,8 +225,8 @@ function SecuritySection() {
           <div className="flex flex-col gap-4">
             {devices.map((device, idx) => {
               const DeviceIcon = getDeviceIcon(device.deviceName);
-              // Phần tử đầu tiên trong danh sách (sắp xếp desc theo lastActiveAt) chính là phiên hiện tại đang gọi API
-              const isCurrent = idx === 0;
+              // Xác định thiết bị hiện tại dựa trên trường isCurrent từ Backend
+              const isCurrent = !!device.isCurrent;
 
               return (
                 <div 

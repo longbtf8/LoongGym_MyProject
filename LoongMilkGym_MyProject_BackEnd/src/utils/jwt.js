@@ -22,6 +22,21 @@ const createRefreshToken = async (user, metadata = {}) => {
   const refreshTokenHash = hashToken(refreshToken);
   const date = new Date();
   date.setDate(date.getDate() + authConfig.refreshTokenExpires);
+
+  // Dọn dẹp phiên đăng nhập cũ trên CÙNG một trình duyệt/thiết bị để tránh bị lặp bản ghi
+  if (user.id && metadata.userAgent) {
+    try {
+      await prisma.refreshTokens.deleteMany({
+        where: {
+          userId: user.id,
+          userAgent: metadata.userAgent,
+        },
+      });
+    } catch (err) {
+      console.error("Lỗi khi dọn dẹp phiên RefreshToken cũ:", err);
+    }
+  }
+
   await prisma.refreshTokens.create({
     data: {
       user: user.id ? { connect: { id: user.id } } : undefined,
