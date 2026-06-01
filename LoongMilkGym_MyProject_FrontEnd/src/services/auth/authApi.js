@@ -6,7 +6,7 @@ export const authApi = createApi({
   baseQuery: axiosBaseQuery({
     baseUrl: import.meta.env.VITE_API_BASE_URL,
   }),
-  tagTypes: ["User"],
+  tagTypes: ["User", "Devices"],
 
   endpoints: (builder) => ({
     getUserInfo: builder.query({
@@ -21,7 +21,7 @@ export const authApi = createApi({
         method: "POST",
         data: credentials,
       }),
-      invalidatesTags: ["User"],
+      invalidatesTags: ["User", "Devices"],
     }),
     register: builder.mutation({
       query: (credentials) => ({
@@ -29,7 +29,7 @@ export const authApi = createApi({
         method: "POST",
         data: credentials,
       }),
-      invalidatesTags: ["User"],
+      invalidatesTags: ["User", "Devices"],
     }),
     forgotPassword: builder.mutation({
       query: (data) => ({
@@ -51,7 +51,7 @@ export const authApi = createApi({
         url: "/auth/logout",
         method: "POST",
       }),
-      invalidatesTags: ["User"],
+      invalidatesTags: ["User", "Devices"],
     }),
     verifyEmail: builder.mutation({
       query: (data) => ({
@@ -74,6 +74,19 @@ export const authApi = createApi({
         data,
       }),
     }),
+    getDevices: builder.query({
+      query: () => ({
+        url: "/auth/devices",
+      }),
+      providesTags: ["Devices"],
+    }),
+    revokeDevice: builder.mutation({
+      query: (id) => ({
+        url: `/auth/devices/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Devices"],
+    }),
   }),
 });
 
@@ -87,5 +100,7 @@ export const {
   useVerifyEmailMutation,
   useChangePasswordMutation,
   useResendVerificationMutation,
+  useGetDevicesQuery,
+  useRevokeDeviceMutation,
 } = authApi;
 
