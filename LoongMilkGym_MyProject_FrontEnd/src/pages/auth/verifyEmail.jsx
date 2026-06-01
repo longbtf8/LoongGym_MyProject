@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import Logo from "@/components/Logo";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { useVerifyEmailMutation } from "@/services/auth/authApi";
 import { useTheme } from "@/context/ThemeContext";
@@ -63,13 +64,9 @@ function VerifyEmail() {
 
   return (
     <div className="text-center flex flex-col items-center justify-center">
-      {/* Thương hiệu LoongMilKGym với Chameleon Gradient cực đẹp */}
-      <div className={`text-4xl font-black mb-8 tracking-tighter text-center bg-gradient-to-r bg-clip-text text-transparent select-none filter transition-all duration-300 drop-shadow-[0_2px_8px_rgba(204,255,0,0.15)] ${
-        theme === "light" 
-          ? "from-[#8db400] to-[#0092ad]" 
-          : "from-[#ccff00] to-[#00f5d4]"
-      }`}>
-        LoongMilKGym
+      {/* Tên thương hiệu LoongMilKGym sử dụng component Logo dùng chung */}
+      <div className="mb-8 block">
+        <Logo className="text-4xl" isLink={false} />
       </div>
 
       {status === "verifying" && (

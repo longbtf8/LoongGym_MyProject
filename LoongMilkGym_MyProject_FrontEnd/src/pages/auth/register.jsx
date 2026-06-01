@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import Logo from "@/components/Logo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -86,12 +87,8 @@ function Register() {
     return (
       <div className="text-center flex flex-col items-center justify-center animate-slide-down">
         {/* Logo LoongMilKGym */}
-        <div className={`text-4xl font-black mb-10 tracking-tighter bg-gradient-to-r bg-clip-text text-transparent select-none filter transition-all duration-300 drop-shadow-[0_2px_8px_rgba(204,255,0,0.15)] ${
-          theme === "light" 
-            ? "from-[#8db400] to-[#0092ad]" 
-            : "from-[#ccff00] to-[#00f5d4]"
-        }`}>
-          LoongMilKGym
+        <div className="mb-10 block">
+          <Logo className="text-4xl" isLink={false} />
         </div>
 
         {/* Checkmark icon */}
@@ -119,12 +116,8 @@ function Register() {
   return (
     <div>
       {/* Thương hiệu LoongMilKGym ở góc trên giống mockup với Chameleon Gradient */}
-      <div className={`text-4xl font-black mb-10 tracking-tighter bg-gradient-to-r bg-clip-text text-transparent select-none filter transition-all duration-300 drop-shadow-[0_2px_8px_rgba(204,255,0,0.15)] ${
-        theme === "light" 
-          ? "from-[#8db400] to-[#0092ad]" 
-          : "from-[#ccff00] to-[#00f5d4]"
-      }`}>
-        LoongMilKGym
+      <div className="mb-10 block">
+        <Logo className="text-4xl" isLink={false} />
       </div>
 
       {/* Nút quay lại */}

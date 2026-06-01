@@ -1,18 +1,12 @@
-import React from "react";
-import { useTheme } from "@/context/ThemeContext";
+import ThemeToggle from "@/components/ThemeToggle";
 
 function AuthLayout({ children }) {
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
 
   return (
     <div className="flex min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] font-sans transition-colors duration-300 relative">
       {/* Nút bật/tắt theme ở góc trên cùng bên phải */}
-      <button 
-        className="fixed top-5 right-5 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-color)] px-4 py-2 rounded-full cursor-pointer z-50 text-sm font-semibold shadow-[0_2px_8px_var(--shadow-color)] hover:bg-[var(--border-color)] hover:-translate-y-0.5 transition-all duration-200"
-        onClick={toggleTheme}
-      >
-        {theme === "light" ? "🌙 Tối" : "☀️ Sáng"}
-      </button>
+      <ThemeToggle className="fixed top-5 right-5 z-50 shadow-[0_2px_8px_var(--shadow-color)]" />
 
       {/* Cột trái: Ảnh tập Gym tuyệt đẹp từ thư mục public */}
       <div 
