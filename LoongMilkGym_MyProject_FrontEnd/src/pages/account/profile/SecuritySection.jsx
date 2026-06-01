@@ -70,6 +70,7 @@ function SecuritySection() {
       const res = await changePassword({
         oldPassword: passwordData.oldPassword,
         newPassword: passwordData.newPassword,
+        confirmPassword: passwordData.confirmPassword,
       }).unwrap();
 
       if (res?.success) {
