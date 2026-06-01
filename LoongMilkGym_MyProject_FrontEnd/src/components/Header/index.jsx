@@ -144,91 +144,125 @@ function Header() {
 
             {/* ═══ HAMBURGER MENU (Mobile) ═══ */}
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden w-10 h-10 flex items-center justify-center rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-color)] cursor-pointer hover:bg-[var(--border-color)] transition-all duration-200"
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden w-10 h-10 flex items-center justify-center rounded-full bg-[var(--bg-secondary)] border-2 border-[var(--border-color)] text-[var(--text-color)] cursor-pointer hover:border-primary/50 hover:bg-[var(--border-color)]/30 active:scale-95 transition-all duration-200"
               aria-label="Mở menu di động"
             >
-              {mobileMenuOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
+              <Menu className="w-5 h-5" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* ═══ MOBILE MENU (Slide Down) ═══ */}
+      {/* ═══ MOBILE SLIDE DRAWER (Trượt từ bên phải sang) ═══ */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-[var(--border-color)] bg-[var(--bg-color)]/95 backdrop-blur-xl animate-slide-down">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-1">
-            {/* Nav links mobile */}
-            {NAV_ITEMS.map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <Link
-                  key={item.label}
-                  to={item.path}
-                  className={`px-4 py-3 text-sm font-semibold no-underline rounded-xl transition-all duration-200 ${
-                    isActive
-                      ? "text-primary bg-primary/10"
-                      : "text-[var(--text-muted)] hover:text-[var(--text-color)] hover:bg-[var(--bg-secondary)]"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
+        <>
+          {/* Backdrop tối mờ mịn phía sau */}
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99] lg:hidden animate-fade-in"
+            onClick={() => setMobileMenuOpen(false)}
+          />
 
-            {/* Auth buttons mobile */}
-            {!isLoggedIn && (
-              <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-[var(--border-color)]">
-                <Link
-                  to={paths.register}
-                  className="w-full py-3 text-center text-sm font-bold no-underline rounded-full text-[var(--text-color)] border border-[var(--border-color)] bg-transparent hover:bg-[var(--bg-secondary)] transition-all duration-200"
-                >
-                  Đăng ký
-                </Link>
-                <Link
-                  to={paths.login}
-                  className="w-full py-3 text-center text-sm font-extrabold no-underline rounded-full bg-primary text-black border border-primary shadow-[0_2px_10px_rgba(204,255,0,0.2)] hover:bg-primary-hover transition-all duration-200"
-                >
-                  Đăng nhập
-                </Link>
-              </div>
-            )}
-
-            {/* User info mobile */}
-            {isLoggedIn && (
-              <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-[var(--border-color)]">
-                <div className="flex items-center gap-3 px-4 py-2">
-                  <div className="w-9 h-9 flex items-center justify-center rounded-full bg-gradient-to-br from-primary to-[#00f5d4] text-black font-black text-sm shrink-0">
-                    {userInitial}
-                  </div>
-                  <div className="overflow-hidden">
-                    <p className="text-sm font-bold text-[var(--text-color)] m-0 truncate">{userName}</p>
-                    <p className="text-xs text-[var(--text-muted)] m-0 truncate">{userInfo?.email || ""}</p>
-                  </div>
-                </div>
-                <Link
-                  to={paths.profile}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[var(--text-color)] no-underline rounded-xl hover:bg-[var(--bg-secondary)] transition-colors duration-200"
-                >
-                  <User className="w-4 h-4 text-[var(--text-muted)]" />
-                  Thông tin cá nhân
-                </Link>
+          {/* Drawer trượt chính */}
+          <div className="fixed top-0 right-0 h-screen w-[320px] max-w-[85vw] bg-[var(--bg-secondary)] border-l border-[var(--border-color)] z-[100] lg:hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] flex flex-col justify-between p-6 animate-slide-left">
+            
+            <div className="flex flex-col gap-6 overflow-y-auto">
+              
+              {/* Drawer Header: Logo + Nút Đóng */}
+              <div className="flex items-center justify-between pb-4 border-b border-[var(--border-color)]">
+                <Logo className="text-xl" />
                 <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#ff4d4f] bg-transparent border-none cursor-pointer rounded-xl hover:bg-[#ff4d4f]/10 transition-colors duration-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-9 h-9 flex items-center justify-center rounded-full border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-color)] hover:bg-[var(--border-color)]/50 active:scale-90 transition-all duration-200 cursor-pointer"
+                  aria-label="Đóng menu"
                 >
-                  <LogOut className="w-4 h-4" />
-                  Đăng xuất
+                  <X className="w-4 h-4 transition-transform duration-300 hover:rotate-90" />
                 </button>
               </div>
-            )}
+
+              {/* Drawer Body: Navigation Links */}
+              <nav className="flex flex-col gap-1.5">
+                {NAV_ITEMS.map((item) => {
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <Link
+                      key={item.label}
+                      to={item.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`px-4 py-3 text-sm font-bold no-underline rounded-2xl transition-all duration-200 ${
+                        isActive
+                          ? "text-primary bg-primary/10 border-l-4 border-primary pl-3"
+                          : "text-[var(--text-muted)] hover:text-[var(--text-color)] hover:bg-[var(--border-color)]/30"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Drawer Footer: User Section hoặc Auth CTA */}
+            <div className="pt-4 border-t border-[var(--border-color)]">
+              {isLoggedIn ? (
+                <div className="flex flex-col gap-3">
+                  
+                  {/* Card thông tin user */}
+                  <div className="flex items-center gap-3 px-3 py-2 rounded-2xl bg-[var(--bg-color)] border border-[var(--border-color)]">
+                    <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-primary to-[#00f5d4] text-black font-black text-sm shrink-0">
+                      {userInitial}
+                    </div>
+                    <div className="overflow-hidden">
+                      <p className="text-sm font-bold text-[var(--text-color)] m-0 truncate">{userName}</p>
+                      <p className="text-xs text-[var(--text-muted)] m-0 truncate">{userInfo?.email || ""}</p>
+                    </div>
+                  </div>
+
+                  {/* Nút vào Profile */}
+                  <Link
+                    to={paths.profile}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-[var(--text-color)] no-underline rounded-2xl hover:bg-[var(--border-color)]/30 transition-all duration-200"
+                  >
+                    <User className="w-4.5 h-4.5 text-[var(--text-muted)]" />
+                    Thông tin cá nhân
+                  </Link>
+
+                  {/* Nút Đăng xuất */}
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleLogout();
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-[#ff4d4f] bg-transparent border-none cursor-pointer rounded-2xl hover:bg-[#ff4d4f]/10 transition-all duration-200"
+                  >
+                    <LogOut className="w-4.5 h-4.5" />
+                    Đăng xuất
+                  </button>
+
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2.5">
+                  <Link
+                    to={paths.register}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full py-3 text-center text-sm font-bold no-underline rounded-full text-[var(--text-color)] border border-[var(--border-color)] bg-transparent hover:bg-[var(--border-color)]/30 transition-all duration-200"
+                  >
+                    Đăng ký
+                  </Link>
+                  <Link
+                    to={paths.login}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full py-3 text-center text-sm font-extrabold no-underline rounded-full bg-primary text-black border border-primary shadow-[0_4px_12px_rgba(204,255,0,0.2)] hover:bg-primary-hover active:bg-primary-active transition-all duration-200"
+                  >
+                    Đăng nhập
+                  </Link>
+                </div>
+              )}
+            </div>
+
           </div>
-        </div>
+        </>
       )}
     </header>
   );
