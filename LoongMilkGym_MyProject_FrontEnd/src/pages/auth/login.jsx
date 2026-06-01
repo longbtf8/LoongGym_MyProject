@@ -76,9 +76,19 @@ function Login() {
         setErrorMessage(errorMsg || "Dữ liệu đăng nhập không hợp lệ.");
       } else {
         const msg = err?.data?.message || "";
+        const lowerMsg = msg.toLowerCase();
         
-        // Phát hiện nếu lỗi là yêu cầu xác thực tài khoản/email
-        if (msg.includes("xác thực email") || msg.toLowerCase().includes("verify")) {
+        // Phát hiện lỗi hệ thống/cơ sở dữ liệu thô hoặc lỗi status 500
+        if (
+          err?.status === 500 ||
+          lowerMsg.includes("prisma") ||
+          lowerMsg.includes("sql") ||
+          lowerMsg.includes("database") ||
+          lowerMsg.includes("column") ||
+          lowerMsg.includes("table")
+        ) {
+          setErrorMessage("Đã xảy ra lỗi kết nối hệ thống. Vui lòng thử lại sau ít phút.");
+        } else if (msg.includes("xác thực email") || lowerMsg.includes("verify")) {
           setErrorMessage("Tài khoản của bạn chưa được kích hoạt. Vui lòng xác thực email để đăng nhập.");
           setShowVerifyButton(true);
           setTypedEmail(data.email);

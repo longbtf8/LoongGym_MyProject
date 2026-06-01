@@ -7,7 +7,7 @@ import Register from "@/pages/auth/register";
 import ForgotPassword from "@/pages/auth/forgotPassword";
 import ResetPassword from "@/pages/auth/resetPassword";
 import VerifyEmail from "@/pages/auth/verifyEmail";
-import Profile from "@/pages/account/profile";
+import Profile from "@/pages/account/profile/index.jsx";
 import NotFound from "@/pages/notFound";
 
 // Layouts

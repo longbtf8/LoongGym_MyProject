@@ -12,14 +12,21 @@ const exceptionHandler = (err, req, res, next) => {
   }
 
   const statusCode = err.statusCode || err.status || httpCodes.internalServerError;
-  const message = err.message || "Lỗi máy chủ nội bộ";
-  const error =
-    process.env.NODE_ENV === "development"
+  let message = err.message || "Lỗi máy chủ nội bộ";
+  let error = null;
+
+  // Che giấu lỗi thô của cơ sở dữ liệu/Prisma để đảm bảo bảo mật và giao diện đẹp
+  if (err.name && err.name.startsWith("PrismaClient")) {
+    message = "Đã xảy ra lỗi hệ thống khi kết nối cơ sở dữ liệu. Vui lòng thử lại sau.";
+  } else {
+    error = process.env.NODE_ENV === "development"
       ? {
           stack: err.stack,
           errors: err.errors || null,
         }
       : err.errors || null;
+  }
+
   return res.error(message, statusCode, error);
 };
 module.exports = exceptionHandler;
