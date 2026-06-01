@@ -21,6 +21,8 @@ router.get("/me", authRequire, authController.infoMe);
 router.post("/logout", authRequire, authController.logout);
 router.post("/refresh-token", authController.refreshToken);
 router.post("/verify-email", authController.verifyEmail);
+router.get("/devices", authRequire, authController.getDevices);
+router.delete("/devices/:id", authRequire, authController.revokeDevice);
 router.post(
   "/change-password",
   authRequire,

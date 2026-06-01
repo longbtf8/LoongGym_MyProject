@@ -29,6 +29,7 @@
     "module-alias": "^2.3.4",
     "mysql2": "^3.22.3",
     "nodemailer": "^8.0.10",
+    "ua-parser-js": "^2.0.10",
     "zod": "^4.4.3"
   },
   "devDependencies": {

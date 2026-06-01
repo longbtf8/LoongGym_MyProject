@@ -3,11 +3,38 @@ const { prisma } = require("@/lib/prisma");
 const authService = require("@/services/auth.service");
 const queueService = require("@/services/queue.service");
 const { signAccessToken } = require("@/utils/jwt");
+const { UAParser } = require("ua-parser-js");
+
+const getRequestMetadata = (req) => {
+  const userAgentStr = req.headers["user-agent"] || "";
+  // Lấy IP chính xác từ headers hoặc express client IP
+  const ipAddress = req.headers["x-forwarded-for"] || req.ip || "";
+  
+  const parser = new UAParser(userAgentStr);
+  const ua = parser.getResult();
+  
+  let deviceName = "Thiết bị không xác định";
+  if (ua.os.name) {
+    deviceName = `${ua.os.name}`;
+    if (ua.browser.name) {
+      deviceName += ` (${ua.browser.name})`;
+    }
+  } else if (ua.browser.name) {
+    deviceName = ua.browser.name;
+  }
+
+  return {
+    userAgent: userAgentStr,
+    deviceName,
+    ipAddress,
+  };
+};
 
 const register = async (req, res, next) => {
   try {
     const { email, password, fullname } = req.validated.body;
-    const result = await authService.register({ email, password, fullname });
+    const metadata = getRequestMetadata(req);
+    const result = await authService.register({ email, password, fullname }, metadata);
     const infoVerification = {
       id: result.user.id,
       email: result.user.email,
@@ -22,7 +49,8 @@ const register = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.validated.body;
-    const result = await authService.login({ email, password });
+    const metadata = getRequestMetadata(req);
+    const result = await authService.login({ email, password }, metadata);
     return res.success(result, httpCodes.created, "Đăng nhập thành công");
   } catch (error) {
     next(error);
@@ -53,8 +81,9 @@ const logout = async (req, res, next) => {
 const refreshToken = async (req, res, next) => {
   try {
     const { refresh_token } = req.body;
+    const metadata = getRequestMetadata(req);
     const { accessToken, refreshTokenNew, userId } =
-      await authService.refreshToken(refresh_token);
+      await authService.refreshToken(refresh_token, metadata);
 
     return res.success({
       userId: userId,
@@ -143,6 +172,27 @@ const resendVerification = async (req, res, next) => {
   }
 };
 
+const getDevices = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const devices = await authService.getDevices(userId);
+    return res.success(devices, httpCodes.success, "Lấy danh sách thiết bị thành công");
+  } catch (error) {
+    next(error);
+  }
+};
+
+const revokeDevice = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { id: tokenId } = req.params;
+    await authService.revokeDevice({ userId, tokenId });
+    return res.success(null, httpCodes.success, "Đăng xuất thiết bị thành công");
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -154,4 +204,6 @@ module.exports = {
   resetPassword,
   forgotPassword,
   resendVerification,
+  getDevices,
+  revokeDevice,
 };

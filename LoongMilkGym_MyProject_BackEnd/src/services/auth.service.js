@@ -7,7 +7,7 @@ const { httpCodes } = require("@/config/constants");
 const jwt = require("jsonwebtoken");
 const authConfig = require("@/config/auth.config");
 
-const register = async ({ email, password, fullname }) => {
+const register = async ({ email, password, fullname }, metadata = {}) => {
   const existedUser = await prisma.user.findUnique({
     where: { email },
   });
@@ -44,7 +44,7 @@ const register = async ({ email, password, fullname }) => {
       settings: true,
     },
   });
-  const { accessToken, refreshToken } = await generateAuthTokens(user);
+  const { accessToken, refreshToken } = await generateAuthTokens(user, metadata);
 
   // Gửi email xác thực
 
@@ -55,7 +55,7 @@ const register = async ({ email, password, fullname }) => {
   };
 };
 
-const login = async ({ email, password }) => {
+const login = async ({ email, password }, metadata = {}) => {
   const user = await prisma.user.findUnique({
     where: { email },
     include: {
@@ -93,7 +93,7 @@ const login = async ({ email, password }) => {
       lastLoginAt: new Date(),
     },
   });
-  const { accessToken, refreshToken } = await generateAuthTokens(user);
+  const { accessToken, refreshToken } = await generateAuthTokens(user, metadata);
 
   const safeUser = {
     id: user.id,
@@ -126,8 +126,11 @@ const logout = async ({ accessToken, tokenPayload }) => {
   });
 };
 
-const refreshToken = async (refresh_token) => {
-  const tokenHash = crypto.createHash("sha256").update(refresh_token).digest("hex");
+const refreshToken = async (refresh_token, metadata = {}) => {
+  const tokenHash = crypto
+    .createHash("sha256")
+    .update(refresh_token)
+    .digest("hex");
   const refreshTokenDB = await prisma.refreshTokens.findFirst({
     where: {
       token: tokenHash,
@@ -157,7 +160,7 @@ const refreshToken = async (refresh_token) => {
     role: refreshTokenDB.user.role,
   };
   const { accessToken, refreshToken: refreshTokenNew } =
-    await generateAuthTokens(user);
+    await generateAuthTokens(user, metadata);
   return { accessToken, refreshTokenNew, userId: refreshTokenDB.userId };
 };
 const generateVerificationLink = (user) => {
@@ -228,20 +231,22 @@ const forgotPassword = async ({ email }) => {
     error.statusCode = httpCodes.notFound;
     throw error;
   }
-  
+
   // Tạo token ngẫu nhiên
   const token = randomRefreshToken();
   // Hash token trước khi lưu vào DB
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
-  
+
   // Tính thời gian hết hạn (15 phút)
-  const expiresAt = new Date(Date.now() + authConfig.passwordResetExpiresIn * 60 * 1000);
-  
+  const expiresAt = new Date(
+    Date.now() + authConfig.passwordResetExpiresIn * 60 * 1000,
+  );
+
   // Xoá các token đặt lại mật khẩu cũ của người dùng này
   await prisma.passwordResetToken.deleteMany({
     where: { userId: user.id },
   });
-  
+
   // Lưu token đặt lại mật khẩu mới
   await prisma.passwordResetToken.create({
     data: {
@@ -250,7 +255,7 @@ const forgotPassword = async ({ email }) => {
       expiresAt,
     },
   });
-  
+
   return {
     email: user.email,
     token,
@@ -259,7 +264,7 @@ const forgotPassword = async ({ email }) => {
 
 const resetPassword = async ({ token, newPassword }) => {
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
-  
+
   const resetTokenRecord = await prisma.passwordResetToken.findFirst({
     where: {
       tokenHash,
@@ -268,16 +273,18 @@ const resetPassword = async ({ token, newPassword }) => {
       },
     },
   });
-  
+
   if (!resetTokenRecord) {
-    const error = new Error("Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn");
+    const error = new Error(
+      "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn",
+    );
     error.statusCode = httpCodes.badRequest;
     throw error;
   }
-  
+
   // Hash mật khẩu mới
   const newPasswordHash = await bcrypt.hash(newPassword, 10);
-  
+
   // Cập nhật mật khẩu người dùng
   await prisma.user.update({
     where: { id: resetTokenRecord.userId },
@@ -285,7 +292,7 @@ const resetPassword = async ({ token, newPassword }) => {
       passwordHash: newPasswordHash,
     },
   });
-  
+
   // Xoá tất cả token đã sử dụng của người dùng này
   await prisma.passwordResetToken.deleteMany({
     where: { userId: resetTokenRecord.userId },
@@ -313,6 +320,40 @@ const resendVerification = async ({ email }) => {
   };
 };
 
+const getDevices = async (userId) => {
+  const tokens = await prisma.refreshTokens.findMany({
+    where: {
+      userId,
+      expiresAt: {
+        gt: new Date(),
+      },
+    },
+    orderBy: {
+      lastActiveAt: "desc",
+    },
+  });
+  return tokens;
+};
+
+const revokeDevice = async ({ userId, tokenId }) => {
+  const token = await prisma.refreshTokens.findFirst({
+    where: {
+      id: tokenId,
+      userId,
+    },
+  });
+  if (!token) {
+    const error = new Error("Thiết bị không tồn tại hoặc đã hết hạn");
+    error.statusCode = httpCodes.notFound;
+    throw error;
+  }
+  await prisma.refreshTokens.delete({
+    where: {
+      id: tokenId,
+    },
+  });
+};
+
 module.exports = {
   register,
   login,
@@ -324,4 +365,6 @@ module.exports = {
   forgotPassword,
   resetPassword,
   resendVerification,
+  getDevices,
+  revokeDevice,
 };

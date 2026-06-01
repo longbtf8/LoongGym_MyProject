@@ -17,7 +17,7 @@ const signAccessToken = (payload) => {
 const verifyAccessToken = (token) => {
   return jwt.verify(token, authConfig.jwtSecret);
 };
-const createRefreshToken = async (user) => {
+const createRefreshToken = async (user, metadata = {}) => {
   const refreshToken = randomRefreshToken();
   const refreshTokenHash = hashToken(refreshToken);
   const date = new Date();
@@ -27,13 +27,16 @@ const createRefreshToken = async (user) => {
       userId: user.id,
       token: refreshTokenHash,
       expiresAt: date,
+      userAgent: metadata.userAgent || null,
+      deviceName: metadata.deviceName || null,
+      ipAddress: metadata.ipAddress || null,
     },
   });
   return refreshToken;
 };
-const generateAuthTokens = async (user) => {
+const generateAuthTokens = async (user, metadata = {}) => {
   const accessToken = signAccessToken({ userId: user.id, role: user.role });
-  const refreshToken = await createRefreshToken(user);
+  const refreshToken = await createRefreshToken(user, metadata);
   return { accessToken, refreshToken };
 };
 module.exports = {
