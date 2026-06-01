@@ -24,7 +24,7 @@ const createRefreshToken = async (user, metadata = {}) => {
   date.setDate(date.getDate() + authConfig.refreshTokenExpires);
   await prisma.refreshTokens.create({
     data: {
-      userId: user.id,
+      user: user.id ? { connect: { id: user.id } } : undefined,
       token: refreshTokenHash,
       expiresAt: date,
       userAgent: metadata.userAgent || null,
