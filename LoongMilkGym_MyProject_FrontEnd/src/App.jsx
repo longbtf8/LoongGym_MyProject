@@ -1,13 +1,15 @@
 import { Fragment } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { publicRoutes } from "@/routes";
+import { publicRoutes, privateRoutes } from "@/routes";
 import { DefaultLayout } from "@/layouts";
 
 function App() {
+  const allRoutes = [...publicRoutes, ...privateRoutes];
+
   return (
     <Router>
       <Routes>
-        {publicRoutes.map((route, index) => {
+        {allRoutes.map((route, index) => {
           const Page = route.component;
 
           // Xác định Layout sử dụng
@@ -18,14 +20,19 @@ function App() {
             Layout = Fragment; // NoLayout (Không có Layout)
           }
 
+          // Xác định Guard sử dụng
+          const Guard = route.guard || Fragment;
+
           return (
             <Route
               key={index}
               path={route.path}
               element={
-                <Layout>
-                  <Page />
-                </Layout>
+                <Guard>
+                  <Layout>
+                    <Page />
+                  </Layout>
+                </Guard>
               }
             />
           );

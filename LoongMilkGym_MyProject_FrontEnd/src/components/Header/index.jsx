@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, LogOut } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import Logo from "@/components/Logo";
@@ -119,10 +119,20 @@ function Header() {
                       <p className="text-xs text-[var(--text-muted)] m-0 mt-0.5 truncate">{userInfo?.email || ""}</p>
                     </div>
 
+                    {/* Menu links */}
+                    <Link
+                      to={paths.profile}
+                      onClick={() => setShowUserMenu(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[var(--text-color)] no-underline hover:bg-[var(--border-color)]/30 transition-colors duration-200"
+                    >
+                      <User className="w-4 h-4 text-[var(--text-muted)]" />
+                      Thông tin cá nhân
+                    </Link>
+
                     {/* Nút Đăng xuất */}
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#ff4d4f] bg-transparent border-none cursor-pointer hover:bg-[#ff4d4f]/10 transition-colors duration-200"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#ff4d4f] bg-transparent border-t border-[var(--border-color)] border-l-0 border-r-0 border-b-0 cursor-pointer hover:bg-[#ff4d4f]/10 transition-colors duration-200"
                     >
                       <LogOut className="w-4 h-4" />
                       Đăng xuất
@@ -200,6 +210,14 @@ function Header() {
                     <p className="text-xs text-[var(--text-muted)] m-0 truncate">{userInfo?.email || ""}</p>
                   </div>
                 </div>
+                <Link
+                  to={paths.profile}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[var(--text-color)] no-underline rounded-xl hover:bg-[var(--bg-secondary)] transition-colors duration-200"
+                >
+                  <User className="w-4 h-4 text-[var(--text-muted)]" />
+                  Thông tin cá nhân
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#ff4d4f] bg-transparent border-none cursor-pointer rounded-xl hover:bg-[#ff4d4f]/10 transition-colors duration-200"

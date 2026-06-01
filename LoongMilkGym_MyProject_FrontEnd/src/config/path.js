@@ -5,6 +5,7 @@ const paths = {
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
   verifyEmail: "/verify-email",
+  profile: "/account/profile",
 };
 
 export default paths;
