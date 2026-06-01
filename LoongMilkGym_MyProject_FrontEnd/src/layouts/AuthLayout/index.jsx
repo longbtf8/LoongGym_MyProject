@@ -1,4 +1,5 @@
 import ThemeToggle from "@/components/ThemeToggle";
+import { useTheme } from "@/context/ThemeContext";
 
 function AuthLayout({ children }) {
   const { theme } = useTheme();
