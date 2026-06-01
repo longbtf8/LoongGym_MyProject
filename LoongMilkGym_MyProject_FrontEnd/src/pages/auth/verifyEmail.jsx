@@ -3,11 +3,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import Logo from "@/components/Logo";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { useVerifyEmailMutation } from "@/services/auth/authApi";
-import { useTheme } from "@/context/ThemeContext";
 
 function VerifyEmail() {
   const navigate = useNavigate();
-  const { theme } = useTheme();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
 

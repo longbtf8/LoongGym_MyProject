@@ -6,7 +6,6 @@ import * as z from "zod";
 import { useRegisterMutation } from "@/services/auth/authApi";
 import PasswordInput from "@/components/PasswordInput";
 import { useState } from "react";
-import { useTheme } from "@/context/ThemeContext";
 
 // Khai báo schema validate bằng Zod tiếng Việt khớp hoàn toàn với Backend
 const registerSchema = z
@@ -36,7 +35,6 @@ const registerSchema = z
 
 function Register() {
   const navigate = useNavigate();
-  const { theme } = useTheme();
   const [registerUser] = useRegisterMutation();
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");

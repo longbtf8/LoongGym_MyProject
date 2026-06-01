@@ -6,7 +6,6 @@ import * as z from "zod";
 import { useResetPasswordMutation, useChangePasswordMutation } from "@/services/auth/authApi";
 import PasswordInput from "@/components/PasswordInput";
 import { useState } from "react";
-import { useTheme } from "@/context/ThemeContext";
 
 // Schema dành cho Reset Password (có token từ email)
 const resetPasswordSchema = z
@@ -47,7 +46,6 @@ const changePasswordSchema = z
 
 function ResetPassword() {
   const navigate = useNavigate();
-  const { theme } = useTheme();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
 

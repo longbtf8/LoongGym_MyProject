@@ -1,12 +1,10 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Logo from "@/components/Logo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useForgotPasswordMutation } from "@/services/auth/authApi";
-import { useState } from "react";
-import { useTheme } from "@/context/ThemeContext";
-
 // Khai báo schema validate email bằng Zod tiếng Việt
 const forgotPasswordSchema = z.object({
   email: z
@@ -18,7 +16,6 @@ const forgotPasswordSchema = z.object({
 
 function ForgotPassword() {
   const navigate = useNavigate();
-  const { theme } = useTheme();
   const [forgotPassword] = useForgotPasswordMutation();
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");

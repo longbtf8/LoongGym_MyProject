@@ -7,7 +7,6 @@ import { useLoginMutation, useResendVerificationMutation } from "@/services/auth
 import { STORAGE_KEYS } from "@/services/api";
 import PasswordInput from "@/components/PasswordInput";
 import { useState } from "react";
-import { useTheme } from "@/context/ThemeContext";
 
 // Khai báo schema validate với Zod bằng tiếng Việt
 const loginSchema = z.object({
@@ -24,7 +23,6 @@ const loginSchema = z.object({
 
 function Login() {
   const navigate = useNavigate();
-  const { theme } = useTheme();
   const [loginUser] = useLoginMutation();
   const [resendVerification, { isLoading: isResending }] = useResendVerificationMutation();
 
