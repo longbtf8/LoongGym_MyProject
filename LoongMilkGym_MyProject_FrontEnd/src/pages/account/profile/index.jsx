@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import React, { useState } from "react";
 import { 
   User, 
   ChevronRight,
@@ -14,85 +13,26 @@ import {
 import PersonalInfoSection from "./PersonalInfoSection";
 import SecuritySection from "./SecuritySection";
 import PlaceholderSection from "./PlaceholderSection";
+import { useProfileForm } from "./hooks/useProfileForm";
 
 function Profile() {
-  const { userInfo, handleLogout } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
+  const {
+    userInfo,
+    formData,
+    isEditing,
+    setIsEditing,
+    handleChange,
+    handleSave,
+    handleCancel,
+    formatDateDisplay,
+    handleLogout
+  } = useProfileForm();
   
   // Quản lý tab hiện tại cho cả Desktop và Mobile: "personal_info" | "security" | "privacy" | "notifications" | "orders"
   const [activeTab, setActiveTab] = useState("personal_info");
   
   // Trạng thái view trên Mobile: "menu" | "detail"
   const [mobileView, setMobileView] = useState("menu");
-
-  // Khởi tạo state cho các trường thông tin dựa trên dữ liệu thật từ Backend (hoặc fallback mặc định)
-  const [formData, setFormData] = useState({
-    fullName: "",
-    phone: "",
-    birthDate: "",
-    gender: "",
-    address: "",
-    weight: "",
-    height: "",
-    calorieGoal: ""
-  });
-
-  // Đồng bộ dữ liệu từ useAuth khi tải trang
-  useEffect(() => {
-    if (userInfo) {
-      setFormData({
-        fullName: userInfo.profile?.fullName || userInfo.fullname || "Bùi Thành Long",
-        phone: userInfo.profile?.phone || "+84 987 654 321",
-        birthDate: userInfo.profile?.birthDate 
-          ? new Date(userInfo.profile.birthDate).toISOString().split('T')[0] 
-          : "2005-12-31",
-        gender: userInfo.profile?.gender || "Nam",
-        address: userInfo.profile?.address || "Hà Nội, Việt Nam",
-        weight: userInfo.profile?.weightKg || "72",
-        height: userInfo.profile?.heightCm || "178",
-        calorieGoal: userInfo.profile?.calorieGoal || "2800"
-      });
-    }
-  }, [userInfo]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSave = () => {
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    if (userInfo) {
-      setFormData({
-        fullName: userInfo.profile?.fullName || userInfo.fullname || "Bùi Thành Long",
-        phone: userInfo.profile?.phone || "+84 987 654 321",
-        birthDate: userInfo.profile?.birthDate 
-          ? new Date(userInfo.profile.birthDate).toISOString().split('T')[0] 
-          : "2005-12-31",
-        gender: userInfo.profile?.gender || "Nam",
-        address: userInfo.profile?.address || "Hà Nội, Việt Nam",
-        weight: userInfo.profile?.weightKg || "72",
-        height: userInfo.profile?.heightCm || "178",
-        calorieGoal: userInfo.profile?.calorieGoal || "2800"
-      });
-    }
-  };
-
-  const formatDateDisplay = (dateString) => {
-    if (!dateString) return "";
-    const parts = dateString.split("-");
-    if (parts.length === 3) {
-      return `${parts[2]}/${parts[1]}/${parts[0]}`;
-    }
-    return dateString;
-  };
 
   // Xử lý chuyển tab trên Mobile (Option A: click chuyển sang view chi tiết và hiển thị nút back)
   const handleMobileTabClick = (tabId) => {

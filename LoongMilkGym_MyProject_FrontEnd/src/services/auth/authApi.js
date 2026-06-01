@@ -1,6 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "../baseQuery";
-import { STORAGE_KEYS } from "../api";
+import { STORAGE_KEYS } from "@/config/appConfig";
 
 export const authApi = createApi({
   reducerPath: "authApi",

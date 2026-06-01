@@ -1,14 +1,16 @@
-import { Fragment } from "react";
+import { Fragment, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { publicRoutes, privateRoutes } from "@/routes";
 import { DefaultLayout } from "@/layouts";
+import LoadingScreen from "@/components/LoadingScreen";
 
 function App() {
   const allRoutes = [...publicRoutes, ...privateRoutes];
 
   return (
     <Router>
-      <Routes>
+      <Suspense fallback={<LoadingScreen />}>
+        <Routes>
         {allRoutes.map((route, index) => {
           const Page = route.component;
 
@@ -38,6 +40,7 @@ function App() {
           );
         })}
       </Routes>
+      </Suspense>
     </Router>
   );
 }

@@ -1,27 +1,11 @@
 import axios from "axios";
-
-// Key localStorage riêng biệt cho dự án LoongMilKGym, tránh xung đột với dự án khác cùng localhost
-const STORAGE_KEYS = {
-  ACCESS_TOKEN: "loongmilkgym_accessToken",
-  REFRESH_TOKEN: "loongmilkgym_refreshToken",
-};
+import { STORAGE_KEYS, AUTH_ENDPOINTS } from "@/config/appConfig";
 
 export { STORAGE_KEYS };
 
 export const httpRequest = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
 });
-
-// Danh sách các endpoint KHÔNG cần refresh token khi gặp lỗi 401
-const AUTH_ENDPOINTS = [
-  "/auth/login",
-  "/auth/register",
-  "/auth/forgot-password",
-  "/auth/reset-password",
-  "/auth/verify-email",
-  "/auth/resend-verification",
-  "/auth/refresh-token",
-];
 
 // Request interceptor: Gắn access token vào mọi request
 httpRequest.interceptors.request.use((config) => {

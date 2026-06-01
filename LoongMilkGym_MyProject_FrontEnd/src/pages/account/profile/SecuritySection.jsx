@@ -1,18 +1,14 @@
 import React, { useState } from "react";
-import { Laptop, Smartphone, Globe, Lock, Shield, Check, RefreshCw, Eye, EyeOff } from "lucide-react";
+import { Laptop, Smartphone, Globe, RefreshCw } from "lucide-react";
 import { useGetDevicesQuery, useRevokeDeviceMutation, useChangePasswordMutation } from "@/services/auth/authApi";
 import { parseApiError } from "@/utils/errorParser";
+import PasswordInput from "@/components/PasswordInput";
 
 function SecuritySection() {
   const { data: response, isLoading, refetch, isFetching } = useGetDevicesQuery();
   const [revokeDevice] = useRevokeDeviceMutation();
   const [changePassword, { isLoading: isUpdating }] = useChangePasswordMutation();
   const [revokingId, setRevokingId] = useState(null);
-  
-  // State ẩn/hiện mật khẩu
-  const [showOldPassword, setShowOldPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // State cho đổi mật khẩu
   const [passwordData, setPasswordData] = useState({
@@ -76,10 +72,6 @@ function SecuritySection() {
       if (res?.success) {
         setMessage({ type: "success", text: "Cập nhật mật khẩu thành công!" });
         setPasswordData({ oldPassword: "", newPassword: "", confirmPassword: "" });
-        // Tự động tắt ẩn hiện sau khi cập nhật thành công
-        setShowOldPassword(false);
-        setShowNewPassword(false);
-        setShowConfirmPassword(false);
       } else {
         setMessage({ type: "error", text: res?.message || "Cập nhật mật khẩu thất bại" });
       }
@@ -133,65 +125,35 @@ function SecuritySection() {
         <form onSubmit={handleUpdatePassword} className="flex flex-col gap-4 max-w-md">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Mật khẩu hiện tại</label>
-            <div className="relative flex items-center">
-              <input 
-                type={showOldPassword ? "text" : "password"} 
-                name="oldPassword"
-                value={passwordData.oldPassword}
-                onChange={handlePasswordChange}
-                placeholder="••••••••"
-                className="w-full pl-4 pr-11 py-2.5 text-sm font-semibold rounded-xl border-2 border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-color)] outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-              />
-              <button
-                type="button"
-                onClick={() => setShowOldPassword(!showOldPassword)}
-                className="absolute right-3 text-[var(--text-muted)] hover:text-[var(--text-color)] transition-colors cursor-pointer bg-none border-none p-0 flex items-center justify-center"
-              >
-                {showOldPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
+            <PasswordInput
+              variant="settings"
+              name="oldPassword"
+              value={passwordData.oldPassword}
+              onChange={handlePasswordChange}
+              placeholder="••••••••"
+            />
           </div>
           
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Mật khẩu mới</label>
-            <div className="relative flex items-center">
-              <input 
-                type={showNewPassword ? "text" : "password"} 
-                name="newPassword"
-                value={passwordData.newPassword}
-                onChange={handlePasswordChange}
-                placeholder="••••••••"
-                className="w-full pl-4 pr-11 py-2.5 text-sm font-semibold rounded-xl border-2 border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-color)] outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-              />
-              <button
-                type="button"
-                onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 text-[var(--text-muted)] hover:text-[var(--text-color)] transition-colors cursor-pointer bg-none border-none p-0 flex items-center justify-center"
-              >
-                {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
+            <PasswordInput
+              variant="settings"
+              name="newPassword"
+              value={passwordData.newPassword}
+              onChange={handlePasswordChange}
+              placeholder="••••••••"
+            />
           </div>
 
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Xác nhận mật khẩu mới</label>
-            <div className="relative flex items-center">
-              <input 
-                type={showConfirmPassword ? "text" : "password"} 
-                name="confirmPassword"
-                value={passwordData.confirmPassword}
-                onChange={handlePasswordChange}
-                placeholder="••••••••"
-                className="w-full pl-4 pr-11 py-2.5 text-sm font-semibold rounded-xl border-2 border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-color)] outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 text-[var(--text-muted)] hover:text-[var(--text-color)] transition-colors cursor-pointer bg-none border-none p-0 flex items-center justify-center"
-              >
-                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
+            <PasswordInput
+              variant="settings"
+              name="confirmPassword"
+              value={passwordData.confirmPassword}
+              onChange={handlePasswordChange}
+              placeholder="••••••••"
+            />
           </div>
 
           <button 

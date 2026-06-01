@@ -1,14 +1,17 @@
+import React, { lazy } from "react";
 import paths from "@/config/path";
 
-// Pages
+// Pages statically imported for instantaneous entry (Trang chủ và Đăng nhập/Đăng ký tải tức thì)
 import Home from "@/pages/home";
 import Login from "@/pages/auth/login";
 import Register from "@/pages/auth/register";
-import ForgotPassword from "@/pages/auth/forgotPassword";
-import ResetPassword from "@/pages/auth/resetPassword";
-import VerifyEmail from "@/pages/auth/verifyEmail";
-import Profile from "@/pages/account/profile/index.jsx";
-import NotFound from "@/pages/notFound";
+
+// Pages lazily loaded to save massive initial bundle size (Tải chậm để giảm dung lượng file bundle ban đầu)
+const ForgotPassword = lazy(() => import("@/pages/auth/forgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/auth/resetPassword"));
+const VerifyEmail = lazy(() => import("@/pages/auth/verifyEmail"));
+const Profile = lazy(() => import("@/pages/account/profile/index.jsx"));
+const NotFound = lazy(() => import("@/pages/notFound"));
 
 // Layouts
 import { DefaultLayout, AuthLayout, MessageLayout } from "@/layouts";
