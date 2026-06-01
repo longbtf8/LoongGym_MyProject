@@ -24,7 +24,6 @@ model User {
   lastLoginAt     DateTime?            @map("last_login_at")
   profile         UserProfile?
   settings        UserSetting?
-  sessions        AuthSession[]
   resetTokens     PasswordResetToken[]
   revokedTokens   RevokedTokens[]
   refreshTokens   RefreshTokens[]
@@ -72,22 +71,6 @@ model UserSetting {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("user_settings")
-}
-
-model AuthSession {
-  id           String    @id @default(uuid())
-  userId       String    @map("user_id")
-  refreshToken String?   @map("refresh_token")
-  userAgent    String?   @map("user_agent")
-  ipAddress    String?   @map("ip_address")
-  expiresAt    DateTime  @map("expires_at")
-  revokedAt    DateTime? @map("revoked_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@map("auth_sessions")
 }
 
 model PasswordResetToken {
