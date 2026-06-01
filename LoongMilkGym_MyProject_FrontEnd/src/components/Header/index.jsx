@@ -126,7 +126,10 @@ function Header() {
                       {userInitial}
 
                       {/* Tooltip tên tài khoản khi hover */}
-                      <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 px-3 py-1.5 text-xs font-semibold rounded-lg bg-[var(--bg-secondary)] text-[var(--text-color)] border border-[var(--border-color)] shadow-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 z-50">
+                      <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 px-3 py-1.5 text-[10px] font-bold rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 z-50 shadow-md border 
+                        bg-neutral-900 text-white border-neutral-800
+                        dark:bg-neutral-800 dark:text-neutral-100 dark:border-primary/20 dark:shadow-[0_0_12px_rgba(204,255,0,0.12)]"
+                      >
                         {userName}
                       </span>
                     </button>
