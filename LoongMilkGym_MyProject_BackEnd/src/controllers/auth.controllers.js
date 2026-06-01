@@ -98,7 +98,7 @@ const forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.validated.body;
     const { email: userEmail, token } = await authService.forgotPassword({ email });
-    const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
     await queueService.push("sendForgotPasswordEmail", { email: userEmail, resetLink });
     return res.success(
       null,

@@ -73,7 +73,7 @@ const forgotPasswordSchema = z.object({
   }),
 });
 
-const restPasswordSchema = z.object({
+const resetPasswordSchema = z.object({
   body: z.object({
     token: z.string().min(20, "Token không hợp lệ"),
 
@@ -97,6 +97,6 @@ module.exports = {
   loginSchema,
   changePasswordSchema,
   forgotPasswordSchema,
-  restPasswordSchema,
+  resetPasswordSchema,
   resendVerificationSchema,
 };

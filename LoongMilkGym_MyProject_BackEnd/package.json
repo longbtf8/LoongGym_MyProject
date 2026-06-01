@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "node --watch server.js",
+    "dev": "concurrently -k -n server,queue,schedule -c green,yellow,cyan \"node --watch server.js\" \"node queue.js\" \"node schedule.js\"",
+    "dev:server": "node --watch server.js",
+    "dev:queue": "node queue.js",
+    "dev:schedule": "node schedule.js",
     "start": "node src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -29,6 +32,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "prisma": "^6.19.3"
   },
   "_moduleAliases": {

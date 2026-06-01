@@ -32,8 +32,8 @@ class MailService {
     await this.send({
       from: `"${fromName}" <${fromAddress}>`,
       to: user.email,
-      subject: "Verification",
-      text: "Hello world?",
+      subject: "Xác thực email của bạn - LoongMilkGym",
+      text: "Vui lòng xác thực email của bạn.",
       template: "auth/verificationEmail",
       templateData: {
         verificationLink,

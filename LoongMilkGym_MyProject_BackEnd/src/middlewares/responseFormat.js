@@ -9,7 +9,7 @@ function responseFormat(req, res, next) {
     return res.status(statusCode).json(response);
   };
   res.error = (
-    message = "Something went wrong",
+    message = "Đã có lỗi xảy ra",
     statusCode = httpCodes.internalServerError,
     error = null,
   ) => {

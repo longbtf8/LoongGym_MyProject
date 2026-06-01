@@ -12,7 +12,7 @@ const exceptionHandler = (err, req, res, next) => {
   }
 
   const statusCode = err.statusCode || err.status || httpCodes.internalServerError;
-  const message = err.message || "Internal Server Error";
+  const message = err.message || "Lỗi máy chủ nội bộ";
   const error =
     process.env.NODE_ENV === "development"
       ? {

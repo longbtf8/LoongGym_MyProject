@@ -7,12 +7,11 @@ const {
   loginSchema,
   changePasswordSchema,
   forgotPasswordSchema,
-  restPasswordSchema,
+  resetPasswordSchema,
   resendVerificationSchema,
 } = require("@/validations/auth.validation");
 const express = require("express");
 const router = express.Router();
-const jwt = require("jsonwebtoken");
 const authController = require("@/controllers/auth.controllers");
 const authRequire = require("@/middlewares/authRequire");
 
@@ -35,7 +34,7 @@ router.post(
 );
 router.post(
   "/reset-password",
-  validate(restPasswordSchema),
+  validate(resetPasswordSchema),
   authController.resetPassword,
 );
 router.post(

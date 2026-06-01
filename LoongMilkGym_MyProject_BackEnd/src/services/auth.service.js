@@ -12,7 +12,7 @@ const register = async ({ email, password, fullname }) => {
     where: { email },
   });
   if (existedUser) {
-    const error = new Error("The email already exists.");
+    const error = new Error("Email đã tồn tại.");
     error.statusCode = httpCodes.conflict;
     throw error;
   }
@@ -46,7 +46,7 @@ const register = async ({ email, password, fullname }) => {
   });
   const { accessToken, refreshToken } = await generateAuthTokens(user);
 
-  //sendMail
+  // Gửi email xác thực
 
   return {
     user,
@@ -143,7 +143,7 @@ const refreshToken = async (refresh_token) => {
     },
   });
   if (!refreshTokenDB) {
-    const error = new Error("Unauthorized");
+    const error = new Error("Không có quyền truy cập");
     error.statusCode = httpCodes.unauthorized;
     throw error;
   }
@@ -166,7 +166,7 @@ const generateVerificationLink = (user) => {
     authConfig.verificationJwtSecret,
     { expiresIn: authConfig.verificationExpiresIn },
   );
-  const verificationLink = `http://localhost:5173?token=${token}`;
+  const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
   return verificationLink;
 };
 const verifyEmail = async (token) => {
@@ -229,20 +229,20 @@ const forgotPassword = async ({ email }) => {
     throw error;
   }
   
-  // Generate random token using utility helper
+  // Tạo token ngẫu nhiên
   const token = randomRefreshToken();
-  // Hash token to save in DB
+  // Hash token trước khi lưu vào DB
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
   
-  // Calculate expiration time (15 mins)
+  // Tính thời gian hết hạn (15 phút)
   const expiresAt = new Date(Date.now() + authConfig.passwordResetExpiresIn * 60 * 1000);
   
-  // Clean up any old reset tokens for this user
+  // Xoá các token đặt lại mật khẩu cũ của người dùng này
   await prisma.passwordResetToken.deleteMany({
     where: { userId: user.id },
   });
   
-  // Save new reset token
+  // Lưu token đặt lại mật khẩu mới
   await prisma.passwordResetToken.create({
     data: {
       userId: user.id,
@@ -275,10 +275,10 @@ const resetPassword = async ({ token, newPassword }) => {
     throw error;
   }
   
-  // Hash new password
+  // Hash mật khẩu mới
   const newPasswordHash = await bcrypt.hash(newPassword, 10);
   
-  // Update user password
+  // Cập nhật mật khẩu người dùng
   await prisma.user.update({
     where: { id: resetTokenRecord.userId },
     data: {
@@ -286,7 +286,7 @@ const resetPassword = async ({ token, newPassword }) => {
     },
   });
   
-  // Delete all used tokens for this user
+  // Xoá tất cả token đã sử dụng của người dùng này
   await prisma.passwordResetToken.deleteMany({
     where: { userId: resetTokenRecord.userId },
   });
