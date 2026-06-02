@@ -43,7 +43,7 @@ httpRequest.interceptors.response.use(
       requestUrl.includes(endpoint)
     );
 
-    if (error.status === 401 && refreshToken && !isAuthEndpoint) {
+    if (error.response?.status === 401 && refreshToken && !isAuthEndpoint) {
       const original = error.config;
       try {
         if (isRefreshing) {
