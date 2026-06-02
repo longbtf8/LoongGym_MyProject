@@ -39,15 +39,20 @@ model UserProfile {
   userId String @unique @map("user_id")
 
   fullName     String?   @map("full_name")
-  username     String?   @unique
   avatarUrl    String?   @map("avatar_url")
+  phone        String?
+  address      String?
   gender       String?
   birthDate    DateTime? @map("birth_date")
   heightCm     Float?    @map("height_cm")
   weightKg     Float?    @map("weight_kg")
+  heightUnit   String?   @default("cm") @map("height_unit")
+  weightUnit   String?   @default("kg") @map("weight_unit")
+  membershipTier String?   @default("Standard") @map("membership_tier")
   fitnessLevel String?   @map("fitness_level")
   goal         String?
   bio          String?
+  calorieGoal  Int?      @map("calorie_goal")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -108,8 +113,8 @@ model RefreshTokens {
 
   userAgent    String?
   deviceName   String?
-  ipAddress    String? // IP của thiết bị khi đăng nhập
-  lastActiveAt DateTime @default(now()) // Thời gian hoạt động gần nhất
+  ipAddress    String?
+  lastActiveAt DateTime @default(now())
   expiresAt    DateTime @map("expires_at")
   createdAt    DateTime @default(now()) @map("created_at")
   user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)

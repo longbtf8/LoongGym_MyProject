@@ -92,6 +92,14 @@ export const authApi = createApi({
       }),
       invalidatesTags: ["Devices"],
     }),
+    updateProfile: builder.mutation({
+      query: (data) => ({
+        url: "/users/me",
+        method: "PUT",
+        data,
+      }),
+      invalidatesTags: ["User"],
+    }),
   }),
 });
 
@@ -107,5 +115,6 @@ export const {
   useResendVerificationMutation,
   useGetDevicesQuery,
   useRevokeDeviceMutation,
+  useUpdateProfileMutation,
 } = authApi;
 

@@ -120,10 +120,20 @@ function Header() {
                   <div className="relative hidden sm:block" ref={userMenuRef}>
                     <button
                       onClick={() => setShowUserMenu(!showUserMenu)}
-                      className="group relative w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-primary to-[#00f5d4] text-black font-black text-base cursor-pointer border-2 border-transparent hover:border-primary/50 transition-all duration-200 hover:-translate-y-0.5 shadow-[0_2px_10px_rgba(204,255,0,0.15)]"
+                      className="group relative w-10 h-10 flex items-center justify-center rounded-full p-[2px] bg-gradient-to-tr from-primary to-[#00f5d4] cursor-pointer border-2 border-transparent hover:border-primary/50 transition-all duration-200 hover:-translate-y-0.5 shadow-[0_2px_10px_rgba(204,255,0,0.15)]"
                       aria-label="Menu tài khoản"
                     >
-                      {userInitial}
+                      {userInfo?.profile?.avatarUrl ? (
+                        <img 
+                          src={userInfo.profile.avatarUrl} 
+                          alt={userName} 
+                          className="w-full h-full rounded-full object-cover bg-[var(--bg-color)]"
+                        />
+                      ) : (
+                        <div className="w-full h-full rounded-full bg-[var(--bg-color)] flex items-center justify-center text-base font-black text-primary">
+                          {userInitial}
+                        </div>
+                      )}
 
                       {/* Tooltip tên tài khoản khi hover */}
                       <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 px-3 py-1.5 text-[10px] font-bold rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 z-50 shadow-md border 
@@ -168,10 +178,20 @@ function Header() {
                   {/* Mobile view (Click nhảy thẳng vào trang Profile) */}
                   <Link
                     to={paths.profile}
-                    className="sm:hidden w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-primary to-[#00f5d4] text-black font-black text-base border-2 border-transparent shadow-[0_2px_10px_rgba(204,255,0,0.15)] hover:border-primary/50 transition-all duration-200"
+                    className="sm:hidden w-10 h-10 flex items-center justify-center rounded-full p-[2px] bg-gradient-to-tr from-primary to-[#00f5d4] border-2 border-transparent shadow-[0_2px_10px_rgba(204,255,0,0.15)] hover:border-primary/50 transition-all duration-200"
                     aria-label="Xem trang cá nhân"
                   >
-                    {userInitial}
+                    {userInfo?.profile?.avatarUrl ? (
+                      <img 
+                        src={userInfo.profile.avatarUrl} 
+                        alt={userName} 
+                        className="w-full h-full rounded-full object-cover bg-[var(--bg-color)]"
+                      />
+                    ) : (
+                      <div className="w-full h-full rounded-full bg-[var(--bg-color)] flex items-center justify-center text-base font-black text-primary">
+                        {userInitial}
+                      </div>
+                    )}
                   </Link>
                 </>
               )}
@@ -211,10 +231,20 @@ function Header() {
           }`}
         >
           {isLoggedIn ? (
-            <div className={`w-5.5 h-5.5 rounded-full flex items-center justify-center text-[10px] font-black bg-gradient-to-br from-primary to-[#00f5d4] text-black shadow-sm ${
+            <div className={`w-5.5 h-5.5 rounded-full p-[1px] bg-gradient-to-tr from-primary to-[#00f5d4] shadow-sm flex items-center justify-center ${
               location.pathname === paths.profile ? "ring-2 ring-primary ring-offset-2 ring-offset-[var(--bg-secondary)]" : ""
             }`}>
-              {userInitial}
+              {userInfo?.profile?.avatarUrl ? (
+                <img 
+                  src={userInfo.profile.avatarUrl} 
+                  alt={userName} 
+                  className="w-full h-full rounded-full object-cover bg-[var(--bg-color)]"
+                />
+              ) : (
+                <div className="w-full h-full rounded-full bg-[var(--bg-color)] flex items-center justify-center text-[9px] font-black text-primary">
+                  {userInitial}
+                </div>
+              )}
             </div>
           ) : (
             <User className="w-5 h-5" />

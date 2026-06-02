@@ -10,7 +10,7 @@ import {
   LogOut
 } from "lucide-react";
 
-import PersonalInfoSection from "./PersonalInfoSection";
+import PersonalInfoSection from "./PersonalInfoSection/index";
 import SecuritySection from "./SecuritySection";
 import PlaceholderSection from "./PlaceholderSection";
 import { useProfileForm } from "./hooks/useProfileForm";
@@ -25,7 +25,9 @@ function Profile() {
     handleSave,
     handleCancel,
     formatDateDisplay,
-    handleLogout
+    handleLogout,
+    isSaving,
+    errorMessage
   } = useProfileForm();
   
   // Quản lý tab hiện tại cho cả Desktop và Mobile: "personal_info" | "security" | "privacy" | "notifications" | "orders"
@@ -154,6 +156,8 @@ function Profile() {
               handleCancel={handleCancel}
               formatDateDisplay={formatDateDisplay}
               userInfo={userInfo}
+              isSaving={isSaving}
+              errorMessage={errorMessage}
             />
           )}
 
@@ -267,6 +271,8 @@ function Profile() {
                   handleCancel={handleCancel}
                   formatDateDisplay={formatDateDisplay}
                   userInfo={userInfo}
+                  isSaving={isSaving}
+                  errorMessage={errorMessage}
                 />
               )}
 

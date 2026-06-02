@@ -46,3 +46,6 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Exclude local system report folder from git deployment
+/Report/

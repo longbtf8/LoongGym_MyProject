@@ -22,8 +22,10 @@ function LoadingScreen() {
       </div>
 
       {/* Label thương hiệu chuyển màu */}
-      <h2 className="mt-6 text-lg font-black tracking-widest text-[var(--text-color)] uppercase m-0 flex items-center gap-1.5">
-        Loong<span className="text-primary">Gym</span>
+      <h2 className="mt-6 text-lg font-black tracking-widest uppercase m-0 flex items-center">
+        <span className="text-primary">Loong</span>
+        <span className="text-[var(--text-color)]">Milk</span>
+        <span className="text-[#00f5d4]">Gym</span>
       </h2>
       
       <p className="mt-2 text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] animate-pulse">

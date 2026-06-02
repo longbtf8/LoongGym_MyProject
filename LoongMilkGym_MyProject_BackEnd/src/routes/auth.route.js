@@ -1,6 +1,4 @@
-const { prisma } = require("@/lib/prisma");
 require("module-alias/register");
-const bcrypt = require("bcrypt");
 const validate = require("@/middlewares/validate");
 const {
   registerSchema,

@@ -13,8 +13,8 @@ export function useAuth() {
   const [logout] = useLogoutMutation();
 
   const userInfo = userData?.data;
-  const userName = userInfo?.fullname || "Tài khoản";
-  const userInitial = userName.charAt(0).toUpperCase();
+  const userName = userInfo?.profile?.fullName || userInfo?.fullname || userInfo?.email?.split("@")[0] || "Tài khoản";
+  const userInitial = (userInfo?.profile?.fullName || userInfo?.fullname || userInfo?.email || "U").charAt(0).toUpperCase();
 
   const handleLogout = async () => {
     try {
