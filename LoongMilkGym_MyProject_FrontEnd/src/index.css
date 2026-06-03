@@ -15,7 +15,7 @@
   --text-muted: #6b7280;
   --border-color: #e5e7eb;
   --input-bg: #eceff1;
-  --input-focus-border: #ccff00;
+  --input-focus-border: #b5e600;
 }
 
 [data-theme="dark"] {
@@ -80,3 +80,27 @@ body {
 .animate-error {
   animation: errorFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Ẩn thanh cuộn dọc/ngang cho các phần tử trượt */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Hiệu ứng trượt từ dưới lên (Bottom Sheet) */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

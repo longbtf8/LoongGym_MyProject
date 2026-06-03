@@ -7,6 +7,7 @@ const { UAParser } = require("ua-parser-js");
 
 const getRequestMetadata = (req) => {
   const userAgentStr = req.headers["user-agent"] || "";
+  const sessionId = req.headers["x-session-id"] || null;
   // Lấy IP chính xác từ headers (xử lý danh sách IP đi qua proxy) hoặc express client IP
   let ipAddress = req.headers["x-forwarded-for"] || req.ip || "";
   if (ipAddress.includes(",")) {
@@ -27,7 +28,7 @@ const getRequestMetadata = (req) => {
   }
 
   return {
-    userAgent: userAgentStr,
+    sessionId,
     deviceName,
     ipAddress,
   };

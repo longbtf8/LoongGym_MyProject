@@ -63,7 +63,6 @@ const login = async ({ email, password }, metadata = {}) => {
       settings: true,
     },
   });
-  console.log(user);
   if (!user) {
     const error = new Error("Email hoặc mật khẩu không đúng");
     error.statusCode = httpCodes.unauthorized;
@@ -160,7 +159,7 @@ const refreshToken = async (refresh_token, metadata = {}) => {
     role: refreshTokenDB.user.role,
   };
   const { accessToken, refreshToken: refreshTokenNew } =
-    await generateAuthTokens(user, metadata);
+    await generateAuthTokens(user, metadata, { skipCleanup: true });
   return { accessToken, refreshTokenNew, userId: refreshTokenDB.userId };
 };
 const generateVerificationLink = (user) => {

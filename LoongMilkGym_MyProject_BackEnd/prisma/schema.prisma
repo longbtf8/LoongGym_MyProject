@@ -14,6 +14,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║  NHÓM BẢNG 1: TÀI KHOẢN & NGƯỜI DÙNG (Account & User Management)         ║
+// ║  Quản lý đăng ký, đăng nhập, hồ sơ cá nhân, cài đặt, phiên đăng nhập     ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
+
 model User {
   id              String               @id @default(uuid())
   email           String               @unique
@@ -38,21 +43,21 @@ model UserProfile {
   id     String @id @default(uuid())
   userId String @unique @map("user_id")
 
-  fullName     String?   @map("full_name")
-  avatarUrl    String?   @map("avatar_url")
-  phone        String?
-  address      String?
-  gender       String?
-  birthDate    DateTime? @map("birth_date")
-  heightCm     Float?    @map("height_cm")
-  weightKg     Float?    @map("weight_kg")
-  heightUnit   String?   @default("cm") @map("height_unit")
-  weightUnit   String?   @default("kg") @map("weight_unit")
+  fullName       String?   @map("full_name")
+  avatarUrl      String?   @map("avatar_url")
+  phone          String?
+  address        String?
+  gender         String?
+  birthDate      DateTime? @map("birth_date")
+  heightCm       Float?    @map("height_cm")
+  weightKg       Float?    @map("weight_kg")
+  heightUnit     String?   @default("cm") @map("height_unit")
+  weightUnit     String?   @default("kg") @map("weight_unit")
   membershipTier String?   @default("Standard") @map("membership_tier")
-  fitnessLevel String?   @map("fitness_level")
-  goal         String?
-  bio          String?
-  calorieGoal  Int?      @map("calorie_goal")
+  fitnessLevel   String?   @map("fitness_level")
+  goal           String?
+  bio            String?
+  calorieGoal    Int?      @map("calorie_goal")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -111,7 +116,7 @@ model RefreshTokens {
   userId String? @map("user_id")
   token  String  @map("token_hash") @db.VarChar(512)
 
-  userAgent    String?
+  sessionId    String?  @map("session_id")
   deviceName   String?
   ipAddress    String?
   lastActiveAt DateTime @default(now())
@@ -131,4 +136,124 @@ model Queues {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("queues")
+}
+
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║  NHÓM BẢNG 2: THƯ VIỆN BÀI TẬP (Exercise Library)                            ║
+// ║  Quản lý bài tập, nhóm cơ, thiết bị, hướng dẫn, lỗi thường gặp, thẻ tag      ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
+
+/// Bảng "Nhóm cơ" – Lưu các nhóm cơ trên cơ thể (ngực, lưng, chân, vai, tay trước, tay sau)
+/// Hỗ trợ cấu trúc cha-con (ví dụ: "Tay" → "Tay trước", "Tay sau")
+model MuscleGroup {
+  id       String  @id @default(uuid()) /// Mã định danh duy nhất
+  name     String  @db.VarChar(100) /// Tên nhóm cơ (ví dụ: Ngực, Lưng, Chân)
+  slug     String  @unique @db.VarChar(100) /// Đường dẫn thân thiện (ví dụ: nguc, lung, chan)
+  parentId String? @map("parent_id") /// Mã nhóm cơ cha (null nếu là nhóm gốc)
+
+  parent   MuscleGroup?  @relation("MuscleGroupHierarchy", fields: [parentId], references: [id])
+  children MuscleGroup[] @relation("MuscleGroupHierarchy") /// Danh sách nhóm cơ con
+
+  exerciseMuscles ExerciseMuscle[] /// Quan hệ với bảng cơ tác động của bài tập
+
+  createdAt DateTime @default(now()) @map("created_at") /// Ngày tạo bản ghi
+
+  @@map("muscle_groups")
+}
+
+/// Bảng "Thiết bị tập" – Lưu danh sách thiết bị tập luyện (tạ đòn, tạ đơn, máy tập, tự trọng)
+model Equipment {
+  id   String @id @default(uuid()) /// Mã định danh duy nhất
+  name String @db.VarChar(100) /// Tên thiết bị (ví dụ: Barbell, Dumbbell, Machine)
+  slug String @unique @db.VarChar(100) /// Đường dẫn thân thiện (ví dụ: barbell, dumbbell)
+
+  exercises Exercise[] /// Danh sách bài tập sử dụng thiết bị này
+
+  createdAt DateTime @default(now()) @map("created_at") /// Ngày tạo bản ghi
+
+  @@map("equipment")
+}
+
+/// Bảng "Bài tập" – Lưu thông tin chi tiết từng bài tập (Bench Press, Squat, Deadlift,...)
+model Exercise {
+  id                 String  @id @default(uuid()) /// Mã định danh duy nhất
+  name               String  @db.VarChar(150) /// Tên bài tập (ví dụ: Bench Press, Squat)
+  slug               String  @unique @db.VarChar(150) /// Đường dẫn thân thiện (ví dụ: bench-press)
+  description        String? @db.Text /// Mô tả ngắn gọn về bài tập
+  difficulty         String  @db.VarChar(30) /// Độ khó: beginner, intermediate, advanced
+  exerciseType       String? @map("exercise_type") @db.VarChar(50) /// Loại bài tập: strength, cardio, mobility, hiit
+  primaryEquipmentId String? @map("primary_equipment_id") /// Mã thiết bị chính sử dụng cho bài tập
+  estimatedCalories  Float?  @map("estimated_calories") /// Calo ước tính tiêu hao (kcal / 3 set)
+  durationSeconds    Int?    @map("duration_seconds") /// Thời gian ước tính thực hiện (giây)
+  thumbnailUrl       String? @map("thumbnail_url") @db.Text /// Đường dẫn ảnh đại diện của bài tập
+  videoUrl           String? @map("video_url") @db.Text /// Đường dẫn video hướng dẫn bài tập
+  isPublished        Boolean @default(false) @map("is_published") /// Trạng thái xuất bản (true = hiển thị cho người dùng)
+  viewCount          Int     @default(0) @map("view_count") /// Số lượt xem bài tập
+
+  primaryEquipment Equipment? @relation(fields: [primaryEquipmentId], references: [id])
+
+  muscles        ExerciseMuscle[] /// Danh sách nhóm cơ tác động
+  steps          ExerciseStep[] /// Các bước hướng dẫn thực hiện
+  commonMistakes ExerciseCommonMistake[] /// Các lỗi kỹ thuật thường gặp
+  tags           ExerciseTag[] /// Các thẻ phân loại bài tập
+
+  createdAt DateTime @default(now()) @map("created_at") /// Ngày tạo bản ghi
+  updatedAt DateTime @updatedAt @map("updated_at") /// Ngày cập nhật gần nhất
+
+  @@map("exercises")
+}
+
+/// Bảng "Cơ tác động của bài tập" – Bảng trung gian liên kết bài tập với nhóm cơ
+/// Mỗi bài tập có thể tác động tới nhiều nhóm cơ với vai trò khác nhau (chính/phụ)
+model ExerciseMuscle {
+  exerciseId    String @map("exercise_id") /// Mã bài tập
+  muscleGroupId String @map("muscle_group_id") /// Mã nhóm cơ
+  role          String @db.VarChar(20) /// Vai trò tác động: primary (chính), secondary (phụ)
+
+  exercise    Exercise    @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  muscleGroup MuscleGroup @relation(fields: [muscleGroupId], references: [id])
+
+  @@id([exerciseId, muscleGroupId, role]) /// Khóa chính tổ hợp (bài tập + nhóm cơ + vai trò)
+  @@map("exercise_muscles")
+}
+
+/// Bảng "Các bước thực hiện bài tập" – Lưu hướng dẫn từng bước chi tiết
+model ExerciseStep {
+  id          String @id @default(uuid()) /// Mã định danh duy nhất
+  exerciseId  String @map("exercise_id") /// Mã bài tập liên kết
+  stepOrder   Int    @map("step_order") /// Thứ tự bước (1, 2, 3, 4,...)
+  title       String @db.VarChar(150) /// Tiêu đề bước (ví dụ: "Chuẩn bị tư thế")
+  instruction String @db.Text /// Nội dung hướng dẫn chi tiết của bước
+
+  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at") /// Ngày tạo bản ghi
+
+  @@map("exercise_steps")
+}
+
+/// Bảng "Lỗi thường gặp" – Lưu các lỗi kỹ thuật phổ biến khi thực hiện bài tập
+model ExerciseCommonMistake {
+  id          String  @id @default(uuid()) /// Mã định danh duy nhất
+  exerciseId  String  @map("exercise_id") /// Mã bài tập liên kết
+  title       String  @db.VarChar(150) /// Tiêu đề lỗi (ví dụ: "Lưng bị cong")
+  description String? @db.Text /// Mô tả chi tiết lỗi và cách khắc phục
+  severity    String  @default("medium") @db.VarChar(30) /// Mức độ nghiêm trọng: low, medium, high
+
+  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at") /// Ngày tạo bản ghi
+
+  @@map("exercise_common_mistakes")
+}
+
+/// Bảng "Thẻ bài tập" – Lưu các tag phân loại bài tập (strength, chest, powerlifting,...)
+model ExerciseTag {
+  id         String @id @default(uuid()) /// Mã định danh duy nhất
+  exerciseId String @map("exercise_id") /// Mã bài tập liên kết
+  tag        String @db.VarChar(80) /// Nội dung thẻ (ví dụ: strength, chest, beginner)
+
+  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@map("exercise_tags")
 }

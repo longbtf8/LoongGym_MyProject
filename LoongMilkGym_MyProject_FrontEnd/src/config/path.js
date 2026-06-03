@@ -6,6 +6,8 @@ const paths = {
   resetPassword: "/reset-password",
   verifyEmail: "/verify-email",
   profile: "/account/profile",
+  exercises: "/exercises",
+  exerciseDetail: "/exercises/:slug",
 };
 
 export default paths;

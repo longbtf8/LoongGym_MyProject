@@ -22,11 +22,13 @@ function Profile() {
     isEditing,
     setIsEditing,
     handleChange,
+    handleAvatarChange,
     handleSave,
     handleCancel,
     formatDateDisplay,
     handleLogout,
     isSaving,
+    avatarPreviewUrl,
     errorMessage
   } = useProfileForm();
   
@@ -152,11 +154,13 @@ function Profile() {
               isEditing={isEditing}
               setIsEditing={setIsEditing}
               handleChange={handleChange}
+              handleAvatarChange={handleAvatarChange}
               handleSave={handleSave}
               handleCancel={handleCancel}
               formatDateDisplay={formatDateDisplay}
               userInfo={userInfo}
               isSaving={isSaving}
+              avatarPreviewUrl={avatarPreviewUrl}
               errorMessage={errorMessage}
             />
           )}
@@ -267,11 +271,13 @@ function Profile() {
                   isEditing={isEditing}
                   setIsEditing={setIsEditing}
                   handleChange={handleChange}
+                  handleAvatarChange={handleAvatarChange}
                   handleSave={handleSave}
                   handleCancel={handleCancel}
                   formatDateDisplay={formatDateDisplay}
                   userInfo={userInfo}
                   isSaving={isSaving}
+                  avatarPreviewUrl={avatarPreviewUrl}
                   errorMessage={errorMessage}
                 />
               )}

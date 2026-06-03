@@ -49,7 +49,9 @@ const authRequire = async (req, res, next) => {
     req.accessToken = accessToken;
     next();
   } catch (error) {
-    console.log(error);
+    if (error.name !== "TokenExpiredError" && error.name !== "JsonWebTokenError") {
+      console.error("Lỗi xác thực Token không mong muốn:", error);
+    }
     return res.error("Token không hợp lệ hoặc đã hết hạn", httpCodes.unauthorized);
   }
 };

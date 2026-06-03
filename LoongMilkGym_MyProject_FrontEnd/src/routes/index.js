@@ -12,6 +12,8 @@ const ResetPassword = lazy(() => import("@/pages/auth/resetPassword"));
 const VerifyEmail = lazy(() => import("@/pages/auth/verifyEmail"));
 const Profile = lazy(() => import("@/pages/account/profile/index.jsx"));
 const NotFound = lazy(() => import("@/pages/notFound"));
+const Exercises = lazy(() => import("@/pages/exercises/index.jsx"));
+const ExerciseDetail = lazy(() => import("@/pages/exercises/detail/index.jsx"));
 
 // Layouts
 import { DefaultLayout, AuthLayout, MessageLayout } from "@/layouts";
@@ -28,6 +30,8 @@ const publicRoutes = [
   { path: paths.forgotPassword, component: ForgotPassword, layout: AuthLayout, guard: GuestGuard },
   { path: paths.resetPassword, component: ResetPassword, layout: AuthLayout },
   { path: paths.verifyEmail, component: VerifyEmail, layout: MessageLayout, guard: GuestGuard },
+  { path: paths.exercises, component: Exercises, layout: DefaultLayout },
+  { path: paths.exerciseDetail, component: ExerciseDetail, layout: DefaultLayout },
   { path: "*", component: NotFound, layout: null },
 ];
 

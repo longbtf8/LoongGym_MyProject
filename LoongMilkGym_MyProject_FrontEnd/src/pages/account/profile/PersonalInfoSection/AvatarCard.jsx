@@ -2,14 +2,20 @@ import React from "react";
 import { Camera, Award, Flame, Check } from "lucide-react";
 import { getFitnessLevelLabel } from "./constants";
 
-function AvatarCard({ formData, userInfo, isEditing }) {
+function AvatarCard({ formData, userInfo, isEditing, avatarPreviewUrl, onAvatarChange }) {
   return (
     <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 shadow-sm transition-all duration-300">
       
       {/* KHỐI ẢNH ĐẠI DIỆN */}
       <div className="relative group shrink-0">
         <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-[3px] bg-gradient-to-tr from-primary to-[#00f5d4] shadow-md">
-          {userInfo?.profile?.avatarUrl ? (
+          {avatarPreviewUrl ? (
+            <img 
+              src={avatarPreviewUrl} 
+              alt={formData.fullName} 
+              className="w-full h-full rounded-full object-cover bg-[var(--bg-color)] border border-primary"
+            />
+          ) : userInfo?.profile?.avatarUrl ? (
             <img 
               src={userInfo.profile.avatarUrl} 
               alt={formData.fullName} 
@@ -24,7 +30,16 @@ function AvatarCard({ formData, userInfo, isEditing }) {
         {isEditing && (
           <label className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-primary text-black border border-[var(--bg-secondary)] flex items-center justify-center cursor-pointer shadow-md hover:scale-105 active:scale-95 transition-all duration-200 animate-bounce">
             <Camera className="w-4 h-4 stroke-[2.5px]" />
-            <input type="file" accept="image/*" className="hidden" />
+            <input 
+              type="file" 
+              accept="image/*" 
+              className="hidden" 
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  onAvatarChange(e.target.files[0]);
+                }
+              }}
+            />
           </label>
         )}
       </div>

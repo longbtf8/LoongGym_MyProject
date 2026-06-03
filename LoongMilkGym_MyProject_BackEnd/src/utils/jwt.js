@@ -17,19 +17,21 @@ const signAccessToken = (payload) => {
 const verifyAccessToken = (token) => {
   return jwt.verify(token, authConfig.jwtSecret);
 };
-const createRefreshToken = async (user, metadata = {}) => {
+const createRefreshToken = async (user, metadata = {}, { skipCleanup = false } = {}) => {
   const refreshToken = randomRefreshToken();
   const refreshTokenHash = hashToken(refreshToken);
   const date = new Date();
   date.setDate(date.getDate() + authConfig.refreshTokenExpires);
 
-  // Dọn dẹp phiên đăng nhập cũ trên CÙNG một trình duyệt/thiết bị để tránh bị lặp bản ghi
-  if (user.id && metadata.userAgent) {
+  // Dọn dẹp phiên đăng nhập cũ trên CÙNG một phiên trình duyệt (dùng sessionId)
+  // Chỉ thực hiện khi Đăng nhập/Đăng ký, KHÔNG thực hiện khi Refresh Token
+  // sessionId là UUID duy nhất cho mỗi phiên trình duyệt (Chrome, Firefox, ẩn danh đều khác nhau)
+  if (!skipCleanup && user.id && metadata.sessionId) {
     try {
       await prisma.refreshTokens.deleteMany({
         where: {
           userId: user.id,
-          userAgent: metadata.userAgent,
+          sessionId: metadata.sessionId,
         },
       });
     } catch (err) {
@@ -42,16 +44,16 @@ const createRefreshToken = async (user, metadata = {}) => {
       user: user.id ? { connect: { id: user.id } } : undefined,
       token: refreshTokenHash,
       expiresAt: date,
-      userAgent: metadata.userAgent || null,
+      sessionId: metadata.sessionId || null,
       deviceName: metadata.deviceName || null,
       ipAddress: metadata.ipAddress || null,
     },
   });
   return refreshToken;
 };
-const generateAuthTokens = async (user, metadata = {}) => {
+const generateAuthTokens = async (user, metadata = {}, options = {}) => {
   const accessToken = signAccessToken({ userId: user.id, role: user.role });
-  const refreshToken = await createRefreshToken(user, metadata);
+  const refreshToken = await createRefreshToken(user, metadata, options);
   return { accessToken, refreshToken };
 };
 module.exports = {

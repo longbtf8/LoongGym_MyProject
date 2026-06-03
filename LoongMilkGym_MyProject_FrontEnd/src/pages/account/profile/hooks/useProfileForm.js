@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useUpdateProfileMutation } from "@/services/auth/authApi";
+import { useUpdateProfileMutation, useUploadAvatarMutation } from "@/services/auth/authApi";
 import { parseApiError } from "@/utils/errorParser";
 
 /**
@@ -11,7 +11,11 @@ export function useProfileForm() {
   const { userInfo, handleLogout } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [updateProfile, { isLoading: isSaving }] = useUpdateProfileMutation();
+  const [updateProfile, { isLoading: isSavingProfile }] = useUpdateProfileMutation();
+  const [uploadAvatar, { isLoading: isUploadingAvatar }] = useUploadAvatarMutation();
+
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState(null);
 
   // Khởi tạo state form rỗng
   const [formData, setFormData] = useState({
@@ -58,6 +62,13 @@ export function useProfileForm() {
           ? userInfo.profile.calorieGoal 
           : "",
       });
+
+      // Clear avatar states
+      setSelectedAvatarFile(null);
+      if (avatarPreviewUrl) {
+        URL.revokeObjectURL(avatarPreviewUrl);
+        setAvatarPreviewUrl(null);
+      }
     }
   };
 
@@ -74,11 +85,37 @@ export function useProfileForm() {
     }));
   };
 
+  const handleAvatarChange = (file) => {
+    if (file) {
+      setSelectedAvatarFile(file);
+      if (avatarPreviewUrl) {
+        URL.revokeObjectURL(avatarPreviewUrl);
+      }
+      setAvatarPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
   const handleSave = async () => {
     try {
       setErrorMessage("");
+
+      // 1. Nếu có tệp avatar được chọn, upload trước
+      if (selectedAvatarFile) {
+        const fileFormData = new FormData();
+        fileFormData.append("image-avatar", selectedAvatarFile);
+        await uploadAvatar(fileFormData).unwrap();
+      }
+
+      // 2. Lưu các thông tin profile còn lại
       await updateProfile(formData).unwrap();
       setIsEditing(false);
+
+      // 3. Clean up avatar states
+      setSelectedAvatarFile(null);
+      if (avatarPreviewUrl) {
+        URL.revokeObjectURL(avatarPreviewUrl);
+        setAvatarPreviewUrl(null);
+      }
     } catch (err) {
       console.error("Cập nhật hồ sơ thất bại:", err);
       const parsedError = parseApiError(err, "Cập nhật hồ sơ thất bại, vui lòng kiểm tra lại dữ liệu.");
@@ -112,11 +149,13 @@ export function useProfileForm() {
     isEditing,
     setIsEditing: handleStartEditing,
     handleChange,
+    handleAvatarChange,
     handleSave,
     handleCancel,
     formatDateDisplay,
     handleLogout,
-    isSaving,
+    isSaving: isSavingProfile || isUploadingAvatar,
+    avatarPreviewUrl,
     errorMessage,
     setErrorMessage,
   };

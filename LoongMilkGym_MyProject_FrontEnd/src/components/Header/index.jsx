@@ -6,7 +6,8 @@ import {
   Home, 
   Compass, 
   Sparkles, 
-  ShoppingBag 
+  ShoppingBag,
+  Dumbbell
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useClickOutside } from "@/hooks/useClickOutside";
@@ -18,7 +19,7 @@ import paths from "@/config/path";
 const NAV_ITEMS = [
   { label: "Trang chủ", path: paths.home },
   { label: "Lộ trình", path: "#" },
-  { label: "Thư viện", path: "#" },
+  { label: "Thư viện", path: paths.exercises },
   { label: "AI Coach", path: "#" },
   { label: "Cửa hàng", path: "#" },
   { label: "Cộng đồng", path: "#" },
@@ -41,10 +42,11 @@ function Header() {
   // Sử dụng custom hook useClickOutside để đóng dropdown menu khi click ra ngoài
   useClickOutside(userMenuRef, () => setShowUserMenu(false));
 
-  // Danh sách các tab dưới thanh Bottom Nav (Mobile)
+  // Danh sách các tab dưới thanh Bottom Nav (Mobile) - Gồm 5 mục chính giống Nav desktop
   const BOTTOM_NAV_ITEMS = [
     { label: "Trang chủ", path: paths.home, icon: Home },
     { label: "Lộ trình", path: "/route-placeholder", icon: Compass },
+    { label: "Thư viện", path: paths.exercises, icon: Dumbbell },
     { label: "AI Coach", path: "/ai-coach-placeholder", icon: Sparkles },
     { label: "Cửa hàng", path: "/shop-placeholder", icon: ShoppingBag },
   ];
@@ -68,7 +70,7 @@ function Header() {
                     to={item.path}
                     className={`relative px-4 py-2 text-sm font-semibold no-underline rounded-full transition-all duration-200 ${
                       isActive
-                        ? "text-primary bg-primary/10"
+                        ? "text-black bg-primary font-extrabold shadow-sm shadow-primary/10"
                         : "text-[var(--text-muted)] hover:text-[var(--text-color)] hover:bg-[var(--bg-secondary)]"
                     }`}
                   >
@@ -120,7 +122,7 @@ function Header() {
                   <div className="relative hidden sm:block" ref={userMenuRef}>
                     <button
                       onClick={() => setShowUserMenu(!showUserMenu)}
-                      className="group relative w-10 h-10 flex items-center justify-center rounded-full p-[2px] bg-gradient-to-tr from-primary to-[#00f5d4] cursor-pointer border-2 border-transparent hover:border-primary/50 transition-all duration-200 hover:-translate-y-0.5 shadow-[0_2px_10px_rgba(204,255,0,0.15)]"
+                      className="group relative w-10 h-10 flex items-center justify-center rounded-full p-[2px] bg-gradient-to-tr from-primary to-[#00f5d4] cursor-pointer border-2 border-transparent hover:border-primary/50 transition-all duration-200 shadow-[0_2px_10px_rgba(204,255,0,0.15)] before:absolute before:content-[''] before:w-full before:h-4 before:-bottom-3 before:left-0"
                       aria-label="Menu tài khoản"
                     >
                       {userInfo?.profile?.avatarUrl ? (
@@ -201,57 +203,28 @@ function Header() {
       </header>
 
       {/* ═══ BOTTOM NAVIGATION BAR (Mobile only) ═══ */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-[var(--bg-secondary)]/90 backdrop-blur-xl border-t border-[var(--border-color)] flex items-center justify-around px-2 shadow-[0_-4px_25px_rgba(0,0,0,0.04)] dark:shadow-[0_-4px_25px_rgba(0,0,0,0.22)] z-50">
-        {BOTTOM_NAV_ITEMS.map((item) => {
-          const IconComponent = item.icon;
-          const isActive = location.pathname === item.path;
-          return (
-            <Link
-              key={item.label}
-              to={item.path}
-              className={`flex flex-col items-center justify-center gap-1 w-14 h-full no-underline transition-colors duration-200 ${
-                isActive 
-                  ? "text-primary" 
-                  : "text-[var(--text-muted)] hover:text-[var(--text-color)]"
-              }`}
-            >
-              <IconComponent className="w-5 h-5" />
-              <span className="text-[10px] font-bold tracking-tight">{item.label}</span>
-            </Link>
-          );
-        })}
-
-        {/* Tab Tài khoản thứ 5 */}
-        <Link
-          to={isLoggedIn ? paths.profile : paths.login}
-          className={`flex flex-col items-center justify-center gap-1 w-14 h-full no-underline transition-colors duration-200 ${
-            location.pathname === paths.profile || location.pathname === paths.login
-              ? "text-primary" 
-              : "text-[var(--text-muted)] hover:text-[var(--text-color)]"
-          }`}
-        >
-          {isLoggedIn ? (
-            <div className={`w-5.5 h-5.5 rounded-full p-[1px] bg-gradient-to-tr from-primary to-[#00f5d4] shadow-sm flex items-center justify-center ${
-              location.pathname === paths.profile ? "ring-2 ring-primary ring-offset-2 ring-offset-[var(--bg-secondary)]" : ""
-            }`}>
-              {userInfo?.profile?.avatarUrl ? (
-                <img 
-                  src={userInfo.profile.avatarUrl} 
-                  alt={userName} 
-                  className="w-full h-full rounded-full object-cover bg-[var(--bg-color)]"
-                />
-              ) : (
-                <div className="w-full h-full rounded-full bg-[var(--bg-color)] flex items-center justify-center text-[9px] font-black text-primary">
-                  {userInitial}
-                </div>
-              )}
-            </div>
-          ) : (
-            <User className="w-5 h-5" />
-          )}
-          <span className="text-[10px] font-bold tracking-tight">Tài khoản</span>
-        </Link>
-      </nav>
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 py-1 bg-[var(--bg-secondary)]/90 backdrop-blur-xl border-t border-[var(--border-color)] z-50">
+        <nav className="grid grid-cols-5 gap-0 w-full px-1">
+          {BOTTOM_NAV_ITEMS.map((item) => {
+            const IconComponent = item.icon;
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.label}
+                to={item.path}
+                className={`flex flex-col items-center justify-center gap-1 py-1.5 mx-0.5 rounded-xl no-underline transition-colors duration-200 ${
+                  isActive 
+                    ? "bg-primary text-black font-extrabold shadow-md shadow-primary/10" 
+                    : "bg-transparent text-[var(--text-muted)] hover:text-[var(--text-color)]"
+                }`}
+              >
+                <IconComponent className="w-4.5 h-4.5" />
+                <span className="text-[9px] font-bold tracking-tight leading-none">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
     </>
   );
 }

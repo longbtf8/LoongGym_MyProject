@@ -100,6 +100,17 @@ export const authApi = createApi({
       }),
       invalidatesTags: ["User"],
     }),
+    uploadAvatar: builder.mutation({
+      query: (formData) => ({
+        url: "/users/me/upload-avatar",
+        method: "POST",
+        data: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }),
+      invalidatesTags: ["User"],
+    }),
   }),
 });
 
@@ -116,5 +127,6 @@ export const {
   useGetDevicesQuery,
   useRevokeDeviceMutation,
   useUpdateProfileMutation,
+  useUploadAvatarMutation,
 } = authApi;
 

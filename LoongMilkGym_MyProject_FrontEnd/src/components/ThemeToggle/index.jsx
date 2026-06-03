@@ -9,7 +9,7 @@ function ThemeToggle({ className = "" }) {
     <div className="relative group">
       <button
         onClick={toggleTheme}
-        className={`w-10 h-10 flex items-center justify-center rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-muted)] cursor-pointer hover:text-[var(--text-color)] hover:bg-[var(--border-color)] transition-all duration-200 hover:-translate-y-0.5 ${className}`}
+        className={`w-10 h-10 flex items-center justify-center rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-muted)] cursor-pointer hover:text-[var(--text-color)] hover:bg-[var(--border-color)] transition-all duration-200 hover:-translate-y-0.5 relative before:absolute before:content-[''] before:w-full before:h-4 before:-bottom-3 before:left-0 ${className}`}
         aria-label="Chuyển đổi giao diện sáng/tối"
       >
         {theme === "light" ? (

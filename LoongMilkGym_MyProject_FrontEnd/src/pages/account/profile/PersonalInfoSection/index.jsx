@@ -9,11 +9,13 @@ function PersonalInfoSection({
   isEditing,
   setIsEditing,
   handleChange,
+  handleAvatarChange,
   handleSave,
   handleCancel,
   formatDateDisplay,
   userInfo,
   isSaving,
+  avatarPreviewUrl,
   errorMessage
 }) {
   return (
@@ -75,6 +77,8 @@ function PersonalInfoSection({
         formData={formData} 
         userInfo={userInfo} 
         isEditing={isEditing} 
+        avatarPreviewUrl={avatarPreviewUrl}
+        onAvatarChange={handleAvatarChange}
       />
 
       {/* THÀNH PHẦN 2: LƯỚI CHỈ SỐ CƠ THỂ & ĐƠN VỊ ĐO */}
