@@ -83,7 +83,15 @@ Dưới đây là phân tích chi tiết ý nghĩa và vai trò của các commi
 *   **Hành động**:
     - Thêm mục Bảng điều khiển vào mảng `NAV_ITEMS` trên desktop và dropdown Avatar của Header.
     - Cấu hình lại kích thước của Logo (`text-3xl sm:text-4xl`) và tiêu đề h1 (`text-2xl sm:text-4xl`) trên các trang đăng nhập, đăng ký, quên mật khẩu, đổi mật khẩu và trang chi tiết bài tập để không bị quá to trên di động.
-*   **Ý nghĩa**: Tăng độ thân thiện của giao diện di động bằng cách tối ưu hóa kích thước chữ tiêu đề và đảm bảo truy cập Dashboard nhanh từ tất cả các trang trên desktop.
+### 17. `feat/refactor: modularize dashboard and header, unify controller naming, centralize helpers, and implement dashboard rtk query`
+*   **Hành động**:
+    - Phân rã Monolith Header: Tách `BottomNavBar` và `MobileBottomSheet` thành các component con riêng biệt đặt trong cùng một thư mục `src/components/Header/`.
+    - Phân rã Monolith Dashboard: Tách giao diện trang Dashboard cồng kềnh thành 8 component con độc lập trong thư mục `src/pages/dashboard/components/` bao gồm: `GreetingBanner`, `TodayWorkoutCard`, `NutritionTracker`, `RecoveryScore`, `AICoachInsight`, `WeeklyProgressChart`, `QuickActionsGrid`, và `WeeklyLeaderboard`.
+    - Tích hợp RTK Query cho Dashboard: Tạo dịch vụ `dashboardApi.js`, cấu hình trong Redux store, và sử dụng hook `useGetDashboardSummaryQuery` thay thế cho lệnh gọi axios thô.
+    - Cấu trúc lại Backend: Đổi tên file controller sang dạng số ít nhất quán (`exercises.controller.js` -> `exercise.controller.js`), cập nhật route tương ứng, và tối ưu hóa việc trích xuất metadata với tiện ích `requestMetadata.js`.
+    - Chuẩn hóa Tiện ích và Lỗi: Xây dựng class `AppError` mang status code và di chuyển các helper xử lý Cloudinary sang `utils/cloudinary.js` để tái sử dụng, đồng thời áp dụng `AppError` vào các service.
+    - Vá lỗi xác thực: Sửa lỗi trích xuất token tại `authRequire.js` từ `slice(6)` thành `slice(7)` để khớp chính xác độ dài của chuỗi `"Bearer "`.
+*   **Ý nghĩa**: Làm sạch đáng kể cấu trúc mã nguồn ở cả hai phía Client/Server, nâng cao khả năng bảo trì hệ thống và đảm bảo tính đồng bộ kiến trúc.
 
 ---
 

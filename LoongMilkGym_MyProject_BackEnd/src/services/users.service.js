@@ -1,24 +1,8 @@
 const { prisma } = require("@/lib/prisma");
 const { httpCodes } = require("@/config/constants");
 const { convertToKg, convertToCm, convertFromStandard } = require("@/utils/unitConverter");
-const cloudinary = require("cloudinary").v2;
-
-/**
- * Trích xuất public_id từ URL Cloudinary
- */
-const getPublicIdFromUrl = (url) => {
-  if (!url || !url.includes("res.cloudinary.com")) return null;
-  try {
-    const parts = url.split("/image/upload/");
-    if (parts.length < 2) return null;
-    const remaining = parts[1].replace(/^v\d+\//, "");
-    const lastDotIndex = remaining.lastIndexOf(".");
-    return lastDotIndex === -1 ? remaining : remaining.substring(0, lastDotIndex);
-  } catch (error) {
-    console.error("Lỗi khi trích xuất public_id từ Cloudinary URL:", error);
-    return null;
-  }
-};
+const { deleteOldImage } = require("@/utils/cloudinary");
+const AppError = require("@/utils/AppError");
 
 /**
  * Service lấy thông tin chi tiết Profile của user
@@ -38,9 +22,7 @@ const getProfile = async (userId) => {
   });
 
   if (!profile) {
-    const error = new Error("Không tìm thấy thông tin hồ sơ người dùng.");
-    error.statusCode = httpCodes.notFound;
-    throw error;
+    throw new AppError("Không tìm thấy thông tin hồ sơ người dùng.", httpCodes.notFound);
   }
 
   // Chuyển đổi và bổ sung các chỉ số đo lường hiển thị tùy chỉnh (Pound, Stone, Inch, Feet)
@@ -83,9 +65,7 @@ const updateProfile = async (userId, data) => {
   });
 
   if (!currentProfile) {
-    const error = new Error("Không tìm thấy thông tin hồ sơ người dùng.");
-    error.statusCode = httpCodes.notFound;
-    throw error;
+    throw new AppError("Không tìm thấy thông tin hồ sơ người dùng.", httpCodes.notFound);
   }
 
   const finalHeightUnit = heightUnit || currentProfile.heightUnit || "cm";
@@ -145,17 +125,13 @@ const updateProfile = async (userId, data) => {
 
 const uploadAvatar = async (userId, file) => {
   if (!file) {
-    const error = new Error("Vui lòng tải lên một file hình ảnh.");
-    error.statusCode = httpCodes.badRequest;
-    throw error;
+    throw new AppError("Vui lòng tải lên một file hình ảnh.", httpCodes.badRequest);
   }
 
   const avatarUrl = file.path || file.secure_url;
 
   if (!avatarUrl) {
-    const error = new Error("Tải ảnh lên Cloudinary thất bại.");
-    error.statusCode = httpCodes.badRequest;
-    throw error;
+    throw new AppError("Tải ảnh lên Cloudinary thất bại.", httpCodes.badRequest);
   }
 
   // 1. Lấy thông tin UserProfile hiện tại để tìm ảnh đại diện cũ
@@ -166,16 +142,7 @@ const uploadAvatar = async (userId, file) => {
 
   // 2. Nếu có ảnh đại diện cũ và là ảnh trên Cloudinary, tiến hành xóa
   if (currentProfile && currentProfile.avatarUrl) {
-    const oldPublicId = getPublicIdFromUrl(currentProfile.avatarUrl);
-    if (oldPublicId) {
-      try {
-        console.log(`[Cloudinary] Đang xóa avatar cũ có public_id: ${oldPublicId}`);
-        await cloudinary.uploader.destroy(oldPublicId);
-        console.log(`[Cloudinary] Đã xóa thành công avatar cũ.`);
-      } catch (destroyError) {
-        console.error(`[Cloudinary] Lỗi khi xóa avatar cũ (bỏ qua để tiếp tục):`, destroyError.message);
-      }
-    }
+    await deleteOldImage(currentProfile.avatarUrl);
   }
 
   // 3. Cập nhật URL ảnh đại diện mới vào cơ sở dữ liệu

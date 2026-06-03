@@ -1,5 +1,6 @@
 const { prisma } = require("@/lib/prisma");
 const { httpCodes } = require("@/config/constants");
+const AppError = require("@/utils/AppError");
 
 /**
  * Service lấy danh sách bài tập đã xuất bản có bộ lọc và phân trang
@@ -116,9 +117,7 @@ const getExerciseBySlug = async (slug) => {
   });
 
   if (!exercise || !exercise.isPublished) {
-    const error = new Error("Không tìm thấy bài tập hoặc bài tập chưa được xuất bản.");
-    error.statusCode = httpCodes.notFound;
-    throw error;
+    throw new AppError("Không tìm thấy bài tập hoặc bài tập chưa được xuất bản.", httpCodes.notFound);
   }
 
   // Tăng lượt xem lên 1

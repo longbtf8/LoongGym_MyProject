@@ -1,4 +1,6 @@
 const { prisma } = require("@/lib/prisma");
+const AppError = require("@/utils/AppError");
+const { httpCodes } = require("@/config/constants");
 
 /**
  * Lấy thông tin tóm tắt hiển thị trên Dashboard của người dùng
@@ -11,7 +13,7 @@ const getDashboardSummary = async (userId) => {
   });
 
   if (!user) {
-    throw new Error("Không tìm thấy người dùng");
+    throw new AppError("Không tìm thấy người dùng", httpCodes.notFound);
   }
 
   const profile = user.profile || {};

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const exercisesController = require("@/controllers/exercises.controller");
+const exercisesController = require("@/controllers/exercise.controller");
 const validate = require("@/middlewares/validate");
 const { getExercisesSchema, getExerciseBySlugSchema } = require("@/validations/exercise.validation");
 

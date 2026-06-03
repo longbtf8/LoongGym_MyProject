@@ -12,7 +12,7 @@ const authRequire = async (req, res, next) => {
         message: "Bạn chưa đăng nhập",
       });
     }
-    const accessToken = authHeader?.slice(6)?.trim();
+    const accessToken = authHeader.slice(7).trim();
 
     const payload = await verifyAccessToken(accessToken);
     const isBlacklistToken = await prisma.revokedTokens.count({
