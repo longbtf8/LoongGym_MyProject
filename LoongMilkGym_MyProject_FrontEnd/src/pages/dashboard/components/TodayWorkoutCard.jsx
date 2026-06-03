@@ -33,7 +33,7 @@ function TodayWorkoutCard({ workout }) {
         </div>
       </div>
 
-      <button className="w-full py-3.5 bg-transparent border border-primary text-primary hover:bg-primary hover:text-black font-extrabold text-sm rounded-2xl transition-all duration-200 active:scale-95 cursor-pointer mt-4">
+      <button className="w-full py-3.5 bg-primary border border-primary text-black hover:bg-primary-hover font-extrabold text-sm rounded-2xl transition-all duration-200 active:scale-95 cursor-pointer mt-4 shadow-md shadow-primary/10">
         Bắt đầu tập
       </button>
     </div>
