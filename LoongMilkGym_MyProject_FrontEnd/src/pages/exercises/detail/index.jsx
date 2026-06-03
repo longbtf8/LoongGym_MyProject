@@ -95,7 +95,7 @@ export default function ExerciseDetail() {
 
         {/* Header Title */}
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-color)]">
+          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-color)]">
             {exercise.name}
           </h1>
           <p className="text-sm text-[var(--text-muted)] max-w-3xl leading-relaxed">

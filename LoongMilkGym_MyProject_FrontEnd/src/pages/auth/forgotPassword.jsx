@@ -61,7 +61,7 @@ function ForgotPassword() {
     <div>
       {/* Tên thương hiệu LoongMilKGym sử dụng component Logo dùng chung */}
       <div className="mb-10 block">
-        <Logo className="text-4xl" isLink={false} />
+        <Logo className="text-3xl sm:text-4xl" isLink={false} />
       </div>
 
       {/* Nút quay lại */}
@@ -73,7 +73,7 @@ function ForgotPassword() {
       </button>
 
       {/* Tiêu đề Quên mật khẩu */}
-      <h1 className="text-4xl font-extrabold mb-4 m-0">
+      <h1 className="text-2xl sm:text-4xl font-extrabold mb-4 m-0">
         Quên mật khẩu?
       </h1>
       

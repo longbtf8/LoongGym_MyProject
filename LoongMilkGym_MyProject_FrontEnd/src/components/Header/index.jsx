@@ -24,6 +24,7 @@ import paths from "@/config/path";
 // Danh sách các mục điều hướng chính trên Desktop
 const NAV_ITEMS = [
   { label: "Trang chủ", path: paths.home },
+  { label: "Bảng điều khiển", path: paths.dashboard },
   { label: "Lộ trình", path: "#" },
   { label: "Thư viện", path: paths.exercises },
   { label: "AI Coach", path: "#" },
@@ -162,6 +163,15 @@ function Header() {
                         </div>
 
                         {/* Menu links */}
+                        <Link
+                          to={paths.dashboard}
+                          onClick={() => setShowUserMenu(false)}
+                          className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[var(--text-color)] no-underline hover:bg-[var(--border-color)]/30 transition-colors duration-200"
+                        >
+                          <LayoutDashboard className="w-4 h-4 text-[var(--text-muted)]" />
+                          Bảng điều khiển
+                        </Link>
+
                         <Link
                           to={paths.profile}
                           onClick={() => setShowUserMenu(false)}

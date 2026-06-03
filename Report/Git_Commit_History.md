@@ -79,6 +79,12 @@ Dưới đây là phân tích chi tiết ý nghĩa và vai trò của các commi
     - Thay thế thanh Bottom Nav di động sang dạng 4 tab chính + 1 nút "Thêm" gọi Bottom Sheet Slide-up kính mờ (Glassmorphism) chứa thông tin tài khoản VIP và lưới hành động phụ (bao gồm nút Bảng điều khiển mới).
 *   **Ý nghĩa**: Hoàn thiện toàn bộ hệ thống giao diện Dashboard cao cấp chuẩn thiết kế mockup, nâng tầm trải nghiệm điều hướng trên di động và tối ưu hóa hiển thị responsive.
 
+### 16. `feat: link dashboard to desktop header and scale down mobile text size`
+*   **Hành động**:
+    - Thêm mục Bảng điều khiển vào mảng `NAV_ITEMS` trên desktop và dropdown Avatar của Header.
+    - Cấu hình lại kích thước của Logo (`text-3xl sm:text-4xl`) và tiêu đề h1 (`text-2xl sm:text-4xl`) trên các trang đăng nhập, đăng ký, quên mật khẩu, đổi mật khẩu và trang chi tiết bài tập để không bị quá to trên di động.
+*   **Ý nghĩa**: Tăng độ thân thiện của giao diện di động bằng cách tối ưu hóa kích thước chữ tiêu đề và đảm bảo truy cập Dashboard nhanh từ tất cả các trang trên desktop.
+
 ---
 
 ## 🛠️ 2. Nguyên Tắc Cập Nhật Commit Chuẩn Mực

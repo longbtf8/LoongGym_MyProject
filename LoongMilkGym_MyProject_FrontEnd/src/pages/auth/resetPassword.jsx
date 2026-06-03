@@ -115,7 +115,7 @@ function ResetPassword() {
     <div>
       {/* Tên thương hiệu LoongMilKGym sử dụng component Logo dùng chung */}
       <div className="mb-10 block">
-        <Logo className="text-4xl" isLink={false} />
+        <Logo className="text-3xl sm:text-4xl" isLink={false} />
       </div>
 
       {/* Nút quay lại */}
@@ -127,7 +127,7 @@ function ResetPassword() {
       </button>
 
       {/* Tiêu đề thay đổi theo chế độ */}
-      <h1 className="text-4xl font-extrabold mb-4 m-0">
+      <h1 className="text-2xl sm:text-4xl font-extrabold mb-4 m-0">
         {isResetMode ? "Đặt lại mật khẩu" : "Đổi mật khẩu"}
       </h1>
 

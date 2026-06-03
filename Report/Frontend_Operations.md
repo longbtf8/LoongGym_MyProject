@@ -114,3 +114,14 @@ Trang tổng quan cá nhân `/dashboard` được thiết kế theo xu hướng 
     -   Bảng xếp hạng Top 3 thành viên tích cực trong tuần, làm nổi bật người đứng nhất bằng màu Neon chủ đạo và ghi chú rõ ràng vị trí hiện tại của chính tài khoản đăng nhập.
 *   **Liên kết AI và Đồng bộ dữ liệu**:
     -   Hệ thống gọi API `GET /api/dashboard/summary` lúc khởi tạo trang để đồng bộ tên, ảnh đại diện, mục tiêu thể chất và các dữ liệu dinh dưỡng, tự động áp dụng giá trị mặc định đẹp mắt nếu API chưa có dữ liệu hoặc gặp sự cố mạng.
+
+---
+
+## 📱 8. Tối Ưu Kích Thước Chữ Trên Mobile (Mobile Typography Optimization)
+Để đảm bảo chữ tiêu đề không bị tràn dòng hoặc quá to, gây mất cân đối trên các thiết bị di động màn hình nhỏ (iPhone SE, các dòng máy Android cỡ vừa):
+*   **Trang Xác thực (Đăng nhập, Đăng ký, Quên mật khẩu, Đặt lại mật khẩu)**:
+    -   Thu gọn Logo từ `text-4xl` cố định sang dạng co giãn `text-3xl sm:text-4xl`.
+    -   Thay đổi thẻ tiêu đề trang `h1` từ `text-4xl` sang `text-2xl sm:text-4xl`. Nhờ đó tiêu đề "Đăng nhập" hay "Đặt lại mật khẩu" hiển thị vô cùng gọn gàng trên di động mà vẫn giữ được độ to đẹp mắt trên desktop.
+*   **Trang Chi tiết Bài tập (`ExerciseDetail`)**:
+    -   Tên bài tập (`exercise.name`) được điều chỉnh từ `text-3xl sm:text-4xl` sang `text-2xl sm:text-4xl`. Cách làm này đảm bảo các bài tập có tên dài (ví dụ: "Dumbbell Incline Bicep Curl") không bị vỡ bố cục thành 3-4 dòng chữ khổng lồ trên màn hình dọc của điện thoại.
+

@@ -64,7 +64,7 @@ function VerifyEmail() {
     <div className="text-center flex flex-col items-center justify-center">
       {/* Tên thương hiệu LoongMilKGym sử dụng component Logo dùng chung */}
       <div className="mb-8 block">
-        <Logo className="text-4xl" isLink={false} />
+        <Logo className="text-3xl sm:text-4xl" isLink={false} />
       </div>
 
       {status === "verifying" && (

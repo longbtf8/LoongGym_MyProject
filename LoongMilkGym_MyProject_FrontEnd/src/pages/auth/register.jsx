@@ -81,7 +81,7 @@ function Register() {
       <div className="text-center flex flex-col items-center justify-center animate-slide-down">
         {/* Logo LoongMilKGym */}
         <div className="mb-10 block">
-          <Logo className="text-4xl" isLink={false} />
+          <Logo className="text-3xl sm:text-4xl" isLink={false} />
         </div>
 
         {/* Checkmark icon */}
@@ -91,7 +91,7 @@ function Register() {
           </svg>
         </div>
 
-        <h1 className="text-3xl font-extrabold mb-4 m-0 text-emerald-500">Đăng ký thành công!</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold mb-4 m-0 text-emerald-500">Đăng ký thành công!</h1>
         <p className="text-[var(--text-muted)] text-sm mb-8 leading-relaxed max-w-[360px] mx-auto">
           Tài khoản của bạn đã được khởi tạo thành công. Một liên kết xác thực đã được gửi đến địa chỉ email của bạn. Vui lòng kích hoạt tài khoản của bạn trước khi đăng nhập.
         </p>
@@ -110,7 +110,7 @@ function Register() {
     <div>
       {/* Thương hiệu LoongMilKGym ở góc trên giống mockup với Chameleon Gradient */}
       <div className="mb-10 block">
-        <Logo className="text-4xl" isLink={false} />
+        <Logo className="text-3xl sm:text-4xl" isLink={false} />
       </div>
 
       {/* Nút quay lại */}
@@ -122,7 +122,7 @@ function Register() {
       </button>
 
       {/* Tiêu đề Đăng ký */}
-      <h1 className="text-4xl font-extrabold mb-8 m-0">
+      <h1 className="text-2xl sm:text-4xl font-extrabold mb-8 m-0">
         Đăng ký
       </h1>
 
