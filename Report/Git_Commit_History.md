@@ -71,6 +71,14 @@ Dưới đây là phân tích chi tiết ý nghĩa và vai trò của các commi
     - Soạn thảo tài liệu nghiệp vụ chi tiết cho trang Dashboard tại `Report/Page_Dashboard_Documentation.md`.
 *   **Ý nghĩa**: Cung cấp API lõi phục vụ hiển thị thông tin trang chủ của người dùng và đồng bộ hóa tài liệu hệ thống.
 
+### 15. `feat: implement dashboard frontend UI, routes, tablet header optimization, and mobile navigation sheet`
+*   **Hành động**:
+    - Thiết kế giao diện Dashboard `/dashboard` với 8 phân vùng thông tin cốt lõi hiển thị lời chào, mục tiêu, thẻ tập luyện hôm nay, tiến trình dinh dưỡng, chỉ số phục hồi SVG, biểu đồ tuần, hành động nhanh và bảng xếp hạng tuần.
+    - Cấu hình định tuyến lazy load tại `src/routes/index.js` và bổ sung path `dashboard: "/dashboard"` tại `src/config/path.js`.
+    - Tối ưu hóa kích thước chữ và ẩn nút Đăng ký khi chiều rộng màn hình gần tới tablet (`lg:hidden xl:inline-flex`) tránh xuống dòng.
+    - Thay thế thanh Bottom Nav di động sang dạng 4 tab chính + 1 nút "Thêm" gọi Bottom Sheet Slide-up kính mờ (Glassmorphism) chứa thông tin tài khoản VIP và lưới hành động phụ (bao gồm nút Bảng điều khiển mới).
+*   **Ý nghĩa**: Hoàn thiện toàn bộ hệ thống giao diện Dashboard cao cấp chuẩn thiết kế mockup, nâng tầm trải nghiệm điều hướng trên di động và tối ưu hóa hiển thị responsive.
+
 ---
 
 ## 🛠️ 2. Nguyên Tắc Cập Nhật Commit Chuẩn Mực

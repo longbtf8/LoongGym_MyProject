@@ -8,6 +8,7 @@ const paths = {
   profile: "/account/profile",
   exercises: "/exercises",
   exerciseDetail: "/exercises/:slug",
+  dashboard: "/dashboard",
 };
 
 export default paths;

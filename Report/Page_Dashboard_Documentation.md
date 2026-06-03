@@ -4,16 +4,26 @@ Tài liệu này mô tả chi tiết giao diện người dùng (Frontend) dự 
 
 ---
 
-## 🎨 I. PHÂN HỆ FRONTEND (GIAO DIỆN & TIỆN ÍCH DỰ KIẾN)
+## 🎨 I. PHÂN HỆ FRONTEND (GIAO DIỆN & TIỆN ÍCH HIỆN TẠI)
 
-Trang Dashboard đóng vai trò trung tâm hiển thị các thông tin nhanh trong ngày của người dùng:
-*   **Thẻ thông tin cá nhân**: Hiển thị tên người dùng, avatar, mục tiêu luyện tập hiện tại và cấp độ thể chất.
-*   **Lộ trình tập luyện hôm nay (`todayWorkout`)**: Hiển thị bài tập dự kiến của ngày hôm nay (tạm thời trả về `null`).
-*   **Điểm phục hồi (`recoveryScore`)**: Điểm phục hồi thể chất trong ngày (mặc định tạm thời là `85`).
-*   **Mục tiêu và Chỉ số Dinh dưỡng (`nutrition`)**:
-    - Hiển thị lượng Protein, Carbs, Fat đã nạp trong ngày so với mục tiêu đề ra (`proteinTarget`, `carbsTarget`, `fatTarget`).
-*   **Thống kê tuần (`stats`)**: Số lượng bài tập đã hoàn thành, tổng số phút luyện tập trong tuần và chuỗi ngày tập liên tục (Streak).
-*   **Hành động nhanh (`quickActions`)**: Các phím tắt chuyển nhanh đến Thư viện bài tập, Chọn lộ trình tập và hỏi AI Coach.
+Trang Dashboard đã được triển khai đầy đủ tại đường dẫn `/dashboard` (được bảo vệ bởi `AuthGuard`), thiết kế tối giản, hiện đại và chuẩn xác theo mockup:
+
+1.  **Giao diện & Cấu trúc Grid (3 Cột trên Desktop, 2 Cột trên Tablet, 1 Cột trên Mobile)**:
+    -   **Khu vực A (Greeting Banner)**: Lời chào cá nhân hóa "Xin chào, [Tên]" kèm ảnh đại diện (avatar) của người dùng hoặc ký tự đại diện với viền gradient nổi bật, hiển thị Badge mục tiêu tập (ví dụ: "Tăng cơ") và nút kêu gọi hành động (CTA) "Bắt đầu tập hôm nay" dạng capsule màu Neon nổi bật.
+    -   **Khu vực B (Bài tập hôm nay)**: Card bài tập (mặc định "Ngực & Tay sau") với 3 Stat Chips dạng ô vuông (8 Bài - Số lượng, 60 Phút - Thời gian, Khó - Mức độ) và nút khởi chạy tập luyện "Bắt đầu tập" bo góc.
+    -   **Khu vực C (Dinh dưỡng hôm nay)**: Các thanh tiến độ (Progress Bars) thể hiện tỉ lệ nạp Protein, Carbs, Fat trong ngày, tự động tính toán tỷ lệ % so với mục tiêu và nút "Thêm bữa ăn".
+    -   **Khu vực D (AI Coach Insight)**: Khung lời khuyên dinh dưỡng và tập luyện từ AI Coach với định dạng quote nghiêng sang trọng kèm nút "Hỏi AI Coach" phản hồi nhanh.
+    -   **Khu vực E (Tiến độ tuần này)**: Biểu đồ cột biểu diễn hoạt động từ T2 đến CN bằng CSS thuần trực quan, tự động làm nổi bật ngày hiện tại bằng màu Neon phát sáng.
+    -   **Khu vực F (Chỉ số phục hồi)**: Vòng tròn đo điểm số phục hồi (Recovery Score) sử dụng SVG hình khuyên hiển thị tỷ lệ động (mặc định 85% Tốt), kèm 3 thông số phụ chi tiết (Giấc ngủ, Năng lượng, Đau cơ) ở dưới.
+    -   **Khu vực G (Hành động nhanh)**: Lưới 2x2 nút điều hướng nhanh tới Thư viện, Lộ trình, Cửa hàng và Cộng đồng với hiệu ứng hover co giãn phóng to nhẹ thu hút tương tác.
+    -   **Khu vực H (Bảng xếp hạng tuần)**: Danh sách Top 3 bảng xếp hạng người dùng trong tuần trực quan, có viền nổi bật cho người dẫn đầu và thẻ ghi nhận thứ hạng của chính người dùng hiện tại ("Alex (Bạn)").
+
+2.  **Khả năng tương thích Thiết kế Sáng/Tối (Light/Dark Mode)**:
+    -   Sử dụng hoàn toàn các biến CSS hệ thống của LoongMilkGym (`--bg-color`, `--bg-secondary`, `--text-color`, `--text-muted`, `--border-color`).
+    -   Ở chế độ sáng, nền trang và card chuyển sang xám nhạt mịn màng, chữ đen rõ ràng. Ở chế độ tối, nền tối sâu và các card màu xám đen bóng bẩy chuẩn xu hướng tối giản.
+
+3.  **Tích hợp điều hướng Mobile**:
+    -   Thanh Bottom Sheet menu khi click vào nút "Thêm" trên thiết bị di động đã được tích hợp thêm nút "Bảng điều khiển" (sử dụng icon `LayoutDashboard` màu cam) để người dùng mobile dễ dàng truy cập.
 
 ---
 

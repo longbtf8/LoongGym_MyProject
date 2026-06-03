@@ -14,6 +14,7 @@ const Profile = lazy(() => import("@/pages/account/profile/index.jsx"));
 const NotFound = lazy(() => import("@/pages/notFound"));
 const Exercises = lazy(() => import("@/pages/exercises/index.jsx"));
 const ExerciseDetail = lazy(() => import("@/pages/exercises/detail/index.jsx"));
+const Dashboard = lazy(() => import("@/pages/dashboard/index.jsx"));
 
 // Layouts
 import { DefaultLayout, AuthLayout, MessageLayout } from "@/layouts";
@@ -38,6 +39,7 @@ const publicRoutes = [
 // Private Routes (Bắt buộc phải đăng nhập, tự động bảo vệ bởi AuthGuard)
 const privateRoutes = [
   { path: paths.profile, component: Profile, layout: DefaultLayout, guard: AuthGuard },
+  { path: paths.dashboard, component: Dashboard, layout: DefaultLayout, guard: AuthGuard },
 ];
 
 export { publicRoutes, privateRoutes };

@@ -62,35 +62,55 @@ Toàn bộ logic trạng thái form, quản lý biến tạm, hủy sửa đổi
 
 ---
 
-## 📱 4. Thanh Điều Hướng Dưới Cùng Cho Mobile (Contiguous Mobile Bottom Nav)
-Để tối ưu không gian hiển thị và tạo cảm giác liền mạch nguyên khối giống ứng dụng di động gốc (Native App):
-*   **Cấu trúc Lưới Dính Liền (Contiguous Grid)**:
-    - Áp dụng hệ thống lưới 5 cột dính liền (`grid grid-cols-5 gap-0 w-full px-1`), chia đều không gian cho 5 chức năng chính: Trang chủ, Thư viện, Quét QR, Bài đăng, và Tài khoản.
-    - Loại bỏ hoàn toàn đường viền và màu nền mặc định khi không kích hoạt (`bg-transparent border-0`) để giữ giao diện tối giản, thoáng mắt.
-*   **Hiển Thị Trạng Thái Active Dạng Viên Nhộng (Capsule-only Highlight)**:
-    - Khi một trang được kích hoạt, nút tương ứng sẽ tự động hiển thị nền xanh chuối thương hiệu (`bg-primary`), chữ đen tương phản cao (`text-black font-extrabold`), và bo góc tròn trịa trọn vẹn (`rounded-xl shadow-md`).
-    - Lồng ghép hiệu ứng chuyển màu mượt mà (`transition-colors duration-200`) giúp loại bỏ hiện tượng giật cục màu sắc hay nháy đường viền khi thay đổi giữa các trang.
-*   **Chống Che Khuất Nội Dung Cuối Trang**:
-    - Nhằm khắc phục việc thanh Bottom Nav dạng cố định (`fixed bottom-0`) che mất nội dung cuối của các trang, phần chân trang `Footer` đã được nâng khoảng đệm dưới lên `pb-28` khi ở chế độ mobile, giúp người dùng cuộn xem được trọn vẹn thông tin bản quyền và mạng xã hội.
+## 📱 4. Thanh Điều Hướng Mobile "4 Tab Chính + 1 Tab Thêm" & Bottom Sheet Cao Cấp
+Để tối ưu hóa diện tích hiển thị và đảm bảo khả năng mở rộng trang không giới hạn mà không gây chật chội trên thiết bị di động:
+*   **Cấu trúc 4 Tab Chính Cố Định**:
+    -   Thanh Bottom Nav hiển thị 4 liên kết được sử dụng nhiều nhất: **Trang chủ** (Home), **Lộ trình** (Compass), **Thư viện** (Dumbbell) và **AI Coach** (Sparkles).
+    -   Mỗi nút khi được chọn (Active) hiển thị dạng viên nhộng màu Neon (`bg-primary text-black`) kết hợp đổ bóng nhẹ và chuyển đổi màu chữ mượt mà.
+*   **Nút "Thêm" Mở Bottom Sheet Menu**:
+    -   Nút thứ 5 mang nhãn **"Thêm"** (icon `Menu`) khi nhấn sẽ kích hoạt overlay che mờ màn hình (`bg-black/60 backdrop-blur-xs`) cùng bảng trượt Bottom Sheet từ dưới lên (`animate-slide-up`).
+    -   **Thiết kế Bottom Sheet mờ ảo (Glassmorphism)**: Sử dụng lớp nền mờ đục `bg-[var(--bg-secondary)]/95 backdrop-blur-2xl`, bo tròn góc phía trên (`rounded-t-3xl`), viền sáng mảnh và có thanh kéo (Drag Notch) mô phỏng ứng dụng Native.
+    -   **Bản tin Tài khoản nhanh**: Tích hợp khối thông tin cá nhân hiển thị ảnh đại diện, họ tên, email, nhãn xếp hạng VIP/Standard và cấp độ tập luyện ngay trong menu.
+    -   **Lưới Hành động Phụ**: Sắp xếp dạng lưới 3 cột gồm các trang: **Bảng điều khiển** (màu Cam), **Cửa hàng** (màu Cyan), **Cộng đồng** (màu Indigo), **Tài khoản** (màu Emerald), cùng các nút đăng nhập/đăng ký hoặc nút Đăng xuất full-width màu đỏ nổi bật.
+*   **Chống Che Khuất Nội Dung Chân Trang**:
+    -   Phần đệm dưới chân trang được giữ ổn định ở mức `pb-28` giúp người dùng cuộn xem được trọn vẹn thông tin Footer mà không bị thanh Bottom Nav đè lên.
 
 ---
 
 ## 🛡️ 5. Cơ Chế Chống Chớp Nháy (Flicker Prevention) Khi Hover
 Khi người dùng di chuột nhanh qua các vùng nhạy cảm, giao diện rất dễ xảy ra lỗi giật lắc hoặc đóng mở liên tục (flickering). Hệ thống giải quyết triệt để lỗi này bằng hai giải pháp:
 *   **Cầu Nối Hover Vô Hình (Hover-Bridge Pseudo-elements)**:
-    - Đối với Tooltip của ảnh đại diện tài khoản (Avatar) và nút thay đổi chế độ sáng/tối (Theme Toggle) ở Header, hệ thống chèn một phần tử đệm vô hình bằng CSS: `before:absolute before:content-[''] before:w-full before:h-4 before:-bottom-4 before:left-0`.
-    - Phần tử này đóng vai trò như một chiếc cầu nối liên kết, giữ trạng thái tương tác chuột luôn liên tục khi người dùng di con trỏ từ nút bấm xuống bảng menu bên dưới, triệt tiêu hoàn toàn lỗi chớp tắt.
+    -   Đối với Tooltip của ảnh đại diện tài khoản (Avatar) và nút thay đổi chế độ sáng/tối (Theme Toggle) ở Header, hệ thống chèn một phần tử đệm vô hình bằng CSS: `before:absolute before:content-[''] before:w-full before:h-4 before:-bottom-4 before:left-0`.
+    -   Phần tử này đóng vai trò như một chiếc cầu nối liên kết, giữ trạng thái tương tác chuột luôn liên tục khi người dùng di con trỏ từ nút bấm xuống bảng menu bên dưới, triệt tiêu hoàn toàn lỗi chớp tắt.
 *   **Lớp Hover Tĩnh Cho Card (`ExerciseCard.jsx`)**:
-    - Trong thư viện bài tập, hiệu ứng tịnh tiến dịch chuyển lên trên (`-translate-y-1`) khi hover vào card có thể làm mất tiêu điểm chuột nếu áp dụng trực tiếp lên thẻ chuyển động.
-    - Giải pháp là bọc toàn bộ thẻ bên trong một container cha có kích thước tĩnh (`group h-full pb-1`) và đặt trạng thái kích hoạt chuyển động dựa trên container cha (`group-hover:-translate-y-1 group-hover:shadow-lg`). Mẹo thiết kế này giúp con trỏ chuột không bao giờ bị trượt ra ngoài vùng bắt sự kiện của card.
+    -   Trong thư viện bài tập, hiệu ứng tịnh tiến dịch chuyển lên trên (`-translate-y-1`) when hover vào card có thể làm mất tiêu điểm chuột nếu áp dụng trực tiếp lên thẻ chuyển động.
+    -   Giải pháp là bọc toàn bộ thẻ bên trong một container cha có kích thước tĩnh (`group h-full pb-1`) và đặt trạng thái kích hoạt chuyển động dựa trên container cha (`group-hover:-translate-y-1 group-hover:shadow-lg`). Mẹo thiết kế này giúp con trỏ chuột không bao giờ bị trượt ra ngoài vùng bắt sự kiện của card.
 
 ---
 
 ## 📊 6. Khóa Chiều Cao Ổn Định Layout (Layout Shift Prevention)
 Khi chuyển đổi trang trong thư viện bài tập hoặc thay đổi bộ lọc tìm kiếm, số lượng bài tập hiển thị có thể thay đổi từ tối đa 8 bài xuống 0 bài (hoặc 1-2 bài ở trang cuối), gây ra hiện tượng dịch chuyển đột ngột (Layout Shift) kéo giật Footer và phân trang lên trên.
 *   **Quy định Chiều cao Tối thiểu linh hoạt theo Thiết bị**:
-    - **Điện thoại di động (Mobile)**: Áp dụng `min-h-[850px]` (Đảm bảo khung chứa đủ 4 hàng bài tập, mỗi hàng 2 cột).
-    - **Máy tính bảng (Tablet)**: Áp dụng `min-h-[1300px]` (Tương thích với kích thước hiển thị lớn hơn).
-    - **Máy tính để bàn (Desktop - `lg:`)**: Áp dụng `min-h-[1100px]` (Đảm bảo khung chứa đủ 3 hàng bài tập, mỗi hàng 3 cột).
+    -   **Điện thoại di động (Mobile)**: Áp dụng `min-h-[850px]` (Đảm bảo khung chứa đủ 4 hàng bài tập, mỗi hàng 2 cột).
+    -   **Máy tính bảng (Tablet)**: Áp dụng `min-h-[1300px]` (Tương thích với kích thước hiển thị lớn hơn).
+    -   **Máy tính để bàn (Desktop - `lg:`)**: Áp dụng `min-h-[1100px]` (Đảm bảo khung chứa đủ 3 hàng bài tập, mỗi hàng 3 cột).
 *   **Hiệu quả**: Khi đổi trang hoặc đổi bộ lọc, thanh phân trang (`Pagination`) và `Footer` luôn được cố định ở một vị trí thẳng hàng dưới chân màn hình, tạo nên trải nghiệm cực kỳ êm mắt và chuyên nghiệp.
 
+---
+
+## 📈 7. Trang Bảng Điều Khiển (Dashboard Summary Page)
+Trang tổng quan cá nhân `/dashboard` được thiết kế theo xu hướng tối giản, hiện đại và chuẩn xác theo bản vẽ mockup với 8 phân vùng thông tin cốt lõi:
+*   **Grid layout đa thích ứng (Responsive Grid)**:
+    -   **Desktop**: Bố cục 3 cột cân đối và 1 banner chào mừng kéo dài hết chiều rộng phía trên.
+    -   **Tablet**: Bố cục 2 cột tự động dồn khối, tối ưu hóa không gian hiển thị trung bình.
+    -   **Mobile**: Bố cục 1 cột cuộn dọc, dễ thao tác chạm vuốt.
+*   **Thanh tiến độ Dinh dưỡng (Nutrition Tracks)**:
+    -   Hiển thị lượng nạp Protein, Carbs, Fat dạng thanh đo màu sắc (Neon, Cyan, Amber). Hệ thống tự động tính toán tỷ lệ phần trăm động dựa trên chỉ số nạp và chỉ tiêu đích nạp nhận về từ API.
+*   **SVG Recovery Circular Dial**:
+    -   Sử dụng SVG tròn khuyết và thuộc tính `strokeDashoffset` để vẽ vòng đo mức độ phục hồi thể chất (mặc định 85% Tốt), kèm các chỉ số phụ (giấc ngủ, năng lượng, đau cơ) trực quan bên dưới.
+*   **Weekly Progress Chart**:
+    -   Biểu đồ cột dọc từ T2 đến CN vẽ hoàn toàn bằng CSS Flexbox và các khối div tròn cạnh, tự động highlight cột ngày hiện tại bằng hiệu ứng đổ bóng phát sáng (Neon Glow) cực kỳ sống động.
+*   **Leaderboard Danh vọng**:
+    -   Bảng xếp hạng Top 3 thành viên tích cực trong tuần, làm nổi bật người đứng nhất bằng màu Neon chủ đạo và ghi chú rõ ràng vị trí hiện tại của chính tài khoản đăng nhập.
+*   **Liên kết AI và Đồng bộ dữ liệu**:
+    -   Hệ thống gọi API `GET /api/dashboard/summary` lúc khởi tạo trang để đồng bộ tên, ảnh đại diện, mục tiêu thể chất và các dữ liệu dinh dưỡng, tự động áp dụng giá trị mặc định đẹp mắt nếu API chưa có dữ liệu hoặc gặp sự cố mạng.
