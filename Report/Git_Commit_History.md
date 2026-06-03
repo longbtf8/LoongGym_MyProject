@@ -1,0 +1,75 @@
+# LỊCH SỬ PHÁT TRIỂN & CÁC COMMITS TÍNH NĂNG LOONGGYM
+
+Tài liệu này ghi chép lại hành trình phát triển hệ thống LoongGym thông qua lịch sử commits gần đây, thể hiện sự nâng cấp liên tục về mặt tính năng, bảo mật và kiến trúc phần mềm.
+
+---
+
+## 🚀 1. Lộ Trình Phát Triển Qua Lịch Sử Commits
+
+Dưới đây là phân tích chi tiết ý nghĩa và vai trò của các commits gần đây nhất trong dự án:
+
+### 1. `6bf93e1` - Phân rã Monolithic Profile và tích hợp thiết bị hoạt động
+*   **Hành động**: Tách trang Hồ sơ cá nhân cồng kềnh thành các component nhỏ gọn và liên kết danh sách các thiết bị đang đăng nhập với API của RTK Query.
+*   **Ý nghĩa**: Giúp tăng tốc độ hiển thị và giúp người dùng kiểm soát được bảo mật tài khoản (phát hiện các phiên đăng nhập lạ).
+
+### 2. `ade0b9d` - Khắc phục lỗi Prisma Client Validation Error
+*   **Hành động**: Thay thế việc gán trực tiếp khóa ngoại `userId` bằng cách sử dụng kết nối quan hệ lồng nhau (`user: { connect: { id: userId } }`) trong câu lệnh khởi tạo Refresh Token.
+*   **Ý nghĩa**: Đảm bảo tuân thủ nghiêm ngặt các ràng buộc khóa ngoại của cơ sở dữ liệu quan hệ và loại bỏ hoàn toàn lỗi xác thực dữ liệu của Prisma.
+
+### 3. `b3c8b6b` - Khóa lỗi thô cơ sở dữ liệu & Đồng bộ Schema
+*   **Hành động**: Chạy đồng bộ trực tiếp database schema lên MySQL và cập nhật `exceptionHandler` chặn đứng lỗi thô của Prisma/SQL, trả về lỗi tiếng Việt thân thiện ở các view Đăng nhập/Đăng ký.
+*   **Ý nghĩa**: Tăng cường bảo mật bảo vệ cấu trúc bảng DB khỏi các cuộc tấn công khai thác lỗi hiển thị và cải thiện trải nghiệm người dùng Việt Nam.
+
+### 4. `fda32ee` - Thiết kế bộ chuyển đổi lỗi thông minh `errorParser`
+*   **Hành động**: Tạo file helper `errorParser.js` xử lý tập trung mọi dạng lỗi thô trả về từ API và sửa lỗi sập ứng dụng khi nhận dạng biểu tượng thiết bị từ giá trị rỗng.
+*   **Ý nghĩa**: Loại bỏ sự lặp lại của các khối mã bắt lỗi trên Frontend, tối ưu hóa kích thước file và giúp ứng dụng hoạt động ổn định không bao giờ bị crash trắng màn hình.
+
+### 5. `f1cd0ec` - Tích hợp Header Refresh Token & Ẩn hiện mật khẩu
+*   **Hành động**: Bổ sung bảo mật phiên bằng header `x-refresh-token`, cơ chế gom cụm phiên và liên kết API đổi mật khẩu có tích hợp mắt ẩn hiện mật khẩu.
+*   **Ý nghĩa**: Nâng cao tính an toàn cho luồng xác thực đa thiết bị, cho phép làm mới phiên an toàn và tăng độ thân thiện của Form đổi mật khẩu.
+
+### 6. `81f6e18` - Mở rộng CORS Header trên Backend & Sửa Confirm Payload
+*   **Hành động**: Cho phép header `x-refresh-token` vượt qua CORS của Backend và đồng bộ đúng payload xác nhận mật khẩu trên Frontend.
+*   **Ý nghĩa**: Đảm bảo giao tiếp liên nguồn thông suốt không bị trình duyệt chặn và sửa lỗi đổi mật khẩu không khớp.
+
+### 7. `651bf9e` - Tải lười Dynamic Lazy-Loading & Màn hình chờ Neon lộng lẫy
+*   **Hành động**: Tách Custom Hook `useProfileForm.js`, nâng cấp hỗ trợ cho PasswordInput và tích hợp màn hình chờ LoadingScreen Neon 3D cao cấp.
+*   **Ý nghĩa**: Tối ưu dung lượng tải ban đầu của web, nâng cao hiệu năng hoạt động của giao diện và tạo ấn tượng thiết kế lộng lẫy, premium bậc nhất cho khách hàng ngay từ cái nhìn đầu tiên.
+
+### 8. `17d8337` & `fa66c73` - Tích hợp Tải Ảnh đại diện Avatar cao cấp
+*   **Hành động**: Cấu hình package `multer` tại Backend và tích hợp upload ảnh trực tiếp lên kho lưu trữ đám mây Cloudinary thông qua Controller & Service riêng biệt.
+*   **Ý nghĩa**: Cho phép người dùng cá nhân hóa hồ sơ bằng cách thay đổi avatar trực tiếp trên UI một cách an toàn và nhanh chóng.
+
+### 9. `1ee2071` - Đồng bộ hóa Zod Schema toàn diện
+*   **Hành động**: Bổ sung validation schema `updateProfileSchema` khớp chính xác từng trường trong database bao gồm giới tính, địa chỉ, trình độ, bio, hạng thành viên, chiều cao, cân nặng.
+*   **Ý nghĩa**: Đảm bảo tính toàn vẹn dữ liệu từ tầng Client cho tới tầng Database và không cho phép lọt bất kỳ dữ liệu rác nào.
+
+### 10. `feat/seed-db-cloudinary` - Khởi tạo Thư viện Bài tập & Đồng bộ Ảnh Cloudinary
+*   **Hành động**: Viết script tải tạm ảnh bài tập từ `free-exercise-db` về backend, upload tập trung lên Cloudinary (`LoongMilkGym_APP/exercises`) khớp theo slug bài tập, sau đó dọn dẹp ảnh tạm ở backend và nạp 21 bài tập mẫu vào cơ sở dữ liệu qua Prisma.
+*   **Ý nghĩa**: Xây dựng kho dữ liệu bài tập chuẩn hóa làm nền tảng phát triển tính năng thư viện, đồng bộ hóa tối ưu tài nguyên lưu trữ đám mây.
+
+### 11. `fix/avatar-cleanup` - Tự động dọn dẹp Avatar cũ trên Cloudinary
+*   **Hành động**: Tích hợp hàm `getPublicIdFromUrl` để trích xuất `public_id` và gọi lệnh `cloudinary.uploader.destroy()` xóa ảnh avatar cũ trước khi cập nhật đường dẫn ảnh mới vào database.
+*   **Ý nghĩa**: Tránh phát sinh file ảnh rác và tiết kiệm tối đa không gian lưu trữ cho tài khoản Cloudinary.
+
+### 12. `feat: resolve tooltip flicker, redesign mobile bottom nav, fix page layout jumps, and secure backend auth`
+*   **Hành động**:
+    - Thay thế `transition-all` bằng `transition-colors` và thêm phần tử đệm vô hình `before:` trên Avatar và ThemeToggle để loại bỏ hoàn toàn lỗi chớp nháy tooltip.
+    - Cấu hình lại Bottom Nav dạngcontigous 5 cột (`grid-cols-5`) dính liền phẳng, loại bỏ viền đen/xanh đậm mặc định và áp dụng hiệu ứng chuyển đổi nền `transition-colors duration-200` mượt mà khi chọn.
+    - Thiết lập chiều cao tối thiểu (`min-h`) cứng cho grid bài tập theo từng breakpoint (`850px` / `1300px` / `1100px`) để khóa vị trí của phân trang và footer.
+    - Bảo mật hóa Refresh Token thông qua SHA-256 hash trước khi ghi xuống CSDL và áp dụng cơ chế xác thực Session ID (UUID) kiểm soát đa phiên hoạt động.
+*   **Ý nghĩa**: Mang lại trải nghiệm UI/UX di động cực kỳ hoàn hảo, mượt mà và gia tăng mức độ bảo mật cho hệ thống xác thực.
+
+### 13. `docs: add separate profile and exercise library page documentation reports`
+*   **Hành động**: Viết riêng 2 tài liệu thiết kế nghiệp vụ hoàn chỉnh cho trang Hồ sơ cá nhân (`Page_Profile_Documentation.md`) và trang Thư viện bài tập (`Page_ExerciseLibrary_Documentation.md`).
+*   **Ý nghĩa**: Chuẩn hóa tài liệu thiết kế hệ thống giúp việc bàn giao hoặc cộng tác lập trình diễn ra hiệu quả hơn.
+
+---
+
+## 🛠️ 2. Nguyên Tắc Cập Nhật Commit Chuẩn Mực
+Dự án LoongGym áp dụng tiêu chuẩn đặt tên commit khoa học (**Conventional Commits**):
+*   `feat`: Khi bổ sung tính năng mới hoàn chỉnh.
+*   `fix`: Khi sửa lỗi nghiệp vụ hoặc lỗi cú pháp lập trình.
+*   `refactor`: Khi tái cấu trúc lại mã nguồn sạch hơn mà không đổi hành vi hệ thống.
+*   `chore`: Khi cài đặt thêm thư viện, cập nhật cấu hình dự án.
+*   `style`: Khi thay đổi giao diện CSS, căn lề, định dạng mã nguồn.
