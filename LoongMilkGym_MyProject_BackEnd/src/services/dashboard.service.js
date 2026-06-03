@@ -1,0 +1,62 @@
+const { prisma } = require("@/lib/prisma");
+
+/**
+ * Lấy thông tin tóm tắt hiển thị trên Dashboard của người dùng
+ * @param {string} userId - ID người dùng cần truy vấn
+ */
+const getDashboardSummary = async (userId) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { profile: true },
+  });
+
+  if (!user) {
+    throw new Error("Không tìm thấy người dùng");
+  }
+
+  const profile = user.profile || {};
+
+  return {
+    user: {
+      id: user.id,
+      email: user.email,
+      fullName: profile.fullName || "GymLife User",
+      avatarUrl: profile.avatarUrl || null,
+      goal: profile.goal || "gain_muscle",
+      fitnessLevel: profile.fitnessLevel || "beginner",
+    },
+    todayWorkout: null,
+    recoveryScore: 85,
+    nutrition: {
+      protein: 0,
+      proteinTarget: 160,
+      carbs: 0,
+      carbsTarget: 300,
+      fat: 0,
+      fatTarget: 80,
+    },
+    stats: {
+      completedWorkoutsThisWeek: 0,
+      totalWorkoutMinutesThisWeek: 0,
+      currentStreak: 0,
+    },
+    quickActions: [
+      {
+        label: "Xem thư viện bài tập",
+        path: "/library",
+      },
+      {
+        label: "Chọn lộ trình tập",
+        path: "/plans",
+      },
+      {
+        label: "Hỏi AI Coach",
+        path: "/ai-coach",
+      },
+    ],
+  };
+};
+
+module.exports = {
+  getDashboardSummary,
+};

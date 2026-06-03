@@ -64,6 +64,13 @@ Dưới đây là phân tích chi tiết ý nghĩa và vai trò của các commi
 *   **Hành động**: Viết riêng 2 tài liệu thiết kế nghiệp vụ hoàn chỉnh cho trang Hồ sơ cá nhân (`Page_Profile_Documentation.md`) và trang Thư viện bài tập (`Page_ExerciseLibrary_Documentation.md`).
 *   **Ý nghĩa**: Chuẩn hóa tài liệu thiết kế hệ thống giúp việc bàn giao hoặc cộng tác lập trình diễn ra hiệu quả hơn.
 
+### 14. `feat: implement GET /api/dashboard/summary API and page documentation`
+*   **Hành động**:
+    - Xây dựng tầng Route (`dashboard.route.js`), Controller (`dashboard.controller.js`), và Service (`dashboard.service.js`) để phục vụ API lấy thông tin tổng quan Dashboard.
+    - Áp dụng kiểm tra xác thực qua middleware `authRequire.js` và xử lý các giá trị mặc định cho người dùng (`fullName`, `goal`, `fitnessLevel`) và mục tiêu dinh dưỡng tạm thời.
+    - Soạn thảo tài liệu nghiệp vụ chi tiết cho trang Dashboard tại `Report/Page_Dashboard_Documentation.md`.
+*   **Ý nghĩa**: Cung cấp API lõi phục vụ hiển thị thông tin trang chủ của người dùng và đồng bộ hóa tài liệu hệ thống.
+
 ---
 
 ## 🛠️ 2. Nguyên Tắc Cập Nhật Commit Chuẩn Mực

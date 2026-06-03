@@ -10,4 +10,5 @@ fs.readdirSync(basePath)
     router.use(`/${resourceName}`, require(`./${fileName}`));
   });
 
+// Auto-loaded routes
 module.exports = router;
