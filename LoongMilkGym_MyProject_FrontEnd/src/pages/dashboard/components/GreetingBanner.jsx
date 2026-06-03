@@ -22,7 +22,7 @@ function GreetingBanner({ userInfo, userName, userInitial, displayGoal }) {
             Xin chào, {userName || "Alex"}
           </h1>
           <div className="flex items-center gap-1.5 mt-1.5">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-bold bg-amber-500/10 text-amber-700 border border-amber-500/20 dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/30 rounded-full">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-bold bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 dark:bg-indigo-500/15 dark:text-indigo-400 dark:border-indigo-500/30 rounded-full">
               <Zap className="w-3 h-3 fill-current" />
               {displayGoal}
             </span>

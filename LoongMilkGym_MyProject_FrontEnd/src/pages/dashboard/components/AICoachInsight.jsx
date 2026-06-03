@@ -10,7 +10,7 @@ function AICoachInsight() {
         </div>
         <div>
           <h3 className="text-xs sm:text-sm font-black text-[var(--text-color)] tracking-wider uppercase m-0 leading-none">AI Coach Insight</h3>
-          <span className="text-[9px] text-primary font-bold mt-1 block">Vừa cập nhật</span>
+          <span className="text-[9px] text-[var(--text-muted)] font-extrabold mt-1 block">Vừa cập nhật</span>
         </div>
       </div>
 
