@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Flame } from "lucide-react";
+import { ArrowRight, CalendarPlus, Flame, Heart } from "lucide-react";
 
 const difficultyMap = {
   beginner: { label: "Người mới", color: "text-emerald-400" },
@@ -8,7 +8,7 @@ const difficultyMap = {
   advanced: { label: "Nâng cao", color: "text-rose-500" }
 };
 
-export default function ExerciseCard({ exercise }) {
+export default function ExerciseCard({ exercise, isFavorite = false, onToggleFavorite, onAddToSchedule }) {
   const primaryMuscle = exercise.muscles?.find((m) => m.role === "primary")?.muscleGroup?.name || "Toàn thân";
   const equipmentName = exercise.primaryEquipment?.name || "Tự trọng";
   const diffInfo = difficultyMap[exercise.difficulty] || { label: exercise.difficulty, color: "text-[var(--text-color)]" };
@@ -40,12 +40,35 @@ export default function ExerciseCard({ exercise }) {
               {equipmentName}
             </span>
           </div>
+
+          <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => onAddToSchedule?.(exercise)}
+              className="w-8 h-8 rounded-lg bg-[var(--bg-color)]/85 backdrop-blur-md border border-[var(--border-color)]/40 text-[var(--text-color)] hover:text-primary hover:border-primary/40 flex items-center justify-center transition cursor-pointer"
+              title="Thêm vào lịch tập"
+            >
+              <CalendarPlus size={15} />
+            </button>
+            <button
+              type="button"
+              onClick={() => onToggleFavorite?.(exercise.id)}
+              className={`w-8 h-8 rounded-lg backdrop-blur-md border flex items-center justify-center transition cursor-pointer ${
+                isFavorite
+                  ? "bg-rose-500 text-white border-rose-400"
+                  : "bg-[var(--bg-color)]/85 text-[var(--text-color)] border-[var(--border-color)]/40 hover:text-rose-400 hover:border-rose-400/40"
+              }`}
+              title={isFavorite ? "Bỏ yêu thích" : "Yêu thích bài tập"}
+            >
+              <Heart size={15} fill={isFavorite ? "currentColor" : "none"} />
+            </button>
+          </div>
         </div>
 
         {/* Content Area */}
         <div className="p-3 sm:p-5 flex flex-col flex-1 gap-2 sm:gap-3">
           <div className="flex flex-col gap-1">
-            <h3 className="text-sm sm:text-base md:text-lg font-bold text-[var(--text-color)] group-hover:text-primary transition-colors line-clamp-1">
+            <h3 className="text-sm sm:text-base md:text-lg font-bold text-[var(--text-color)] group-hover:text-[var(--text-primary)] transition-colors line-clamp-1">
               {exercise.name}
             </h3>
             {/* Ẩn mô tả trên mobile để tiết kiệm diện tích */}

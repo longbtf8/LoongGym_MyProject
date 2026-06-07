@@ -11,7 +11,7 @@ function BottomNavBar({ showMobileMenu, setShowMobileMenu }) {
 
   const BOTTOM_NAV_ITEMS = [
     { label: "Trang chủ", path: paths.home, icon: Home },
-    { label: "Lộ trình", path: "/route-placeholder", icon: Compass },
+    { label: "Lộ trình", path: paths.roadmap, icon: Compass },
     { label: "Thư viện", path: paths.exercises, icon: Dumbbell },
     { label: "AI Coach", path: "/ai-coach-placeholder", icon: Sparkles },
   ];

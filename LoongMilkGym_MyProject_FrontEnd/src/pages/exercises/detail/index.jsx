@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useGetExerciseBySlugQuery } from "@/services/exercise/exerciseApi";
-import { ArrowLeft, Clock, Flame, Dumbbell, ShieldAlert, Award, Sparkles, Heart, Plus, Loader2 } from "lucide-react";
+import { useGetActivePlanQuery, useLazyGetDayDetailsQuery, useUpdateDayDetailsMutation } from "@/services/roadmap/roadmapApi";
+import { ArrowLeft, Clock, Flame, Dumbbell, ShieldAlert, Award, Sparkles, Heart, Plus, Loader2, X, Check } from "lucide-react";
 
 const difficultyMap = {
   beginner: { label: "Người mới", css: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
-  intermediate: { label: "Trung bình", css: "bg-[#ccff00]/10 text-[#ccff00] border-[#ccff00]/20" },
+  intermediate: { label: "Trung bình", css: "bg-[var(--text-primary)]/10 text-[var(--text-primary)] border-[var(--text-primary)]/20" },
   advanced: { label: "Nâng cao", css: "bg-rose-500/10 text-rose-400 border-rose-500/20" }
 };
 
@@ -17,18 +18,108 @@ function getYouTubeId(url) {
   return match && match[2].length === 11 ? match[2] : null;
 }
 
+const FAVORITE_EXERCISES_KEY = "loongmilk.favoriteExercises";
+
+const getStoredFavorites = () => {
+  try {
+    return JSON.parse(localStorage.getItem(FAVORITE_EXERCISES_KEY) || "[]");
+  } catch (error) {
+    return [];
+  }
+};
+
 export default function ExerciseDetail() {
   const { slug } = useParams();
   const { data, isLoading, error } = useGetExerciseBySlugQuery(slug);
   const [toastMessage, setToastMessage] = useState("");
+  const [favoriteIds, setFavoriteIds] = useState(getStoredFavorites);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedScheduleDayId, setSelectedScheduleDayId] = useState("");
+  const [scheduleMessage, setScheduleMessage] = useState("");
+  const { data: activePlanRes, isFetching: isFetchingPlan } = useGetActivePlanQuery();
+  const [getDayDetails, { isFetching: isFetchingDayDetails }] = useLazyGetDayDetailsQuery();
+  const [updateDayDetails, { isLoading: isAddingToSchedule }] = useUpdateDayDetailsMutation();
 
   const exercise = data?.data;
+  const activePlan = activePlanRes?.data;
+  const scheduleDays = activePlan?.days || [];
+  const isFavorite = exercise ? favoriteIds.includes(exercise.id) : false;
 
-  const showComingSoon = (feature) => {
-    setToastMessage(`Tính năng "${feature}" sẽ sớm ra mắt!`);
+  const showToast = (message) => {
+    setToastMessage(message);
     setTimeout(() => {
       setToastMessage("");
     }, 3000);
+  };
+
+  const toggleFavorite = () => {
+    if (!exercise) return;
+    setFavoriteIds((prev) => {
+      const next = prev.includes(exercise.id)
+        ? prev.filter((id) => id !== exercise.id)
+        : [...prev, exercise.id];
+      localStorage.setItem(FAVORITE_EXERCISES_KEY, JSON.stringify(next));
+      showToast(next.includes(exercise.id) ? "Đã lưu vào yêu thích." : "Đã bỏ khỏi yêu thích.");
+      return next;
+    });
+  };
+
+  const openScheduleModal = () => {
+    setScheduleMessage("");
+    setSelectedScheduleDayId(scheduleDays.find((day) => day.status !== "completed")?.id || scheduleDays[0]?.id || "");
+    setShowScheduleModal(true);
+  };
+
+  const handleAddExerciseToDay = async () => {
+    if (!exercise || !selectedScheduleDayId) return;
+
+    try {
+      const dayDetailsRes = await getDayDetails(selectedScheduleDayId).unwrap();
+      const dayExercises = dayDetailsRes?.data?.exercises || [];
+      const cleanExercises = dayExercises.map((ex, index) => ({
+        id: ex.id,
+        exerciseId: ex.exerciseId,
+        exerciseOrder: ex.exerciseOrder || index + 1,
+        sets: ex.sets || 3,
+        repsMin: ex.repsMin || 8,
+        repsMax: ex.repsMax || 12,
+        weightKg: ex.weightKg || 0,
+        restSeconds: ex.restSeconds || 90,
+        tempo: ex.tempo || "2-0-1-0",
+        note: ex.note || ""
+      }));
+
+      await updateDayDetails({
+        dayId: selectedScheduleDayId,
+        data: {
+          metadata: {
+            customExercises: [
+              ...cleanExercises,
+              {
+                exerciseId: exercise.id,
+                exerciseOrder: cleanExercises.length + 1,
+                sets: 3,
+                repsMin: 8,
+                repsMax: 12,
+                weightKg: 0,
+                restSeconds: 90,
+                tempo: "2-0-1-0",
+                note: "Thêm từ trang chi tiết bài tập"
+              }
+            ]
+          }
+        }
+      }).unwrap();
+
+      setScheduleMessage("Đã thêm bài tập vào ngày đã chọn.");
+      showToast("Đã thêm bài tập vào lịch.");
+      setTimeout(() => {
+        setShowScheduleModal(false);
+        setScheduleMessage("");
+      }, 900);
+    } catch (err) {
+      setScheduleMessage("Không thể thêm bài tập. Hãy đăng nhập và tạo lộ trình trước.");
+    }
   };
 
   if (isLoading) {
@@ -152,7 +243,7 @@ export default function ExerciseDetail() {
                   {exercise.steps.map((step, idx) => (
                     <div key={step.id || idx} className="flex gap-4 items-start relative">
                       {/* Step Number Badge */}
-                      <div className="w-8 h-8 rounded-full bg-[var(--bg-color)] border border-[#ccff00] text-[#ccff00] font-extrabold flex items-center justify-center shrink-0 z-10 text-sm shadow-md">
+                      <div className="w-8 h-8 rounded-full bg-[var(--bg-color)] border border-[var(--text-primary)] text-[var(--text-primary)] font-extrabold flex items-center justify-center shrink-0 z-10 text-sm shadow-md">
                         {step.stepOrder || idx + 1}
                       </div>
                       
@@ -225,7 +316,7 @@ export default function ExerciseDetail() {
                   <Award size={16} className="text-[#ccff00]" />
                   Cơ chính
                 </span>
-                <span className="font-semibold text-[#ccff00] capitalize">{primaryMuscle}</span>
+                <span className="font-semibold text-[var(--text-primary)] capitalize">{primaryMuscle}</span>
               </div>
 
               {/* Cơ phụ */}
@@ -267,7 +358,7 @@ export default function ExerciseDetail() {
             {/* Control buttons */}
             <div className="flex flex-col gap-3 border-t border-[var(--border-color)] pt-5">
               <button
-                onClick={() => showComingSoon("Thêm vào lịch tập")}
+                onClick={openScheduleModal}
                 className="w-full bg-[#ccff00] hover:bg-[#b5e600] text-black font-bold text-sm py-3 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-98 shadow-md shadow-[#ccff00]/10 cursor-pointer"
               >
                 <Plus size={16} />
@@ -275,11 +366,15 @@ export default function ExerciseDetail() {
               </button>
               
               <button
-                onClick={() => showComingSoon("Lưu vào yêu thích")}
-                className="w-full bg-transparent hover:bg-[var(--border-color)]/20 border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-color)] font-bold text-sm py-3 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer"
+                onClick={toggleFavorite}
+                className={`w-full border font-bold text-sm py-3 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer ${
+                  isFavorite
+                    ? "bg-rose-500 text-white border-rose-400 hover:bg-rose-600"
+                    : "bg-transparent hover:bg-[var(--border-color)]/20 border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-color)]"
+                }`}
               >
-                <Heart size={16} />
-                Lưu vào yêu thích
+                <Heart size={16} fill={isFavorite ? "currentColor" : "none"} />
+                {isFavorite ? "Đã yêu thích" : "Lưu vào yêu thích"}
               </button>
             </div>
             
@@ -288,6 +383,80 @@ export default function ExerciseDetail() {
         </div>
 
       </div>
+
+      {showScheduleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-5 shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-[var(--border-color)] pb-3">
+              <div>
+                <h3 className="text-base font-extrabold flex items-center gap-2">
+                  <Plus className="w-5 h-5 text-[#ccff00]" />
+                  Thêm vào lịch tập
+                </h3>
+                <p className="text-xs text-[var(--text-muted)] mt-1 line-clamp-1">{exercise.name}</p>
+              </div>
+              <button
+                onClick={() => setShowScheduleModal(false)}
+                className="w-8 h-8 rounded-lg border border-[var(--border-color)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-color)] cursor-pointer"
+                title="Đóng"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="py-4 flex flex-col gap-3">
+              <div className="text-xs text-[var(--text-muted)] leading-relaxed bg-[var(--bg-color)] border border-[var(--border-color)] rounded-xl p-3">
+                Chọn ngày muốn thêm bài. Thông số mặc định là 3 hiệp x 8-12 lần lặp, bạn có thể chỉnh lại trong trang Lộ trình.
+              </div>
+
+              {isFetchingPlan ? (
+                <div className="py-6 text-center text-sm text-[var(--text-muted)]">Đang tải lịch tập...</div>
+              ) : scheduleDays.length === 0 ? (
+                <div className="py-6 text-center text-sm text-[var(--text-muted)]">
+                  Bạn chưa có lộ trình. Hãy tạo lộ trình ở trang Lộ trình trước.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto pr-1">
+                  {scheduleDays.map((day, index) => {
+                    const date = new Date(day.scheduledDate);
+                    const isSelected = selectedScheduleDayId === day.id;
+                    return (
+                      <button
+                        key={day.id}
+                        onClick={() => setSelectedScheduleDayId(day.id)}
+                        className={`text-left rounded-xl border p-3 transition cursor-pointer ${
+                          isSelected
+                            ? "bg-[#ccff00] text-black border-[#ccff00]"
+                            : "bg-[var(--bg-color)] border-[var(--border-color)] text-[var(--text-color)] hover:border-[#ccff00]/50"
+                        }`}
+                      >
+                        <span className="block text-[10px] font-black uppercase opacity-70">Ngày {index + 1}</span>
+                        <span className="block text-xs font-bold line-clamp-1">{day.title}</span>
+                        <span className="block text-[10px] opacity-70 mt-1">{date.toLocaleDateString("vi-VN")}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {scheduleMessage && (
+                <div className="flex items-center gap-2 text-xs font-bold text-[#ccff00]">
+                  <Check size={14} />
+                  {scheduleMessage}
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={handleAddExerciseToDay}
+              disabled={!selectedScheduleDayId || isAddingToSchedule || isFetchingDayDetails}
+              className="w-full h-11 rounded-xl bg-[#ccff00] text-black text-sm font-black hover:bg-[#b5e600] disabled:opacity-60 cursor-pointer"
+            >
+              {isAddingToSchedule || isFetchingDayDetails ? "Đang thêm..." : "Thêm bài tập"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -93,6 +93,16 @@ Dưới đây là phân tích chi tiết ý nghĩa và vai trò của các commi
     - Vá lỗi xác thực: Sửa lỗi trích xuất token tại `authRequire.js` từ `slice(6)` thành `slice(7)` để khớp chính xác độ dài của chuỗi `"Bearer "`.
 *   **Ý nghĩa**: Làm sạch đáng kể cấu trúc mã nguồn ở cả hai phía Client/Server, nâng cao khả năng bảo trì hệ thống và đảm bảo tính đồng bộ kiến trúc.
 
+### 18. `feat/refactor: modularize roadmap page (Direction B), enforce time-relative completion rules, update program covers, and write roadmap documentation`
+*   **Hành động**:
+    - Phân rã trang chính Roadmap (`index.jsx`) thành các component con tự trị chuyên biệt (`PlanSelector.jsx`, `SchedulerModal.jsx`, `SwapModal.jsx`, `CancelModal.jsx`, `CalendarSlider.jsx`, `AnalysisSidebar.jsx`, `ExerciseList.jsx`).
+    - Đồng bộ cache RTK Query qua TagTypes (`DayDetails`, `Roadmap`, `RoadmapStats`) giúp tự động làm mới giao diện khi tạo/hủy lộ trình mà không bị lưu cache cũ.
+    - Áp dụng logic chỉ cho phép Hoàn tất buổi tập vào ngày hiện tại, tự động hiển thị checkmark tích xanh hoàn thành cho các ngày quá khứ.
+    - Thiết kế viền sáng neon và hiệu ứng phóng to/đổ bóng cho các ô nhập Sets/Reps/Weight khi chỉnh sửa bài tập trực quan.
+    - Đẩy 4 ảnh bìa chất lượng cao cho các lộ trình mặc định lên Cloudinary và seed database qua Prisma.
+    - Viết tài liệu thiết kế kỹ thuật chi tiết tại `Report/Page_Roadmap_Documentation.md`.
+*   **Ý nghĩa**: Tinh giản tối đa mã nguồn trang lộ trình chính giúp dễ bảo trì, hoàn thiện logic nghiệp vụ quản lý thời gian tập luyện và tăng cường tính thẩm mỹ cao cấp (Premium Aesthetics) cho giao diện.
+
 ---
 
 ## 🛠️ 2. Nguyên Tắc Cập Nhật Commit Chuẩn Mực

@@ -7,32 +7,46 @@
  * @returns {object} { message: string, isSystemError: boolean }
  */
 export const parseApiError = (err, fallbackMsg = "Đã xảy ra lỗi, vui lòng thử lại.") => {
-  // 1. Kiểm tra lỗi Validation trả về từ Backend (dạng object errors)
+  // 1. Kiểm tra lỗi mất kết nối máy chủ hoặc lỗi hệ thống nghiêm trọng
+  const msg = err?.data?.message || "";
+  const lowerMsg = msg.toLowerCase();
+
+  const isNetworkOrSystemError =
+    !err ||
+    !err.status ||
+    err.status === 500 ||
+    err.status === "FETCH_ERROR" ||
+    err.status === "TIMEOUT_ERROR" ||
+    lowerMsg.includes("prisma") ||
+    lowerMsg.includes("sql") ||
+    lowerMsg.includes("database") ||
+    lowerMsg.includes("column") ||
+    lowerMsg.includes("table") ||
+    (typeof err.data === "string" && (
+      err.data.toLowerCase().includes("network error") ||
+      err.data.toLowerCase().includes("failed to fetch") ||
+      err.data.toLowerCase().includes("connection")
+    )) ||
+    (err.message && (
+      err.message.toLowerCase().includes("network error") ||
+      err.message.toLowerCase().includes("failed to fetch") ||
+      err.message.toLowerCase().includes("connection")
+    ));
+
+  if (isNetworkOrSystemError) {
+    return {
+      message: "Máy chủ đang bảo trì hoặc đang bận. Vui lòng thử lại sau.",
+      isSystemError: true,
+    };
+  }
+
+  // 2. Kiểm tra lỗi Validation trả về từ Backend (dạng object errors)
   if (err?.data?.errors) {
     const firstErrorKey = Object.keys(err.data.errors)[0];
     const errorMsg = err.data.errors[firstErrorKey][0];
     return {
       message: errorMsg || "Dữ liệu không hợp lệ.",
       isSystemError: false,
-    };
-  }
-
-  // 2. Kiểm tra thông điệp lỗi dạng chuỗi
-  const msg = err?.data?.message || "";
-  const lowerMsg = msg.toLowerCase();
-
-  // Phát hiện lỗi hệ thống/cơ sở dữ liệu thô (Prisma, SQL, Database, v.v.) hoặc lỗi status 500
-  if (
-    err?.status === 500 ||
-    lowerMsg.includes("prisma") ||
-    lowerMsg.includes("sql") ||
-    lowerMsg.includes("database") ||
-    lowerMsg.includes("column") ||
-    lowerMsg.includes("table")
-  ) {
-    return {
-      message: "Đã xảy ra lỗi kết nối hệ thống. Vui lòng thử lại sau ít phút.",
-      isSystemError: true,
     };
   }
 

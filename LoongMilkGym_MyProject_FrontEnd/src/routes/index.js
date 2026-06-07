@@ -15,6 +15,7 @@ const NotFound = lazy(() => import("@/pages/notFound"));
 const Exercises = lazy(() => import("@/pages/exercises/index.jsx"));
 const ExerciseDetail = lazy(() => import("@/pages/exercises/detail/index.jsx"));
 const Dashboard = lazy(() => import("@/pages/dashboard/index.jsx"));
+const Roadmap = lazy(() => import("@/pages/roadmap/index.jsx"));
 
 // Layouts
 import { DefaultLayout, AuthLayout, MessageLayout } from "@/layouts";
@@ -40,6 +41,7 @@ const publicRoutes = [
 const privateRoutes = [
   { path: paths.profile, component: Profile, layout: DefaultLayout, guard: AuthGuard },
   { path: paths.dashboard, component: Dashboard, layout: DefaultLayout, guard: AuthGuard },
+  { path: paths.roadmap, component: Roadmap, layout: DefaultLayout, guard: AuthGuard },
 ];
 
 export { publicRoutes, privateRoutes };

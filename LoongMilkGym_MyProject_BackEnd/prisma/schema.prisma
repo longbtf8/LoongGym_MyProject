@@ -33,6 +33,8 @@ model User {
   revokedTokens   RevokedTokens[]
   refreshTokens   RefreshTokens[]
 
+  trainingPlans   UserTrainingPlan[]
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -43,21 +45,23 @@ model UserProfile {
   id     String @id @default(uuid())
   userId String @unique @map("user_id")
 
-  fullName       String?   @map("full_name")
-  avatarUrl      String?   @map("avatar_url")
-  phone          String?
-  address        String?
-  gender         String?
-  birthDate      DateTime? @map("birth_date")
-  heightCm       Float?    @map("height_cm")
-  weightKg       Float?    @map("weight_kg")
-  heightUnit     String?   @default("cm") @map("height_unit")
-  weightUnit     String?   @default("kg") @map("weight_unit")
-  membershipTier String?   @default("Standard") @map("membership_tier")
-  fitnessLevel   String?   @map("fitness_level")
-  goal           String?
-  bio            String?
-  calorieGoal    Int?      @map("calorie_goal")
+  fullName           String?   @map("full_name")
+  avatarUrl          String?   @map("avatar_url")
+  phone              String?
+  address            String?
+  gender             String?
+  birthDate          DateTime? @map("birth_date")
+  heightCm           Float?    @map("height_cm")
+  weightKg           Float?    @map("weight_kg")
+  heightUnit         String?   @default("cm") @map("height_unit")
+  weightUnit         String?   @default("kg") @map("weight_unit")
+  membershipTier     String?   @default("Standard") @map("membership_tier")
+  fitnessLevel       String?   @map("fitness_level")
+  goal               String?
+  bio                String?
+  calorieGoal        Int?      @map("calorie_goal")
+  totalWorkoutDays   Int       @default(0) @map("total_workout_days")
+  totalCaloriesBurned Float     @default(0) @map("total_calories_burned")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -150,6 +154,7 @@ model MuscleGroup {
   name     String  @db.VarChar(100) /// Tên nhóm cơ (ví dụ: Ngực, Lưng, Chân)
   slug     String  @unique @db.VarChar(100) /// Đường dẫn thân thiện (ví dụ: nguc, lung, chan)
   parentId String? @map("parent_id") /// Mã nhóm cơ cha (null nếu là nhóm gốc)
+  imageUrl String? @map("image_url") @db.Text /// Đường dẫn ảnh bản đồ cơ bắp
 
   parent   MuscleGroup?  @relation("MuscleGroupHierarchy", fields: [parentId], references: [id])
   children MuscleGroup[] @relation("MuscleGroupHierarchy") /// Danh sách nhóm cơ con
@@ -196,6 +201,8 @@ model Exercise {
   steps          ExerciseStep[] /// Các bước hướng dẫn thực hiện
   commonMistakes ExerciseCommonMistake[] /// Các lỗi kỹ thuật thường gặp
   tags           ExerciseTag[] /// Các thẻ phân loại bài tập
+
+  workoutTemplateExercises WorkoutTemplateExercise[]
 
   createdAt DateTime @default(now()) @map("created_at") /// Ngày tạo bản ghi
   updatedAt DateTime @updatedAt @map("updated_at") /// Ngày cập nhật gần nhất
@@ -256,4 +263,110 @@ model ExerciseTag {
   exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
 
   @@map("exercise_tags")
+}
+
+
+
+
+
+
+// NHÓM 3 BẢNG LỘ TRÌNH TẬP LUYỆN
+model WorkoutProgram {
+  id            String              @id @default(uuid())
+  title         String              @db.VarChar(200)
+  slug          String              @unique @db.VarChar(200)
+  description   String?             @db.Text
+  goal          String?             @db.VarChar(50)
+  difficulty    String?             @db.VarChar(30)
+  coverImageUrl String?             @map("cover_image_url") @db.Text
+  createdBy     String?             @map("created_by")
+  isPublished   Boolean             @default(false) @map("is_published")
+  price         Decimal             @default(0) @db.Decimal(12, 2)
+  metadata      Json                @default("{}")
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
+  days          WorkoutProgramDay[]
+  userPlans     UserTrainingPlan[]
+
+  @@map("workout_programs")
+}
+
+model WorkoutProgramDay {
+  id          String            @id @default(uuid())
+  programId   String            @map("program_id")
+  program     WorkoutProgram    @relation(fields: [programId], references: [id], onDelete: Cascade)
+  cycleDay    Int               @map("cycle_day")
+  title       String            @db.VarChar(150)
+  description String?           @db.Text
+  focusArea    String?           @map("focus_area") @db.VarChar(100)
+  muscleMapUrl String?           @map("muscle_map_url") @db.Text
+  createdAt    DateTime          @default(now()) @map("created_at")
+  templates   WorkoutTemplate[]
+
+  @@unique([programId, cycleDay])
+  @@map("workout_program_days")
+}
+
+model WorkoutTemplate {
+  id                       String                    @id @default(uuid())
+  programDayId             String?                   @map("program_day_id")
+  programDay               WorkoutProgramDay?        @relation(fields: [programDayId], references: [id], onDelete: Cascade)
+  title                    String                    @db.VarChar(150)
+  description              String?                   @db.Text
+  estimatedDurationMinutes Int?                      @map("estimated_duration_minutes")
+  createdAt                DateTime                  @default(now()) @map("created_at")
+  exercises                WorkoutTemplateExercise[]
+
+  @@map("workout_templates")
+}
+
+model WorkoutTemplateExercise {
+  id                String          @id @default(uuid())
+  workoutTemplateId String          @map("workout_template_id")
+  template          WorkoutTemplate @relation(fields: [workoutTemplateId], references: [id], onDelete: Cascade)
+  exerciseId        String          @map("exercise_id")
+  exercise          Exercise        @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  exerciseOrder     Int             @map("exercise_order")
+  sets              Int?
+  repsMin           Int?            @map("reps_min")
+  repsMax           Int?            @map("reps_max")
+  weightKg          Decimal?        @map("weight_kg") @db.Decimal(6, 2)
+  restSeconds       Int?            @map("rest_seconds")
+  tempo             String?         @db.VarChar(30)
+  note              String?         @db.Text
+
+  @@map("workout_template_exercises")
+}
+
+model UserTrainingPlan {
+  id          String                @id @default(uuid())
+  userId      String                @map("user_id")
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  programId   String?               @map("program_id")
+  program     WorkoutProgram?       @relation(fields: [programId], references: [id], onDelete: SetNull)
+  title       String                @db.VarChar(200)
+  startDate   DateTime              @map("start_date") @db.Date
+  status      String                @default("active") @db.VarChar(30)
+  aiGenerated Boolean               @default(false) @map("ai_generated")
+  aiPrompt    String?               @map("ai_prompt") @db.Text
+  metadata    Json                  @default("{}")
+  createdAt   DateTime              @default(now()) @map("created_at")
+  days        UserTrainingPlanDay[]
+
+  @@map("user_training_plans")
+}
+
+model UserTrainingPlanDay {
+  id                 String           @id @default(uuid())
+  userTrainingPlanId String           @map("user_training_plan_id")
+  plan               UserTrainingPlan @relation(fields: [userTrainingPlanId], references: [id], onDelete: Cascade)
+  scheduledDate      DateTime         @map("scheduled_date") @db.Date
+  title              String           @db.VarChar(150)
+  status             String           @default("pending") @db.VarChar(30)
+  skipReason         String?          @map("skip_reason") @db.VarChar(100)
+  notes              String?          @db.Text
+  metadata           Json             @default("{}")
+  createdAt          DateTime         @default(now()) @map("created_at")
+
+  @@map("user_training_plan_days")
 }

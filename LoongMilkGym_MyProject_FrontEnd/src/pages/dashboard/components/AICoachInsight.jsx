@@ -10,7 +10,7 @@ function AICoachInsight() {
         </div>
         <div>
           <h3 className="text-xs sm:text-sm font-black text-[var(--text-color)] tracking-wider uppercase m-0 leading-none">AI Coach Insight</h3>
-          <span className="text-[9px] text-[var(--text-muted)] font-extrabold mt-1 block">Vừa cập nhật</span>
+          <span className="text-[9px] text-primary font-black mt-1 block">Vừa cập nhật</span>
         </div>
       </div>
 
@@ -18,7 +18,7 @@ function AICoachInsight() {
         "Hôm nay recovery tốt, tập buổi Push với cường độ trung bình để tối ưu hóa sự phát triển cơ bắp mà không gây quá tải."
       </div>
 
-      <button className="w-full py-3 bg-[var(--bg-color)] border border-[var(--border-color)] hover:border-primary/45 rounded-2xl text-xs font-bold text-[var(--text-color)] hover:text-primary transition-all flex items-center justify-center gap-2 cursor-pointer">
+      <button className="w-full py-3 bg-[var(--bg-color)] border border-[var(--border-color)] hover:border-primary/45 rounded-2xl text-xs font-bold text-[var(--text-color)] hover:text-[var(--text-primary)] transition-all flex items-center justify-center gap-2 cursor-pointer">
         Hỏi AI Coach
         <ArrowRight className="w-3.5 h-3.5" />
       </button>

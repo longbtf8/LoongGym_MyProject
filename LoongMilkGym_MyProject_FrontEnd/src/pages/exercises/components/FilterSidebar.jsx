@@ -55,7 +55,7 @@ export default function FilterSidebar({
         <h2 className="text-xl font-bold text-[var(--text-color)]">Bộ lọc thông minh</h2>
         <button
           onClick={resetFilters}
-          className="text-xs text-[var(--text-muted)] hover:text-[#ccff00] flex items-center gap-1 transition-colors cursor-pointer"
+          className="text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] flex items-center gap-1 transition-colors cursor-pointer"
           title="Đặt lại bộ lọc"
         >
           <RotateCcw size={13} />

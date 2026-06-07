@@ -9,6 +9,7 @@ const paths = {
   exercises: "/exercises",
   exerciseDetail: "/exercises/:slug",
   dashboard: "/dashboard",
+  roadmap: "/roadmap",
 };
 
 export default paths;

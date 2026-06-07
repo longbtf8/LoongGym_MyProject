@@ -16,6 +16,7 @@
   --border-color: #e5e7eb;
   --input-bg: #eceff1;
   --input-focus-border: #b5e600;
+  --text-primary: #4d7c0f; /* Xanh lục đậm dễ đọc trên nền sáng */
 }
 
 [data-theme="dark"] {
@@ -26,6 +27,7 @@
   --border-color: #2a2a2a;
   --input-bg: #1e1e1e;
   --input-focus-border: #ccff00;
+  --text-primary: #ccff00; /* Xanh chuối neon nổi bật trên nền tối */
 }
 
 body {
@@ -102,5 +104,10 @@ body {
 
 .animate-slide-up {
   animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Tự động tối ưu hóa độ tương phản cho text-primary ở chế độ sáng */
+.text-primary {
+  color: var(--text-primary) !important;
 }
 

@@ -23,7 +23,7 @@ function LoadingScreen() {
 
       {/* Label thương hiệu chuyển màu */}
       <h2 className="mt-6 text-lg font-black tracking-widest uppercase m-0 flex items-center">
-        <span className="text-primary">Loong</span>
+        <span className="text-[#ccff00]">Loong</span>
         <span className="text-[var(--text-color)]">Milk</span>
         <span className="text-[#00f5d4]">Gym</span>
       </h2>

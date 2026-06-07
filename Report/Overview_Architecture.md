@@ -32,6 +32,7 @@ src/
 │   │   └── profile/      # Hồ sơ cá nhân (Đã được mô-đun hóa cực kỳ tối ưu)
 │   ├── auth/             # Đăng nhập, đăng ký, xác thực, khôi phục mật khẩu
 │   ├── exercises/        # Thư viện bài tập & Chi tiết bài tập (Mới thêm)
+│   ├── roadmap/          # Lộ trình & Tracker tập luyện (Mô-đun hóa Direction B)
 │   └── home/             # Trang chủ giới thiệu
 ├── services/             # Lớp kết nối API bằng RTK Query (authApi, exerciseApi,...)
 ├── store/                # Quản lý global State (Redux Toolkit store)
@@ -100,5 +101,6 @@ sequenceDiagram
 *   **Tích hợp Lưu Trữ Đám Mây (Cloudinary)**: 
     *   Hồ sơ người dùng hỗ trợ upload Avatar trực tiếp lên Cloudinary. Khi có Avatar mới, hệ thống tự động gọi API Cloudinary để hủy bỏ (destroy) tệp tin ảnh cũ dựa trên `public_id`, giải phóng bộ nhớ.
     *   Thư viện bài tập (21 bài tập chính) sử dụng ảnh mẫu chất lượng cao được lưu trữ tập trung trên thư mục `LoongMilkGym_APP/exercises` của Cloudinary và đồng bộ hóa qua DB MySQL.
+    *   Giáo án lộ trình có sẵn sử dụng ảnh bìa gym/fitness chất lượng cao lưu trữ tại `LoongMilkGym_APP/program_covers` trên Cloudinary và được đồng bộ hóa qua DB thông qua cơ chế seed database.
 
 *   **Bảo mật dữ liệu**: Hệ thống không lưu trữ mật khẩu hay khóa thô. Lớp bảo mật `exceptionHandler` chặn đứng toàn bộ mã lỗi kỹ thuật của Prisma/SQL để tránh rò rỉ cấu trúc DB ra ngoài Internet.

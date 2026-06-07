@@ -6,11 +6,26 @@ import SortDropdown from "./components/SortDropdown";
 import Pagination from "./components/Pagination";
 import { useExerciseFilters } from "./hooks/useExerciseFilters";
 import { useGetExercisesQuery, useGetMuscleGroupsQuery, useGetEquipmentQuery } from "@/services/exercise/exerciseApi";
-import { Info, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
+import { useGetActivePlanQuery, useLazyGetDayDetailsQuery, useUpdateDayDetailsMutation } from "@/services/roadmap/roadmapApi";
+import { CalendarPlus, Check, Info, RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
+
+const FAVORITE_EXERCISES_KEY = "loongmilk.favoriteExercises";
+
+const getStoredFavorites = () => {
+  try {
+    return JSON.parse(localStorage.getItem(FAVORITE_EXERCISES_KEY) || "[]");
+  } catch (error) {
+    return [];
+  }
+};
 
 export default function Exercises() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState(getStoredFavorites);
+  const [scheduleModalExercise, setScheduleModalExercise] = useState(null);
+  const [selectedScheduleDayId, setSelectedScheduleDayId] = useState("");
+  const [scheduleMessage, setScheduleMessage] = useState("");
 
   const {
     searchTerm,
@@ -30,6 +45,9 @@ export default function Exercises() {
   // Gọi các API lấy dữ liệu bổ trợ để render thanh trượt nhóm cơ & bottom sheet trên mobile
   const { data: muscleGroupsData } = useGetMuscleGroupsQuery();
   const { data: equipmentData, isLoading: loadingEquipment } = useGetEquipmentQuery();
+  const { data: activePlanRes, isFetching: isFetchingPlan } = useGetActivePlanQuery();
+  const [getDayDetails, { isFetching: isFetchingDayDetails }] = useLazyGetDayDetailsQuery();
+  const [updateDayDetails, { isLoading: isAddingToSchedule }] = useUpdateDayDetailsMutation();
   
   const muscleGroups = muscleGroupsData?.data || [];
   const equipmentList = equipmentData?.data || [];
@@ -46,13 +64,18 @@ export default function Exercises() {
     difficulty: difficulty || undefined,
     muscle: selectedMuscles.length > 0 ? selectedMuscles.join(",") : undefined,
     equipment: selectedEquipment.length > 0 ? selectedEquipment.join(",") : undefined,
-    sort,
+    sort: sort === "favorite" ? "popular" : sort,
     page,
     limit: 8 // Đổi thành 8 hoặc số chẵn để grid 2 cột trên mobile chia đều không bị lẻ dòng cuối
   });
 
-  const exercises = exercisesData?.data?.data || [];
+  const rawExercises = exercisesData?.data?.data || [];
+  const exercises = sort === "favorite"
+    ? [...rawExercises].sort((a, b) => Number(favoriteIds.includes(b.id)) - Number(favoriteIds.includes(a.id)))
+    : rawExercises;
   const pagination = exercisesData?.data?.pagination || { total: 0, page: 1, limit: 8, totalPages: 1 };
+  const activePlan = activePlanRes?.data;
+  const scheduleDays = activePlan?.days || [];
 
   // Xử lý click chọn nhanh Nhóm cơ trên thanh trượt ngang Mobile
   const handleMuscleChipClick = (slug) => {
@@ -67,8 +90,75 @@ export default function Exercises() {
     });
   };
 
+  const toggleFavorite = (exerciseId) => {
+    setFavoriteIds((prev) => {
+      const next = prev.includes(exerciseId)
+        ? prev.filter((id) => id !== exerciseId)
+        : [...prev, exerciseId];
+      localStorage.setItem(FAVORITE_EXERCISES_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const openScheduleModal = (exercise) => {
+    setScheduleModalExercise(exercise);
+    setScheduleMessage("");
+    setSelectedScheduleDayId(scheduleDays.find((day) => day.status !== "completed")?.id || scheduleDays[0]?.id || "");
+  };
+
+  const handleAddExerciseToDay = async () => {
+    if (!scheduleModalExercise || !selectedScheduleDayId) return;
+
+    try {
+      const dayDetailsRes = await getDayDetails(selectedScheduleDayId).unwrap();
+      const dayExercises = dayDetailsRes?.data?.exercises || [];
+      const cleanExercises = dayExercises.map((ex, index) => ({
+        id: ex.id,
+        exerciseId: ex.exerciseId,
+        exerciseOrder: ex.exerciseOrder || index + 1,
+        sets: ex.sets || 3,
+        repsMin: ex.repsMin || 8,
+        repsMax: ex.repsMax || 12,
+        weightKg: ex.weightKg || 0,
+        restSeconds: ex.restSeconds || 90,
+        tempo: ex.tempo || "2-0-1-0",
+        note: ex.note || ""
+      }));
+
+      await updateDayDetails({
+        dayId: selectedScheduleDayId,
+        data: {
+          metadata: {
+            customExercises: [
+              ...cleanExercises,
+              {
+                exerciseId: scheduleModalExercise.id,
+                exerciseOrder: cleanExercises.length + 1,
+                sets: 3,
+                repsMin: 8,
+                repsMax: 12,
+                weightKg: 0,
+                restSeconds: 90,
+                tempo: "2-0-1-0",
+                note: "Thêm từ thư viện bài tập"
+              }
+            ]
+          }
+        }
+      }).unwrap();
+
+      setScheduleMessage("Đã thêm bài tập vào ngày đã chọn.");
+      setTimeout(() => {
+        setScheduleModalExercise(null);
+        setScheduleMessage("");
+      }, 900);
+    } catch (err) {
+      setScheduleMessage("Không thể thêm bài tập. Hãy đăng nhập và tạo lộ trình trước.");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] py-6 sm:py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+    <div className="sm:min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] py-6 sm:py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto flex flex-col gap-6 sm:gap-8">
         
         {/* Header Section */}
@@ -172,7 +262,7 @@ export default function Exercises() {
           <main className="flex-1 w-full">
             {isLoading || isFetching ? (
               // Trạng thái tải bài tập (Skeleton Grid) có chiều cao tối thiểu để khóa vị trí phân trang
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 min-h-[850px] sm:min-h-[1300px] lg:min-h-[1100px]">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 sm:min-h-[1300px] lg:min-h-[1100px]">
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl sm:rounded-2xl overflow-hidden animate-pulse">
                     <div className="aspect-video w-full bg-[var(--border-color)]/30"></div>
@@ -186,7 +276,7 @@ export default function Exercises() {
               </div>
             ) : error ? (
               // Màn hình báo lỗi
-              <div className="flex flex-col items-center justify-center py-16 px-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl text-center min-h-[850px] sm:min-h-[1300px] lg:min-h-[1100px]">
+              <div className="flex flex-col items-center justify-center py-16 px-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl text-center sm:min-h-[1300px] lg:min-h-[1100px]">
                 <Info className="text-rose-500 mb-4" size={40} />
                 <p className="text-lg font-bold text-[var(--text-color)] mb-2">Đã có lỗi xảy ra</p>
                 <p className="text-sm text-[var(--text-muted)] mb-4">Không thể lấy thông tin bài tập từ server.</p>
@@ -200,7 +290,7 @@ export default function Exercises() {
               </div>
             ) : exercises.length === 0 ? (
               // Trạng thái tìm kiếm không có kết quả
-              <div className="flex flex-col items-center justify-center py-20 px-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl text-center min-h-[850px] sm:min-h-[1300px] lg:min-h-[1100px]">
+              <div className="flex flex-col items-center justify-center py-20 px-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl text-center sm:min-h-[1300px] lg:min-h-[1100px]">
                 <Info className="text-[#ccff00] mb-4" size={40} />
                 <p className="text-lg font-bold text-[var(--text-color)] mb-2">Không tìm thấy bài tập nào</p>
                 <p className="text-sm text-[var(--text-muted)] mb-6 max-w-md">
@@ -216,10 +306,16 @@ export default function Exercises() {
               </div>
             ) : (
               // Grid bài tập hiển thị (Có min-h đảm bảo vị trí phân trang không đổi)
-              <div className="flex flex-col justify-between min-h-[850px] sm:min-h-[1300px] lg:min-h-[1100px]">
+              <div className="flex flex-col justify-between sm:min-h-[1300px] lg:min-h-[1100px]">
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
                   {exercises.map((exercise) => (
-                    <ExerciseCard key={exercise.id} exercise={exercise} />
+                    <ExerciseCard
+                      key={exercise.id}
+                      exercise={exercise}
+                      isFavorite={favoriteIds.includes(exercise.id)}
+                      onToggleFavorite={toggleFavorite}
+                      onAddToSchedule={openScheduleModal}
+                    />
                   ))}
                 </div>
                 
@@ -329,6 +425,80 @@ export default function Exercises() {
                 Áp dụng
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {scheduleModalExercise && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-5 shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-[var(--border-color)] pb-3">
+              <div>
+                <h3 className="text-base font-extrabold flex items-center gap-2">
+                  <CalendarPlus className="w-5 h-5 text-primary" />
+                  Thêm vào lịch tập
+                </h3>
+                <p className="text-xs text-[var(--text-muted)] mt-1 line-clamp-1">{scheduleModalExercise.name}</p>
+              </div>
+              <button
+                onClick={() => setScheduleModalExercise(null)}
+                className="w-8 h-8 rounded-lg border border-[var(--border-color)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-color)] cursor-pointer"
+                title="Đóng"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="py-4 flex flex-col gap-3">
+              <div className="text-xs text-[var(--text-muted)] leading-relaxed bg-[var(--bg-color)] border border-[var(--border-color)] rounded-xl p-3">
+                Chọn ngày muốn thêm bài. Gợi ý: đặt bài nặng vào đầu buổi, giữ 3 hiệp x 8-12 lần lặp rồi chỉnh lại trong trang Lộ trình.
+              </div>
+
+              {isFetchingPlan ? (
+                <div className="py-6 text-center text-sm text-[var(--text-muted)]">Đang tải lịch tập...</div>
+              ) : scheduleDays.length === 0 ? (
+                <div className="py-6 text-center text-sm text-[var(--text-muted)]">
+                  Bạn chưa có lộ trình. Hãy tạo lộ trình ở trang Lộ trình trước.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto pr-1">
+                  {scheduleDays.map((day, index) => {
+                    const date = new Date(day.scheduledDate);
+                    const isSelected = selectedScheduleDayId === day.id;
+                    return (
+                      <button
+                        key={day.id}
+                        onClick={() => setSelectedScheduleDayId(day.id)}
+                        className={`text-left rounded-xl border p-3 transition cursor-pointer ${
+                          isSelected
+                            ? "bg-primary text-black border-primary"
+                            : "bg-[var(--bg-color)] border-[var(--border-color)] text-[var(--text-color)] hover:border-primary/50"
+                        }`}
+                      >
+                        <span className="block text-[10px] font-black uppercase opacity-70">Ngày {index + 1}</span>
+                        <span className="block text-xs font-bold line-clamp-1">{day.title}</span>
+                        <span className="block text-[10px] opacity-70 mt-1">{date.toLocaleDateString("vi-VN")}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {scheduleMessage && (
+                <div className="flex items-center gap-2 text-xs font-bold text-primary">
+                  <Check size={14} />
+                  {scheduleMessage}
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={handleAddExerciseToDay}
+              disabled={!selectedScheduleDayId || isAddingToSchedule || isFetchingDayDetails}
+              className="w-full h-11 rounded-xl bg-primary text-black text-sm font-black hover:bg-primary-hover disabled:opacity-60 cursor-pointer"
+            >
+              {isAddingToSchedule || isFetchingDayDetails ? "Đang thêm..." : "Thêm bài tập"}
+            </button>
           </div>
         </div>
       )}

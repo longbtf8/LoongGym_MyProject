@@ -82,7 +82,7 @@ function NutritionTracker({ nutrition }) {
         </div>
       </div>
 
-      <button className="w-full py-3.5 bg-transparent border border-[var(--border-color)] hover:border-primary text-[var(--text-color)] hover:bg-primary hover:text-black font-extrabold text-sm rounded-2xl transition-all duration-200 active:scale-95 cursor-pointer mt-6 flex items-center justify-center gap-2">
+      <button className="w-full py-3.5 bg-transparent border border-[var(--border-color)] hover:border-primary text-[var(--text-color)] hover:bg-primary/10 hover:text-[var(--text-primary)] font-extrabold text-sm rounded-2xl transition-all duration-200 active:scale-95 cursor-pointer mt-6 flex items-center justify-center gap-2">
         <Plus className="w-4 h-4" />
         Thêm bữa ăn
       </button>

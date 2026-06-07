@@ -11,6 +11,7 @@ export default function SortDropdown({ sort, setSort }) {
 
   const options = [
     { value: "popular", label: "Phổ biến nhất" },
+    { value: "favorite", label: "Đã yêu thích" },
     { value: "newest", label: "Mới nhất" },
     { value: "name-asc", label: "Tên A → Z" }
   ];

@@ -125,3 +125,9 @@ Trang tổng quan cá nhân `/dashboard` được thiết kế theo xu hướng 
 *   **Trang Chi tiết Bài tập (`ExerciseDetail`)**:
     -   Tên bài tập (`exercise.name`) được điều chỉnh từ `text-3xl sm:text-4xl` sang `text-2xl sm:text-4xl`. Cách làm này đảm bảo các bài tập có tên dài (ví dụ: "Dumbbell Incline Bicep Curl") không bị vỡ bố cục thành 3-4 dòng chữ khổng lồ trên màn hình dọc của điện thoại.
 
+---
+
+## 🧭 9. Phân Hệ Lộ Trình & Tracker Tập Luyện (Roadmap Module)
+Để biết thêm chi tiết thiết kế hệ thống, nguyên lý hoạt động và giải pháp mô-đun hóa độc lập (Direction B) của trang Lộ trình tập luyện, vui lòng tham khảo tài liệu [Page_Roadmap_Documentation.md](Page_Roadmap_Documentation.md).
+
+
