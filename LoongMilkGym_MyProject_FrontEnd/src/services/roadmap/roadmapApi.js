@@ -83,6 +83,37 @@ export const roadmapApi = createApi({
       }),
       invalidatesTags: (result, error, { dayId }) => ["Roadmap", "RoadmapStats", { type: "DayDetails", id: dayId }],
     }),
+    startTrainingPlan: builder.mutation({
+      query: (data) => ({
+        url: "/me/training-plans",
+        method: "POST",
+        data,
+      }),
+      invalidatesTags: ["Roadmap", "RoadmapStats", "DayDetails"],
+    }),
+    getCurrentPlan: builder.query({
+      query: () => ({
+        url: "/me/training-plans/current",
+        method: "GET",
+      }),
+      providesTags: ["Roadmap"],
+    }),
+    getTrainingPlanDays: builder.query({
+      query: (params) => ({
+        url: "/me/training-plan-days",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["Roadmap"],
+    }),
+    updateTrainingPlanDayStatus: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/me/training-plan-days/${id}/status`,
+        method: "PATCH",
+        data,
+      }),
+      invalidatesTags: (result, error, { id }) => ["Roadmap", { type: "DayDetails", id }],
+    }),
   }),
 });
 
@@ -99,4 +130,8 @@ export const {
   useLazyGetDayDetailsQuery,
   useUpdateDayDetailsMutation,
   useCompleteDayMutation,
+  useStartTrainingPlanMutation,
+  useGetCurrentPlanQuery,
+  useGetTrainingPlanDaysQuery,
+  useUpdateTrainingPlanDayStatusMutation,
 } = roadmapApi;

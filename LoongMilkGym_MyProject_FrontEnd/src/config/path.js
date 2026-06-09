@@ -10,6 +10,8 @@ const paths = {
   exerciseDetail: "/exercises/:slug",
   dashboard: "/dashboard",
   roadmap: "/roadmap",
+  myPlan: "/my-plan",
+  todayWorkout: "/today-workout",
 };
 
 export default paths;
