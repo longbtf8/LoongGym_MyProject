@@ -375,6 +375,9 @@ model UserTrainingPlanDay {
   @@map("user_training_plan_days")
 }
 
+
+//Nhóm 4 Phiên luyện tập
+
 model WorkoutSession {
   id              String                 @id @default(uuid())
   userId          String                 @map("user_id")

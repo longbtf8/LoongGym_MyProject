@@ -756,6 +756,30 @@ const getStats = async (userId) => {
   };
 };
 
+const getTrainingPlanDays = async (userId, { from, to }) => {
+  const startDate = new Date(from);
+  startDate.setHours(0, 0, 0, 0);
+  
+  const endDate = new Date(to);
+  endDate.setHours(23, 59, 59, 999);
+
+  return prisma.userTrainingPlanDay.findMany({
+    where: {
+      plan: {
+        userId,
+        status: "active",
+      },
+      scheduledDate: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+    orderBy: {
+      scheduledDate: "asc",
+    },
+  });
+};
+
 module.exports = {
   getActivePlan,
   startProgramPlan,
@@ -764,5 +788,6 @@ module.exports = {
   getDayDetails,
   updateDayDetails,
   completeDay,
-  getStats
+  getStats,
+  getTrainingPlanDays
 };
