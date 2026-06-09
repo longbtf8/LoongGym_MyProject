@@ -239,6 +239,30 @@ class WorkoutSessionsService {
 
     return result;
   }
+
+  async getSessionByPlanDay(userId, planDayId) {
+    const session = await prisma.workoutSession.findFirst({
+      where: {
+        userId,
+        planDayId,
+      },
+      include: {
+        exercises: {
+          orderBy: { exerciseOrder: "asc" },
+          include: {
+            exercise: true,
+            sets: {
+              orderBy: { setNumber: "asc" },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return session;
+  }
 }
 
 module.exports = new WorkoutSessionsService();

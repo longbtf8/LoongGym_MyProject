@@ -48,6 +48,13 @@ export const workoutSessionApi = createApi({
       }),
       invalidatesTags: ["WorkoutSession"],
     }),
+    getSessionByPlanDay: builder.query({
+      query: (planDayId) => ({
+        url: `/workout-sessions/by-plan-day/${planDayId}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, planDayId) => [{ type: "WorkoutSession", id: `by-day-${planDayId}` }],
+    }),
   }),
 });
 
@@ -58,4 +65,5 @@ export const {
   useAddSetMutation,
   useUpdateSetMutation,
   useCompleteSessionMutation,
+  useGetSessionByPlanDayQuery,
 } = workoutSessionApi;

@@ -68,7 +68,7 @@ const updateDayDetails = async (req, res, next) => {
 const completeDay = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const { dayId } = req.validated.params;
+    const dayId = req.params.dayId;
     const { notes } = req.body;
     const result = await userTrainingPlansService.completeDay(userId, dayId, notes);
     return res.success(result, httpCodes.success, "Hoàn tất buổi tập thành công.");

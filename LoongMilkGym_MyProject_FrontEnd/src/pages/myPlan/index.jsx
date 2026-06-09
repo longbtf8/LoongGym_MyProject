@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Dumbbell, Activity, Check, Play } from "lucide-react";
+import { Dumbbell, Activity, Check, Play, History, ChevronDown, ChevronUp } from "lucide-react";
 import { 
   useGetActivePlanQuery, 
   useGetStatsQuery,
@@ -8,6 +8,7 @@ import {
   useUpdateDayDetailsMutation, 
   useCompleteDayMutation 
 } from "@/services/roadmap/roadmapApi";
+import { useGetSessionByPlanDayQuery } from "@/services/workoutSession/workoutSessionApi";
 import LoadingScreen from "@/components/LoadingScreen";
 
 // Import modular components
@@ -49,6 +50,7 @@ export default function MyPlan() {
   };
 
   const [sessionNotes, setSessionNotes] = useState("");
+  const [showHistory, setShowHistory] = useState(false);
 
   const { data: activePlanRes, isLoading: isLoadingPlan, isError: isPlanError } = useGetActivePlanQuery();
   const { data: statsRes } = useGetStatsQuery();
@@ -68,6 +70,11 @@ export default function MyPlan() {
 
   const [updateDayDetails] = useUpdateDayDetailsMutation();
   const [completeDay, { isLoading: isCompleting }] = useCompleteDayMutation();
+
+  const { data: completedSessionRes } = useGetSessionByPlanDayQuery(selectedDayId, {
+    skip: !selectedDayId || !showHistory || dayDetails?.day?.status !== "completed"
+  });
+  const completedSession = completedSessionRes?.data;
 
   useEffect(() => {
     if (daysList.length > 0) {
@@ -97,6 +104,7 @@ export default function MyPlan() {
     if (dayDetails?.day) {
       const timer = setTimeout(() => {
         setSessionNotes(dayDetails.day.notes || "");
+        setShowHistory(false);
       }, 0);
       return () => clearTimeout(timer);
     }
@@ -300,7 +308,91 @@ export default function MyPlan() {
               <span className="text-[10px] text-[var(--text-muted)]">Dự kiến: 65 phút</span>
             </div>
 
-            {dayDetails?.day?.status !== "rest" && dayDetails?.day && (
+            {dayDetails?.day?.status === "completed" && (
+              <>
+                <div className="w-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl p-3 text-xs font-extrabold flex items-center justify-between mb-3">
+                  <span>🎉 Bạn đã hoàn thành buổi tập này!</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <button
+                    onClick={() => navigate(`/today-workout?dayId=${selectedDayId}`)}
+                    className="h-11 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-color)] rounded-xl text-xs font-black flex items-center justify-center gap-2 hover:bg-[var(--border-color)] active:scale-[0.99] transition cursor-pointer"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    Tập lại buổi này
+                  </button>
+
+                  <button
+                    onClick={() => setShowHistory(!showHistory)}
+                    className="h-11 bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 text-xs font-black rounded-xl flex items-center justify-center gap-2 transition cursor-pointer"
+                  >
+                    <History className="w-3.5 h-3.5" />
+                    {showHistory ? "Ẩn lịch sử" : "Xem lịch sử"}
+                    {showHistory ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {dayDetails?.day?.status === "completed" && showHistory && (
+              <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[20px] p-4 mb-3 flex flex-col gap-3.5">
+                <div className="flex items-center gap-2 pb-2 border-b border-[var(--border-color)]">
+                  <History className="w-4 h-4 text-primary" />
+                  <h3 className="text-xs font-black uppercase tracking-wider text-primary">Lịch sử chi tiết buổi tập</h3>
+                </div>
+                
+                {completedSession ? (
+                  <div className="flex flex-col gap-3">
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-[var(--bg-color)] p-2.5 rounded-xl border border-[var(--border-color)]">
+                        <span className="text-[10px] text-[var(--text-muted)] block">Thời lượng tập</span>
+                        <span className="font-extrabold">{completedSession.durationSeconds ? `${Math.round(completedSession.durationSeconds / 60)} phút` : "Chưa ghi nhận"}</span>
+                      </div>
+                      <div className="bg-[var(--bg-color)] p-2.5 rounded-xl border border-[var(--border-color)]">
+                        <span className="text-[10px] text-[var(--text-muted)] block">Độ khó (RPE)</span>
+                        <span className="font-extrabold text-primary">{completedSession.perceivedEffort ? `${completedSession.perceivedEffort}/10` : "Chưa đánh giá"}</span>
+                      </div>
+                    </div>
+
+                    {completedSession.notes && (
+                      <div className="bg-[var(--bg-color)] p-2.5 rounded-xl border border-[var(--border-color)] text-xs">
+                        <span className="text-[10px] text-[var(--text-muted)] block mb-1">Ghi chú buổi tập</span>
+                        <p className="m-0 italic text-[var(--text-color)]">{completedSession.notes}</p>
+                      </div>
+                    )}
+
+                    <div className="flex flex-col gap-2.5 mt-1">
+                      {completedSession.exercises?.map((se, idx) => (
+                        <div key={se.id} className="bg-[var(--bg-color)] p-3 rounded-xl border border-[var(--border-color)] flex flex-col gap-1.5">
+                          <span className="text-xs font-black block text-primary">{idx + 1}. {se.exercise?.name || "Bài tập"}</span>
+                          {se.sets && se.sets.length > 0 ? (
+                            <div className="flex flex-col gap-1">
+                              {se.sets.map((set, sIdx) => (
+                                <div key={set.id} className="flex items-center justify-between text-[11px] text-[var(--text-muted)] bg-[var(--bg-secondary)] px-2 py-1 rounded">
+                                  <span>Set {sIdx + 1} ({set.setType === "warmup" ? "Khởi động" : set.setType === "drop" ? "Dropset" : "Set chính"})</span>
+                                  <span className="font-semibold text-[var(--text-color)]">
+                                    {set.weightKg} kg × {set.reps} reps {set.rpe ? `(RPE: ${set.rpe})` : ""}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-[10px] text-[var(--text-muted)] italic">Không có set tập nào được ghi nhận.</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-xs text-[var(--text-muted)]">
+                    Đang tải thông tin lịch sử tập...
+                  </div>
+                )}
+              </div>
+            )}
+
+            {dayDetails?.day?.status !== "completed" && dayDetails?.day?.status !== "rest" && dayDetails?.day && (
               <button
                 onClick={() => navigate(`/today-workout?dayId=${selectedDayId}`)}
                 className="w-full h-11 bg-primary text-black rounded-xl text-xs font-black flex items-center justify-center gap-2 hover:bg-primary-hover active:scale-[0.99] transition cursor-pointer shadow-md shadow-primary/5 mb-3 border-0"
@@ -334,19 +426,37 @@ export default function MyPlan() {
           />
         </div>
 
-        {/* Session Notes */}
+        {/* Ghi chú buổi tập */}
         {dayDetails?.day?.status !== "rest" && (
-          <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[20px] p-3">
-            <span className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-1.5 mb-2">
-              <Activity className="w-3.5 h-3.5 text-primary" />
-              Session Notes
-            </span>
+          <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[20px] p-4 flex flex-col gap-3">
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5 text-primary" />
+                Ghi chú buổi tập (Session Notes)
+              </span>
+              <button
+                onClick={async () => {
+                  try {
+                    await updateDayDetails({
+                      dayId: selectedDayId,
+                      data: { notes: sessionNotes }
+                    }).unwrap();
+                    showToast("📝 Đã lưu ghi chú thành công!");
+                  } catch {
+                    showToast("Lỗi khi lưu ghi chú.");
+                  }
+                }}
+                className="px-3.5 py-1.5 bg-primary text-black rounded-xl text-[10px] font-black hover:bg-primary-hover transition border-0 cursor-pointer shadow-sm shadow-primary/5"
+              >
+                Lưu ghi chú
+              </button>
+            </div>
             <textarea
               rows={3}
-              placeholder="Ghi lại cảm nhận buổi tập..."
+              placeholder="Ghi lại cảm nhận, chấn thương hoặc lưu ý cho buổi tập này..."
               value={sessionNotes}
               onChange={(e) => setSessionNotes(e.target.value)}
-              className="w-full bg-[var(--bg-color)] border border-[var(--border-color)] rounded-xl p-2 text-xs text-[var(--text-color)] outline-none resize-none"
+              className="w-full bg-[var(--bg-color)] border border-[var(--border-color)] rounded-xl p-2 text-xs text-[var(--text-color)] outline-none resize-none focus:border-primary"
             />
           </div>
         )}

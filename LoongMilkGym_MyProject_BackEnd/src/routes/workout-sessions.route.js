@@ -14,5 +14,6 @@ router.post("/start", authRequire, validate(startSessionSchema), workoutSessions
 router.get("/:id", authRequire, validate(getSessionSchema), workoutSessionsController.getSession);
 router.post("/:id/exercises/:sessionExerciseId/sets", authRequire, validate(addSetSchema), workoutSessionsController.addSet);
 router.post("/:id/complete", authRequire, validate(completeSessionSchema), workoutSessionsController.completeSession);
+router.get("/by-plan-day/:planDayId", authRequire, workoutSessionsController.getSessionByPlanDay);
 
 module.exports = router;
