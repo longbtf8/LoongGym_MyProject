@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { useGetWorkoutProgramQuery, useStartProgramPlanMutation } from "@/services/roadmap/roadmapApi";
+import { useGetWorkoutProgramQuery, useStartTrainingPlanMutation } from "@/services/roadmap/roadmapApi";
 
 // SchedulerModal: Modal thiết lập phân bổ các ngày tập trong chu kỳ trước khi bắt đầu giáo án
 export default function SchedulerModal({
@@ -14,7 +14,7 @@ export default function SchedulerModal({
   const program = programRes?.data;
 
   const [schedulerDays, setSchedulerDays] = useState([]);
-  const [startProgramPlan, { isLoading: isStarting }] = useStartProgramPlanMutation();
+  const [startTrainingPlan, { isLoading: isStarting }] = useStartTrainingPlanMutation();
 
   // Initialize scheduler days order when program loaded
   useEffect(() => {
@@ -39,13 +39,13 @@ export default function SchedulerModal({
     if (!program) return;
     try {
       const dayMapping = schedulerDays.map(d => d.originalIndex);
-      await startProgramPlan({ 
+      await startTrainingPlan({ 
         programId: program.id,
         dayMapping 
       }).unwrap();
-      onSuccess("Đã bắt đầu lộ trình.");
+      onSuccess("Đã bắt đầu lịch tập.");
     } catch {
-      onSuccess("Không thể bắt đầu lộ trình này.");
+      onSuccess("Không thể bắt đầu giáo án này.");
     }
   };
 
@@ -135,7 +135,7 @@ export default function SchedulerModal({
                 disabled={isStarting}
                 className="flex-1 h-10 rounded-xl bg-primary text-black text-xs font-black hover:bg-primary-hover disabled:opacity-60 cursor-pointer"
               >
-                {isStarting ? "Đang xử lý..." : "Kích hoạt lộ trình"}
+                {isStarting ? "Đang xử lý..." : "Kích hoạt lịch tập"}
               </button>
             </div>
           </>

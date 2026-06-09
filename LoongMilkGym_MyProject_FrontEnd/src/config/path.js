@@ -9,7 +9,6 @@ const paths = {
   exercises: "/exercises",
   exerciseDetail: "/exercises/:slug",
   dashboard: "/dashboard",
-  roadmap: "/roadmap",
   myPlan: "/my-plan",
   todayWorkout: "/today-workout",
 };

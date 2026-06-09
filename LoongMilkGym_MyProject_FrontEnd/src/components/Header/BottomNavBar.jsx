@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Compass, Dumbbell, Sparkles, Menu } from "lucide-react";
+import { Home, CalendarDays, Dumbbell, Sparkles, Menu } from "lucide-react";
 import paths from "@/config/path";
 
 /**
@@ -11,7 +11,7 @@ function BottomNavBar({ showMobileMenu, setShowMobileMenu }) {
 
   const BOTTOM_NAV_ITEMS = [
     { label: "Trang chủ", path: paths.home, icon: Home },
-    { label: "Lộ trình", path: paths.roadmap, icon: Compass },
+    { label: "Lịch tập", path: paths.myPlan, icon: CalendarDays },
     { label: "Thư viện", path: paths.exercises, icon: Dumbbell },
     { label: "AI Coach", path: "/ai-coach-placeholder", icon: Sparkles },
   ];

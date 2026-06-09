@@ -13,6 +13,7 @@ import {
   MessageSquare,
   Sparkles,
   Trophy,
+  X,
 } from "lucide-react";
 import {
   useGetCurrentPlanQuery,
@@ -225,6 +226,14 @@ export default function TodayWorkout() {
       <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] py-8 px-4 w-full flex justify-center">
         <div className="max-w-[700px] w-full flex flex-col gap-5">
           
+          {/* Back button */}
+          <button
+            onClick={() => navigate(paths.myPlan)}
+            className="flex items-center gap-1 text-xs font-bold text-[var(--text-muted)] hover:text-primary self-start transition cursor-pointer bg-transparent border-0 p-0"
+          >
+            <ChevronRight className="w-3.5 h-3.5 rotate-180" /> Quay lại Lịch tập
+          </button>
+
           <div className="flex flex-col gap-2.5">
             <span className="text-[10px] uppercase font-bold text-primary tracking-widest">
               Thông tin buổi tập hôm nay
@@ -315,6 +324,14 @@ export default function TodayWorkout() {
     <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] py-8 px-4 w-full flex justify-center">
       <div className="max-w-[750px] w-full flex flex-col gap-5">
         
+        {/* Back button */}
+        <button
+          onClick={() => navigate(paths.myPlan)}
+          className="flex items-center gap-1 text-xs font-bold text-[var(--text-muted)] hover:text-primary self-start transition cursor-pointer bg-transparent border-0 p-0"
+        >
+          <ChevronRight className="w-3.5 h-3.5 rotate-180" /> Quay lại Lịch tập
+        </button>
+
         {/* Floating live status header */}
         <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4 shadow-md">
           <div className="flex items-center gap-3">

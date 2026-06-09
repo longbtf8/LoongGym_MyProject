@@ -13,6 +13,7 @@ import {
   XCircle,
   Dumbbell,
   Sparkles,
+  Clock,
 } from "lucide-react";
 import {
   useGetCurrentPlanQuery,
@@ -23,9 +24,10 @@ import {
   useUpdateTrainingPlanDayStatusMutation,
   useCancelActivePlanMutation,
 } from "@/services/roadmap/roadmapApi";
+import { useGetSessionQuery } from "@/services/workoutSession/workoutSessionApi";
 import LoadingScreen from "@/components/LoadingScreen";
 import paths from "@/config/path";
-import SchedulerModal from "../roadmap/components/SchedulerModal";
+import SchedulerModal from "./components/SchedulerModal";
 
 // Helper to get start and end of a week (Monday to Sunday) based on offset in weeks from current week
 const getWeekRange = (weekOffset = 0) => {
@@ -65,6 +67,7 @@ export default function MyPlan() {
   const [selectedProgramId, setSelectedProgramId] = useState(null);
   const [customTitle, setCustomTitle] = useState("Lộ trình tự tập");
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+  const [floatingTimer, setFloatingTimer] = useState("00:00");
 
   const showToast = (message, type = "success") => {
     setToast({ show: true, message, type });
@@ -72,6 +75,34 @@ export default function MyPlan() {
   };
 
   const { from, to } = getWeekRange(weekOffset);
+
+  // Active session tracking inside localStorage for Floating Active Bar
+  const activeSessionIdInStorage = localStorage.getItem("active_workout_session_id");
+  const { data: floatingSessionRes } = useGetSessionQuery(activeSessionIdInStorage, {
+    skip: !activeSessionIdInStorage,
+  });
+  const floatingSession = floatingSessionRes?.data;
+
+  // Running timer for Floating Active Bar
+  useEffect(() => {
+    let interval = null;
+    if (floatingSession && floatingSession.status === "in_progress") {
+      const startTime = new Date(floatingSession.startedAt || floatingSession.createdAt).getTime();
+      const updateTimer = () => {
+        const diff = Math.max(Math.round((Date.now() - startTime) / 1000), 0);
+        const hrs = Math.floor(diff / 3600);
+        const mins = Math.floor((diff % 3600) / 60);
+        const secs = diff % 60;
+        const pad = (n) => String(n).padStart(2, "0");
+        setFloatingTimer(hrs > 0 ? `${hrs}:${pad(mins)}:${pad(secs)}` : `${pad(mins)}:${pad(secs)}`);
+      };
+      updateTimer();
+      interval = setInterval(updateTimer, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [floatingSession]);
 
   // Queries & Mutations
   const { data: currentPlanRes, isLoading: isLoadingPlan } = useGetCurrentPlanQuery();
@@ -508,6 +539,37 @@ export default function MyPlan() {
           }`}>
             {toast.type === "error" ? <XCircle className="w-4 h-4" /> : <Check className="w-4 h-4 text-primary" />}
             <span className="text-xs font-bold">{toast.message}</span>
+          </div>
+        )}
+
+        {/* FLOATING ACTIVE WORKOUT BANNER */}
+        {floatingSession && floatingSession.status === "in_progress" && (
+          <div className="fixed bottom-20 left-1/2 -translate-x-1/2 w-[90%] max-w-[500px] bg-[var(--bg-secondary)] border border-primary/45 rounded-2xl p-4 flex items-center justify-between shadow-2xl z-[150] animate-slide-up">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
+                <Dumbbell className="w-4 h-4 text-primary animate-bounce" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[9px] uppercase font-black text-primary tracking-widest">
+                  Buổi tập đang diễn ra
+                </span>
+                <span className="text-xs font-extrabold text-[var(--text-color)] truncate max-w-[150px] sm:max-w-[200px]">
+                  {floatingSession.title || "Buổi tập"}
+                </span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-black bg-[var(--bg-color)] px-2.5 py-1 rounded-lg border border-[var(--border-color)] flex items-center gap-1">
+                <Clock className="w-3 h-3 text-primary animate-pulse" /> {floatingTimer}
+              </span>
+              <button
+                onClick={() => navigate(`/today-workout?dayId=${floatingSession.planDayId || ""}`)}
+                className="h-8 px-3.5 bg-primary text-black rounded-lg text-[10px] font-black hover:bg-primary-hover active:scale-[0.98] transition cursor-pointer"
+              >
+                Tiếp tục
+              </button>
+            </div>
           </div>
         )}
 

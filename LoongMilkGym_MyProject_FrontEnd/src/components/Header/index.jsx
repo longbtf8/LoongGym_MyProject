@@ -17,7 +17,7 @@ import MobileBottomSheet from "./MobileBottomSheet";
 const NAV_ITEMS = [
   { label: "Trang chủ", path: paths.home },
   { label: "Bảng điều khiển", path: paths.dashboard },
-  { label: "Lộ trình", path: paths.roadmap },
+  { label: "Lịch tập", path: paths.myPlan },
   { label: "Thư viện", path: paths.exercises },
   { label: "AI Coach", path: "#" },
   { label: "Cửa hàng", path: "#" },
