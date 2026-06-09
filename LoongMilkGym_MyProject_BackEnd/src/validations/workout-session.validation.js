@@ -2,7 +2,12 @@ const { z } = require("zod");
 
 const startSessionSchema = z.object({
   body: z.object({
-    planDayId: z.string().uuid("Plan Day ID phải là UUID").optional().nullable(),
+    planDayId: z
+      .string()
+      .trim()
+      .transform((val) => (val === "" ? null : val))
+      .optional()
+      .nullable(),
     title: z.string().trim().max(150, "Tiêu đề không được vượt quá 150 ký tự").optional().nullable(),
     notes: z.string().trim().optional().nullable(),
   }),
@@ -10,14 +15,14 @@ const startSessionSchema = z.object({
 
 const getSessionSchema = z.object({
   params: z.object({
-    id: z.string().uuid("ID buổi tập phải là UUID"),
+    id: z.string().trim().min(1, "ID buổi tập không được để trống"),
   }),
 });
 
 const addSetSchema = z.object({
   params: z.object({
-    id: z.string().uuid("ID buổi tập phải là UUID"),
-    sessionExerciseId: z.string().uuid("ID bài tập trong buổi tập phải là UUID"),
+    id: z.string().trim().min(1, "ID buổi tập không được để trống"),
+    sessionExerciseId: z.string().trim().min(1, "ID bài tập trong buổi tập không được để trống"),
   }),
   body: z.object({
     setNumber: z.number({ required_error: "Vui lòng nhập số thứ tự set" }).int().positive("Số thứ tự set phải lớn hơn 0"),
@@ -33,7 +38,7 @@ const addSetSchema = z.object({
 
 const updateSetSchema = z.object({
   params: z.object({
-    id: z.string().uuid("ID set phải là UUID"),
+    id: z.string().trim().min(1, "ID set không được để trống"),
   }),
   body: z.object({
     setNumber: z.number().int().positive("Số thứ tự set phải lớn hơn 0").optional(),
@@ -49,7 +54,7 @@ const updateSetSchema = z.object({
 
 const completeSessionSchema = z.object({
   params: z.object({
-    id: z.string().uuid("ID buổi tập phải là UUID"),
+    id: z.string().trim().min(1, "ID buổi tập không được để trống"),
   }),
   body: z.object({
     perceivedEffort: z.number().int().min(1, "RPE từ 1 đến 10").max(10, "RPE từ 1 đến 10").optional().nullable(),
