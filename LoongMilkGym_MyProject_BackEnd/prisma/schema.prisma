@@ -34,6 +34,7 @@ model User {
   refreshTokens   RefreshTokens[]
 
   trainingPlans   UserTrainingPlan[]
+  workoutSessions WorkoutSession[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -203,6 +204,7 @@ model Exercise {
   tags           ExerciseTag[] /// Các thẻ phân loại bài tập
 
   workoutTemplateExercises WorkoutTemplateExercise[]
+  workoutSessionExercises  WorkoutSessionExercise[]
 
   createdAt DateTime @default(now()) @map("created_at") /// Ngày tạo bản ghi
   updatedAt DateTime @updatedAt @map("updated_at") /// Ngày cập nhật gần nhất
@@ -368,5 +370,60 @@ model UserTrainingPlanDay {
   metadata           Json             @default("{}")
   createdAt          DateTime         @default(now()) @map("created_at")
 
+  workoutSessions    WorkoutSession[]
+
   @@map("user_training_plan_days")
+}
+
+model WorkoutSession {
+  id              String                 @id @default(uuid())
+  userId          String                 @map("user_id")
+  planDayId       String?                @map("plan_day_id")
+  title           String?                @db.VarChar(150)
+  startedAt       DateTime?              @map("started_at")
+  endedAt         DateTime?              @map("ended_at")
+  durationSeconds Int?                   @map("duration_seconds")
+  status          String                 @default("in_progress") @db.VarChar(30) // in_progress, completed, cancelled
+  perceivedEffort Int?                   @map("perceived_effort") // perceived_effort BETWEEN 1 AND 10
+  notes           String?                @db.Text
+  createdAt       DateTime               @default(now()) @map("created_at")
+
+  user            User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planDay         UserTrainingPlanDay?   @relation(fields: [planDayId], references: [id], onDelete: SetNull)
+  exercises       WorkoutSessionExercise[]
+
+  @@map("workout_sessions")
+}
+
+model WorkoutSessionExercise {
+  id               String           @id @default(uuid())
+  workoutSessionId String           @map("workout_session_id")
+  exerciseId       String           @map("exercise_id")
+  exerciseOrder    Int              @map("exercise_order")
+  status           String           @default("pending") @db.VarChar(30)
+  notes            String?          @db.Text
+
+  workoutSession   WorkoutSession   @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
+  exercise         Exercise         @relation(fields: [exerciseId], references: [id])
+  sets             WorkoutSet[]
+
+  @@map("workout_session_exercises")
+}
+
+model WorkoutSet {
+  id                 String                 @id @default(uuid())
+  sessionExerciseId  String                 @map("session_exercise_id")
+  setNumber          Int                    @map("set_number")
+  setType            String                 @default("working") @db.VarChar(30) @map("set_type") // warmup, working, dropset, failure
+  reps               Int?
+  weightKg           Decimal?               @map("weight_kg") @db.Decimal(7, 2)
+  durationSeconds    Int?                   @map("duration_seconds")
+  distanceMeters     Decimal?               @map("distance_meters") @db.Decimal(10, 2)
+  rpe                Decimal?               @db.Decimal(3, 1)
+  isCompleted        Boolean                @default(false) @map("is_completed")
+  completedAt        DateTime?              @map("completed_at")
+
+  sessionExercise    WorkoutSessionExercise @relation(fields: [sessionExerciseId], references: [id], onDelete: Cascade)
+
+  @@map("workout_sets")
 }
