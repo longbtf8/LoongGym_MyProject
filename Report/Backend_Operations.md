@@ -112,4 +112,29 @@ Khi người dùng tải lên ảnh đại diện mới, để tránh lãng phí
     - Mọi request tiếp theo sử dụng Access Token nằm trong blacklist sẽ bị middleware `authRequire.js` chặn đứng ngay lập tức với lỗi `401 Unauthorized`.
     - Một scheduler chạy tự động định kỳ (`cleanupExpiredTokens.js`) quét dọn sạch các token đã hết hạn thực tế trong bảng blacklist để giải phóng dung lượng DB.
 
+---
+
+## 🍎 9. Phân Hệ Dinh Dưỡng & Thực Đơn Ở Backend (Nutrition API & Food Engine)
+Hệ thống quản lý Calo và Thực phẩm ở Backend được xây dựng thông suốt qua các lớp kiến trúc để phục vụ việc tính toán năng lượng nạp:
+*   **Thiết kế Schema Cơ sở dữ liệu**:
+    -   `NutritionTarget`: Quản lý mục tiêu dinh dưỡng hàng ngày của từng người dùng (`userId`), bao gồm lượng Calo (`caloriesTarget`), các nhóm chất đạm/tinh bột/chất béo (`proteinGTarget`, `carbsGTarget`, `fatGTarget`), chất xơ (`fiberGTarget`) và lượng nước uống (`waterMlTarget`). Sử dụng khóa chính phức hợp `userId_targetDate` để đảm bảo mỗi ngày một người dùng chỉ có duy nhất một bộ mục tiêu.
+    -   `FoodItem`: Lưu trữ thông tin thực phẩm mẫu, hỗ trợ tìm kiếm theo tên, nhãn hiệu (`brand`), kích thước định lượng (`servingSizeG`), các chỉ số dinh dưỡng cho mỗi serving size, và trường `metadata` dạng JSON để lưu trữ linh hoạt mã vạch sản phẩm (`barcode`) cùng hình ảnh minh họa (`imageUrl`).
+    -   `MealLog`: Lưu vết nhật ký ăn uống theo ngày và phân loại bữa ăn (Sáng, Trưa, Tối, Nhỏ...).
+    -   `MealLogItem`: Lưu chi tiết các món ăn đã nạp trong một `MealLog`, ghi nhận khối lượng thực phẩm nạp thực tế (`quantityG`) và tự động tính toán quy đổi lượng Calo/chất nạm thực chất tương ứng.
+*   **Kiểm Tra Ràng Buộc Dữ Liệu Chặt Chẽ (`nutrition.validation.js`)**:
+    -   Tất cả tham số `mealLogId` hoặc `itemId` đều được xác thực định dạng UUID nghiêm ngặt.
+    -   Các trường chỉ số nạp hoặc chỉ số mục tiêu đều được giới hạn khoảng an toàn thông qua thư viện Zod: Calo từ 1 đến 10,000; các chỉ số chất đạm/bột/béo/chất xơ từ 0 đến 1,000g; nước uống từ 1 đến 10,000 ml.
+*   **Thuật Toán Chuẩn Hóa Ngày Tháng Theo Múi Giờ**:
+    -   Để giải quyết triệt để lỗi chênh lệch múi giờ cục bộ giữa Client và Server (làm lệch ngày ghi nhận ăn uống sang hôm trước hoặc hôm sau), backend định nghĩa hàm helper `normalizeDate`.
+    -   Hàm này phân tích chuỗi ngày gửi lên và đưa về mốc 0 giờ UTC của ngày đó (`Date.UTC(year, month, date)`), giữ cho mọi hoạt động lưu và truy vấn dữ liệu đồng nhất.
+*   **Cơ Chế Quy Đổi Dinh Dưỡng Tự Động**:
+    -   Khi người dùng thêm món ăn từ thư viện qua `addMealLogItem`, API tiếp nhận `foodItemId` và khối lượng thực tế `quantityG`.
+    -   Dịch vụ truy vấn thông tin gốc của `FoodItem`, tính toán tỷ lệ `factor = quantityG / servingSizeG`.
+    -   Tự động tính và làm tròn các chỉ số năng lượng (`factor * calories`, `factor * proteinG`, v.v.) trước khi ghi bản ghi vào bảng `MealLogItem`.
+*   **Tìm Kiếm Thực Phẩm Kết Hợp (Local & Open Food Facts Global API)**:
+    -   Khi tìm kiếm món ăn bằng từ khóa hoặc quét mã vạch qua API `searchFoods` và `getFoodByBarcode`:
+    -   **Bước 1 (Local Search)**: Backend tìm kiếm trong bảng `FoodItem` các sản phẩm nội bộ hoặc đã cache để trả về nhanh nhất.
+    -   **Bước 2 (Global Lookup)**: Nếu không tìm thấy cục bộ hoặc cần mở rộng kết quả, backend sẽ gọi API Open Food Facts toàn cầu (được cấu hình thời gian chờ `fetchWithTimeout` tối đa 2.5 giây để tránh treo request).
+    -   **Bước 3 (Auto Caching)**: Các món ăn mới tìm thấy từ API toàn cầu sẽ được tự động lưu (cache) vào cơ sở dữ liệu MySQL dưới dạng một bản ghi `FoodItem` mới kèm metadata mã vạch, giúp các lượt tìm kiếm tiếp theo của toàn bộ hệ thống diễn ra tức thời.
+
 
