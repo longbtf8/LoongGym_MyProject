@@ -312,6 +312,25 @@ export default function Recovery() {
       return;
     }
 
+    const VALID_BODY_PARTS_KEYWORDS = [
+      "vai", "ngực", "lưng", "xô", "bụng", "mông", "đùi", "bắp chân", "tay", "cổ tay", "cổ chân", 
+      "khớp gối", "gối", "khuỷu tay", "khớp vai", "cổ", "hông", "khớp", "cơ", "gân", "khớp háng", 
+      "gót chân", "cẳng tay", "bắp tay", "tay sau", "tay trước", "shoulder", "chest", "back", 
+      "lat", "abs", "core", "glute", "thigh", "quad", "hamstring", "calf", "calves", "arm", 
+      "bicep", "tricep", "forearm", "wrist", "ankle", "knee", "elbow", "neck", "hip", "joint", 
+      "muscle", "tendon", "groin", "heel"
+    ];
+
+    const normalized = bodyPart.trim().toLowerCase();
+    const isRelated = VALID_BODY_PARTS_KEYWORDS.some(keyword => normalized.includes(keyword));
+    if (!isRelated) {
+      triggerAlert(
+        "error",
+        "Bộ phận này không liên quan đến tập luyện thể thao (ví dụ: Vai, Gối, Cổ tay, Lưng, Đùi...). Nếu đau nhức cơ quan khác, hãy đi khám bác sĩ ngay để nhận lời khuyên y tế."
+      );
+      return;
+    }
+
     try {
       await logInjury({
         bodyPart,
@@ -363,9 +382,9 @@ export default function Recovery() {
 
         {/* ALERT NOTIFICATION */}
         {alert && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[99999] flex items-center justify-center p-4">
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[99999] pointer-events-none">
             <div
-              className={`flex flex-col items-center gap-4 px-6 py-6 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border backdrop-blur-md max-w-sm w-full text-center animate-scale-in ${
+              className={`flex items-center gap-3 px-5 py-3 rounded-2xl shadow-[0_10px_35px_rgba(0,0,0,0.4)] border backdrop-blur-md text-center animate-scale-in max-w-sm ${
                 alert.type === "success"
                   ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
                   : alert.type === "error"
@@ -374,20 +393,13 @@ export default function Recovery() {
               }`}
             >
               {alert.type === "success" ? (
-                <CheckCircle2 className="w-12 h-12 text-emerald-400 animate-bounce" />
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
               ) : alert.type === "error" ? (
-                <AlertTriangle className="w-12 h-12 text-red-400 animate-bounce" />
+                <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
               ) : (
-                <Info className="w-12 h-12 text-blue-400 animate-bounce" />
+                <Info className="w-5 h-5 text-blue-400 flex-shrink-0" />
               )}
-              <span className="text-sm font-black leading-snug">{alert.text}</span>
-              <button
-                type="button"
-                onClick={() => setAlert(null)}
-                className="mt-2 text-xs font-bold px-5 py-2 rounded-xl border border-current bg-transparent cursor-pointer hover:bg-current/10 transition-colors"
-              >
-                Đóng
-              </button>
+              <span className="text-xs font-black leading-snug">{alert.text}</span>
             </div>
           </div>
         )}
