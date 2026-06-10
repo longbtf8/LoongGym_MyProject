@@ -363,17 +363,32 @@ export default function Recovery() {
 
         {/* ALERT NOTIFICATION */}
         {alert && (
-          <div
-            className={`fixed top-4 right-4 z-[99999] flex items-center gap-2 px-4 py-3 rounded-2xl shadow-xl border animate-slide-in backdrop-blur-md ${
-              alert.type === "success"
-                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                : alert.type === "error"
-                ? "bg-red-500/10 border-red-500/30 text-red-400"
-                : "bg-blue-500/10 border-blue-500/30 text-blue-400"
-            }`}
-          >
-            <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-            <span className="text-xs font-bold">{alert.text}</span>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[99999] flex items-center justify-center p-4">
+            <div
+              className={`flex flex-col items-center gap-4 px-6 py-6 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border backdrop-blur-md max-w-sm w-full text-center animate-scale-in ${
+                alert.type === "success"
+                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                  : alert.type === "error"
+                  ? "bg-red-500/10 border-red-500/30 text-red-400"
+                  : "bg-blue-500/10 border-blue-500/30 text-blue-400"
+              }`}
+            >
+              {alert.type === "success" ? (
+                <CheckCircle2 className="w-12 h-12 text-emerald-400 animate-bounce" />
+              ) : alert.type === "error" ? (
+                <AlertTriangle className="w-12 h-12 text-red-400 animate-bounce" />
+              ) : (
+                <Info className="w-12 h-12 text-blue-400 animate-bounce" />
+              )}
+              <span className="text-sm font-black leading-snug">{alert.text}</span>
+              <button
+                type="button"
+                onClick={() => setAlert(null)}
+                className="mt-2 text-xs font-bold px-5 py-2 rounded-xl border border-current bg-transparent cursor-pointer hover:bg-current/10 transition-colors"
+              >
+                Đóng
+              </button>
+            </div>
           </div>
         )}
 
@@ -487,7 +502,7 @@ export default function Recovery() {
                 </div>
 
                 {/* SLEEP INPUT WITH CALCULATOR */}
-                <div className="flex flex-col gap-3 bg-[var(--bg-color)] border border-[var(--border-color)] p-4 rounded-2xl">
+                <div className="flex flex-col gap-3 bg-[var(--bg-color)] border border-[var(--border-color)] p-4 rounded-2xl relative">
                   <div className="flex justify-between items-center">
                     <label className="text-xs sm:text-sm font-extrabold flex items-center gap-2 text-[var(--text-color)]">
                       <Moon className="w-4.5 h-4.5 text-purple-400" />
@@ -495,7 +510,7 @@ export default function Recovery() {
                       <button
                         type="button"
                         onClick={() => toggleInfo("sleep")}
-                        className="p-0.5 hover:bg-neutral-800 rounded-full text-primary border-0 bg-transparent cursor-pointer flex items-center justify-center"
+                        className="p-0.5 hover:bg-primary/20 text-primary rounded-full border-0 bg-transparent cursor-pointer flex items-center justify-center transition-all duration-200 hover:scale-110"
                       >
                         <HelpCircle className="w-3.5 h-3.5" />
                       </button>
@@ -506,7 +521,19 @@ export default function Recovery() {
                   </div>
 
                   {activeInfo === "sleep" && (
-                    <div className="bg-primary/5 border border-primary/20 p-3 rounded-xl text-[11px] text-[var(--text-muted)] leading-relaxed animate-slide-up">
+                    <div className="absolute top-12 left-4 right-4 z-20 bg-[var(--bg-secondary)] border border-primary/30 p-3.5 rounded-xl text-[11px] text-[var(--text-muted)] leading-relaxed shadow-xl backdrop-blur-md animate-slide-up">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-extrabold text-primary flex items-center gap-1">
+                          <Info className="w-3.5 h-3.5" /> Giải thích thuật ngữ
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => toggleInfo("sleep")}
+                          className="text-[var(--text-muted)] hover:text-primary border-0 bg-transparent cursor-pointer font-bold text-xs"
+                        >
+                          Đóng
+                        </button>
+                      </div>
                       👉 <strong>Giấc ngủ lý tưởng:</strong> Từ 7.5 - 9 tiếng là lý tưởng nhất (đạt 100 điểm ngủ). Thiếu ngủ trầm trọng (dưới 5 tiếng) hoặc ngủ quá nhiều (trên 11 tiếng) làm tăng Cortisol (hóc môn căng thẳng) gây dị hóa, cản trở tổng hợp cơ bắp và làm giảm sự tập trung.
                     </div>
                   )}
@@ -567,7 +594,7 @@ export default function Recovery() {
                 </div>
 
                 {/* SORENESS INPUT */}
-                <div className="flex flex-col gap-3 bg-[var(--bg-color)] border border-[var(--border-color)] p-4 rounded-2xl">
+                <div className="flex flex-col gap-3 bg-[var(--bg-color)] border border-[var(--border-color)] p-4 rounded-2xl relative">
                   <div className="flex justify-between items-center">
                     <label className="text-xs sm:text-sm font-extrabold flex items-center gap-2 text-[var(--text-color)]">
                       <Activity className="w-4.5 h-4.5 text-emerald-400" />
@@ -575,7 +602,7 @@ export default function Recovery() {
                       <button
                         type="button"
                         onClick={() => toggleInfo("soreness")}
-                        className="p-0.5 hover:bg-neutral-800 rounded-full text-primary border-0 bg-transparent cursor-pointer flex items-center justify-center"
+                        className="p-0.5 hover:bg-emerald-500/20 text-emerald-400 rounded-full border-0 bg-transparent cursor-pointer flex items-center justify-center transition-all duration-200 hover:scale-110"
                       >
                         <HelpCircle className="w-3.5 h-3.5" />
                       </button>
@@ -586,7 +613,19 @@ export default function Recovery() {
                   </div>
 
                   {activeInfo === "soreness" && (
-                    <div className="bg-primary/5 border border-primary/20 p-3 rounded-xl text-[11px] text-[var(--text-muted)] leading-relaxed animate-slide-up">
+                    <div className="absolute top-12 left-4 right-4 z-20 bg-[var(--bg-secondary)] border border-emerald-500/30 p-3.5 rounded-xl text-[11px] text-[var(--text-muted)] leading-relaxed shadow-xl backdrop-blur-md animate-slide-up">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-extrabold text-emerald-400 flex items-center gap-1">
+                          <Info className="w-3.5 h-3.5" /> Giải thích thuật ngữ
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => toggleInfo("soreness")}
+                          className="text-[var(--text-muted)] hover:text-emerald-400 border-0 bg-transparent cursor-pointer font-bold text-xs"
+                        >
+                          Đóng
+                        </button>
+                      </div>
                       👉 <strong>Đau mỏi cơ (DOMS):</strong> Là tình trạng cơ bắp bị xé rách vi mô sau các buổi tập kháng lực. Mức nhẹ (1-3) là bình thường, sẵn sàng tập tiếp. Mức vừa (4-7) nên khởi động kỹ và giảm 20% tạ. Mức nặng (8-10) là cơ bắp bị quá tải nặng, có nguy cơ chấn thương cao, nên nghỉ ngơi hoặc giãn cơ nhẹ.
                     </div>
                   )}
@@ -619,7 +658,7 @@ export default function Recovery() {
                 </div>
 
                 {/* ENERGY LEVEL */}
-                <div className="flex flex-col gap-3 bg-[var(--bg-color)] border border-[var(--border-color)] p-4 rounded-2xl">
+                <div className="flex flex-col gap-3 bg-[var(--bg-color)] border border-[var(--border-color)] p-4 rounded-2xl relative">
                   <div className="flex justify-between items-center">
                     <label className="text-xs sm:text-sm font-extrabold flex items-center gap-2 text-[var(--text-color)]">
                       <Zap className="w-4.5 h-4.5 text-primary" />
@@ -627,7 +666,7 @@ export default function Recovery() {
                       <button
                         type="button"
                         onClick={() => toggleInfo("energy")}
-                        className="p-0.5 hover:bg-neutral-800 rounded-full text-primary border-0 bg-transparent cursor-pointer flex items-center justify-center"
+                        className="p-0.5 hover:bg-primary/20 text-primary rounded-full border-0 bg-transparent cursor-pointer flex items-center justify-center transition-all duration-200 hover:scale-110"
                       >
                         <HelpCircle className="w-3.5 h-3.5" />
                       </button>
@@ -638,7 +677,19 @@ export default function Recovery() {
                   </div>
 
                   {activeInfo === "energy" && (
-                    <div className="bg-primary/5 border border-primary/20 p-3 rounded-xl text-[11px] text-[var(--text-muted)] leading-relaxed animate-slide-up">
+                    <div className="absolute top-12 left-4 right-4 z-20 bg-[var(--bg-secondary)] border border-primary/30 p-3.5 rounded-xl text-[11px] text-[var(--text-muted)] leading-relaxed shadow-xl backdrop-blur-md animate-slide-up">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-extrabold text-primary flex items-center gap-1">
+                          <Info className="w-3.5 h-3.5" /> Giải thích thuật ngữ
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => toggleInfo("energy")}
+                          className="text-[var(--text-muted)] hover:text-primary border-0 bg-transparent cursor-pointer font-bold text-xs"
+                        >
+                          Đóng
+                        </button>
+                      </div>
                       👉 <strong>Năng lượng (CNS Energy):</strong> Thể hiện mức năng lượng vật lý và Hệ thần kinh trung ương (Central Nervous System). Năng lượng cao (8-10) báo hiệu Glycogen đầy kho dự trữ, thích hợp đẩy tạ nặng (PR). Năng lượng thấp (1-3) chứng tỏ cơ thể cạn kiệt, tập nặng rất dễ chấn thương do thần kinh mỏi.
                     </div>
                   )}
@@ -671,7 +722,7 @@ export default function Recovery() {
                 </div>
 
                 {/* STRESS LEVEL */}
-                <div className="flex flex-col gap-3 bg-[var(--bg-color)] border border-[var(--border-color)] p-4 rounded-2xl">
+                <div className="flex flex-col gap-3 bg-[var(--bg-color)] border border-[var(--border-color)] p-4 rounded-2xl relative">
                   <div className="flex justify-between items-center">
                     <label className="text-xs sm:text-sm font-extrabold flex items-center gap-2 text-[var(--text-color)]">
                       <Smile className="w-4.5 h-4.5 text-orange-400" />
@@ -679,7 +730,7 @@ export default function Recovery() {
                       <button
                         type="button"
                         onClick={() => toggleInfo("stress")}
-                        className="p-0.5 hover:bg-neutral-800 rounded-full text-primary border-0 bg-transparent cursor-pointer flex items-center justify-center"
+                        className="p-0.5 hover:bg-orange-500/20 text-orange-400 rounded-full border-0 bg-transparent cursor-pointer flex items-center justify-center transition-all duration-200 hover:scale-110"
                       >
                         <HelpCircle className="w-3.5 h-3.5" />
                       </button>
@@ -690,7 +741,19 @@ export default function Recovery() {
                   </div>
 
                   {activeInfo === "stress" && (
-                    <div className="bg-primary/5 border border-primary/20 p-3 rounded-xl text-[11px] text-[var(--text-muted)] leading-relaxed animate-slide-up">
+                    <div className="absolute top-12 left-4 right-4 z-20 bg-[var(--bg-secondary)] border border-orange-500/30 p-3.5 rounded-xl text-[11px] text-[var(--text-muted)] leading-relaxed shadow-xl backdrop-blur-md animate-slide-up">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-extrabold text-orange-400 flex items-center gap-1">
+                          <Info className="w-3.5 h-3.5" /> Giải thích thuật ngữ
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => toggleInfo("stress")}
+                          className="text-[var(--text-muted)] hover:text-orange-400 border-0 bg-transparent cursor-pointer font-bold text-xs"
+                        >
+                          Đóng
+                        </button>
+                      </div>
                       👉 <strong>Mức độ căng thẳng:</strong> Stress tâm lý làm gia tăng hormone Cortisol - khắc tinh của cơ bắp. Khi Cortisol tăng cao, cơ thể sẽ ưu tiên tích trữ mỡ thừa và phân hủy sợi cơ để tạo năng lượng (dị hóa), đồng thời làm chậm tốc độ tổng hợp protein và phục hồi cơ tới 50%.
                     </div>
                   )}
@@ -724,19 +787,31 @@ export default function Recovery() {
 
                 {/* TIM MẠCH (RHR & HRV) INPUTS */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-1.5 relative">
                     <label className="text-[10px] uppercase font-black tracking-wider text-[var(--text-muted)] flex items-center gap-1">
                       Nhịp Tim Nghỉ Ngơi (BPM)
                       <button
                         type="button"
                         onClick={() => toggleInfo("rhr")}
-                        className="p-0.5 hover:bg-neutral-800 rounded-full text-primary border-0 bg-transparent cursor-pointer"
+                        className="p-0.5 hover:bg-rose-500/20 text-rose-400 rounded-full border-0 bg-transparent cursor-pointer transition-all duration-200 hover:scale-110"
                       >
                         <HelpCircle className="w-3.5 h-3.5" />
                       </button>
                     </label>
                     {activeInfo === "rhr" && (
-                      <div className="bg-primary/5 border border-primary/20 p-2.5 rounded-xl text-[10px] text-[var(--text-muted)] leading-relaxed animate-slide-up">
+                      <div className="absolute top-8 left-0 right-0 z-20 bg-[var(--bg-secondary)] border border-rose-500/30 p-2.5 rounded-xl text-[10px] text-[var(--text-muted)] leading-relaxed shadow-xl backdrop-blur-md animate-slide-up">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-extrabold text-rose-400 flex items-center gap-1">
+                            <Info className="w-3 h-3" /> RHR (Nhịp tim nghỉ ngơi)
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => toggleInfo("rhr")}
+                            className="text-[var(--text-muted)] hover:text-rose-400 border-0 bg-transparent cursor-pointer font-bold text-[10px]"
+                          >
+                            Đóng
+                          </button>
+                        </div>
                         💓 <strong>RHR (Resting Heart Rate):</strong> Thường đo lúc mới thức dậy. RHR của người khỏe mạnh từ 60-80 BPM, vận động viên thể thao thường dưới 60 BPM. Nếu nhịp tim nghỉ ngơi của bạn hôm nay tăng vọt từ 5-10 nhịp so với trung bình, đó là báo hiệu cơ thể chưa phục hồi hoàn toàn hoặc thiếu ngủ trầm trọng.
                       </div>
                     )}
@@ -749,19 +824,31 @@ export default function Recovery() {
                     />
                   </div>
 
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-1.5 relative">
                     <label className="text-[10px] uppercase font-black tracking-wider text-[var(--text-muted)] flex items-center gap-1">
                       Biến Thiên Nhịp Tim (HRV - ms)
                       <button
                         type="button"
                         onClick={() => toggleInfo("hrv")}
-                        className="p-0.5 hover:bg-neutral-800 rounded-full text-primary border-0 bg-transparent cursor-pointer"
+                        className="p-0.5 hover:bg-blue-500/20 text-blue-400 rounded-full border-0 bg-transparent cursor-pointer transition-all duration-200 hover:scale-110"
                       >
                         <HelpCircle className="w-3.5 h-3.5" />
                       </button>
                     </label>
                     {activeInfo === "hrv" && (
-                      <div className="bg-primary/5 border border-primary/20 p-2.5 rounded-xl text-[10px] text-[var(--text-muted)] leading-relaxed animate-slide-up">
+                      <div className="absolute top-8 left-0 right-0 z-20 bg-[var(--bg-secondary)] border border-blue-500/30 p-2.5 rounded-xl text-[10px] text-[var(--text-muted)] leading-relaxed shadow-xl backdrop-blur-md animate-slide-up">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-extrabold text-blue-400 flex items-center gap-1">
+                            <Info className="w-3 h-3" /> HRV (Biến thiên nhịp tim)
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => toggleInfo("hrv")}
+                            className="text-[var(--text-muted)] hover:text-blue-400 border-0 bg-transparent cursor-pointer font-bold text-[10px]"
+                          >
+                            Đóng
+                          </button>
+                        </div>
                         📈 <strong>HRV (Heart Rate Variability):</strong> Đo lường biến thiên thời gian giữa các nhịp tim liên tiếp. Chỉ số HRV cao chứng tỏ Hệ thần kinh đối giao cảm hoạt động tốt, cơ thể sẵn sàng chịu tải tạ nặng. HRV thấp cảnh báo bạn đang kiệt sức hoặc bị stress (cơ thể cần được nghỉ ngơi).
                       </div>
                     )}
