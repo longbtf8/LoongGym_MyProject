@@ -137,4 +137,43 @@ Hệ thống quản lý Calo và Thực phẩm ở Backend được xây dựng 
     -   **Bước 2 (Global Lookup)**: Nếu không tìm thấy cục bộ hoặc cần mở rộng kết quả, backend sẽ gọi API Open Food Facts toàn cầu (được cấu hình thời gian chờ `fetchWithTimeout` tối đa 2.5 giây để tránh treo request).
     -   **Bước 3 (Auto Caching)**: Các món ăn mới tìm thấy từ API toàn cầu sẽ được tự động lưu (cache) vào cơ sở dữ liệu MySQL dưới dạng một bản ghi `FoodItem` mới kèm metadata mã vạch, giúp các lượt tìm kiếm tiếp theo của toàn bộ hệ thống diễn ra tức thời.
 
+---
+
+## 📅 10. Phân Hệ Kế Hoạch Tập Luyện Cá Nhân Hóa (User Training Plans Engine)
+Phân hệ này chịu trách nhiệm khởi tạo, cấu hình và quản lý lộ trình tập luyện 30 ngày cho từng hội viên:
+*   **Bảng Cơ Sở Dữ Liệu Tương Tác**:
+    -   `UserTrainingPlan`: Lưu thông tin kế hoạch đang kích hoạt (active), liên kết với giáo án mẫu (`WorkoutProgram`) hoặc thiết lập chế độ tập tự do cá nhân hóa.
+    -   `UserTrainingPlanDay`: Lưu thông tin chi tiết của từng ngày trong 30 ngày kế hoạch. Mỗi ngày lưu trạng thái (`pending`, `completed`), ghi chú và danh sách bài tập tùy biến (`customExercises`) trong trường `metadata`.
+*   **Khởi Tạo Giáo Án Giao Dịch An Toàn (`startProgramPlan` / `startCustomPlan`)**:
+    -   Khi người dùng chọn một giáo án mặc định hoặc tự thiết lập lịch tập cá nhân, hệ thống thực hiện khởi tạo toàn bộ lộ trình 30 ngày trong khối giao dịch an toàn `prisma.$transaction`. Nếu có bất kỳ lỗi nào xảy ra khi chèn dữ liệu hàng loạt, hệ thống tự động rollback để tránh tình trạng lộ trình bị khuyết ngày.
+*   **Đề Xuất Bài Tập Thông Minh Theo Nhóm Cơ**:
+    -   Để hỗ trợ tính năng chọn bài tập thay thế (Swap Exercise), backend phân tích từ khóa nhóm cơ (`focusArea` / `focusKeywords`).
+    -   Khi người dùng muốn thay thế bài tập, backend gợi ý các bài tập trong thư viện có cùng nhóm cơ đích (`exerciseMatchesFocus`) giúp người dùng duy trì đúng mục tiêu huấn luyện ban đầu.
+*   **Hoán Đổi Ngày Tập (Swap Days Date)**:
+    -   Hỗ trợ chuyển đổi ngày tập linh hoạt (ví dụ: đổi ngày tập ngực hôm nay sang ngày mai và ngược lại) bằng cách hoán đổi giá trị trường ngày lên lịch `scheduledDate` trong một transaction an toàn.
+
+---
+
+## ⚡ 11. Phân Hệ Theo Dõi Buổi Tập Thực Tế (Workout Sessions & Set Tracker)
+Đây là động cơ ghi nhận thời gian thực quá trình luyện tập của người dùng:
+*   **Bảng Cơ Sơ Dữ Liệu Tương Tác**:
+    -   `WorkoutSession`: Buổi tập thực tế (trạng thái `in_progress` hoặc `completed`), ghi nhận thời gian bắt đầu, kết thúc, tổng số giây tập luyện và nỗ lực cảm nhận (`perceivedEffort` từ 1 đến 10).
+    -   `WorkoutSessionExercise`: Các bài tập được đưa vào thực hiện trong buổi tập hiện tại.
+    -   `WorkoutSet`: Các hiệp tập thực tế của bài tập, ghi nhận số lần lặp (reps), cân nặng (weightKg), thời gian giữ hoặc cự ly di chuyển, chỉ số nỗ lực RPE và trạng thái hoàn thành (`isCompleted`).
+*   **Thuật Toán Tính Calo Tiêu Thụ Tự Động**:
+    -   Khi hoàn thành buổi tập (`completeSession`), hệ thống tự động tính toán năng lượng tiêu hao dựa trên công thức chuyển hóa sinh học (METs):
+        $$\text{Calories Burned} = \text{MET} \times 3.5 \times \frac{\text{Weight (kg)}}{200} \times \text{Duration (minutes)}$$
+        *(với mức MET mặc định cho tập kháng lực là 6.0).*
+    -   Calo tiêu thụ được tính toán và cộng dồn ngay lập tức vào hồ sơ cá nhân của người dùng (`UserProfile.totalCaloriesBurned`) đồng thời tăng tổng số ngày tập (`totalWorkoutDays`) lên 1 đơn vị.
+
+---
+
+## 📊 12. Dịch Vụ Tích Hợp Số Liệu Dashboard (Dashboard Summary Aggregator)
+Hàm dịch vụ `getDashboardSummary` tại backend đóng vai trò tổng hợp nhanh tất cả các khía cạnh luyện tập và dinh dưỡng để hiển thị tức thời khi người dùng truy cập trang chủ:
+*   **Tích hợp đa nguồn**:
+    -   Đọc dữ liệu hồ sơ hội viên để lấy cấp độ thể chất, mục tiêu và avatar.
+    -   Liên kết gọi trực tiếp dịch vụ `NutritionService` để lấy tổng lượng Calo, Carb, Fat, Protein thực tế người dùng đã nạp trong ngày hôm nay so với mục tiêu ngày đã cài đặt.
+    -   Tổng hợp số lượng buổi tập đã hoàn thành trong tuần, chuỗi ngày tập liên tục (streak) và trả về danh sách hành động nhanh được cá nhân hóa.
+
+
 
