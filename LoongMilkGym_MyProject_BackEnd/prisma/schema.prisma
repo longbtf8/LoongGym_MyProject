@@ -35,6 +35,8 @@ model User {
 
   trainingPlans   UserTrainingPlan[]
   workoutSessions WorkoutSession[]
+  nutritionTargets NutritionTarget[]
+  mealLogs         MealLog[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -429,4 +431,69 @@ model WorkoutSet {
   sessionExercise    WorkoutSessionExercise @relation(fields: [sessionExerciseId], references: [id], onDelete: Cascade)
 
   @@map("workout_sets")
+}
+
+//Nhóm 5 dinh dưỡng Nutrition & Meal Log Models
+model NutritionTarget {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  targetDate     DateTime @map("target_date") @db.Date
+  caloriesTarget Int?     @map("calories_target")
+  proteinGTarget Decimal? @map("protein_g_target") @db.Decimal(8, 2)
+  carbsGTarget   Decimal? @map("carbs_g_target") @db.Decimal(8, 2)
+  fatGTarget     Decimal? @map("fat_g_target") @db.Decimal(8, 2)
+  fiberGTarget   Decimal? @map("fiber_g_target") @db.Decimal(8, 2)
+  waterMlTarget  Int?     @map("water_ml_target")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetDate])
+  @@map("nutrition_targets")
+}
+
+model FoodItem {
+  id           String        @id @default(uuid())
+  name         String        @db.VarChar(200)
+  brand        String?       @db.VarChar(150)
+  servingSizeG Decimal?      @map("serving_size_g") @db.Decimal(8, 2)
+  calories     Int?
+  proteinG     Decimal?      @map("protein_g") @db.Decimal(8, 2)
+  carbsG       Decimal?      @map("carbs_g") @db.Decimal(8, 2)
+  fatG         Decimal?      @map("fat_g") @db.Decimal(8, 2)
+  metadata     Json          @default("{}")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  mealLogItems MealLogItem[]
+
+  @@map("food_items")
+}
+
+model MealLog {
+  id        String        @id @default(uuid())
+  userId    String        @map("user_id")
+  mealDate  DateTime      @map("meal_date") @db.Date
+  mealType  String?       @map("meal_type") @db.VarChar(30)
+  note      String?       @db.Text
+  createdAt DateTime      @default(now()) @map("created_at")
+  items     MealLogItem[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("meal_logs")
+}
+
+model MealLogItem {
+  id             String    @id @default(uuid())
+  mealLogId      String    @map("meal_log_id")
+  foodItemId     String?   @map("food_item_id")
+  customFoodName String?   @map("custom_food_name") @db.VarChar(200)
+  quantityG      Decimal?  @map("quantity_g") @db.Decimal(8, 2)
+  calories       Int?
+  proteinG       Decimal?  @map("protein_g") @db.Decimal(8, 2)
+  carbsG         Decimal?  @map("carbs_g") @db.Decimal(8, 2)
+  fatG           Decimal?  @map("fat_g") @db.Decimal(8, 2)
+  mealLog        MealLog   @relation(fields: [mealLogId], references: [id], onDelete: Cascade)
+  foodItem       FoodItem? @relation(fields: [foodItemId], references: [id], onDelete: SetNull)
+
+  @@map("meal_log_items")
 }

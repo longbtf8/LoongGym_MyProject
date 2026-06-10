@@ -24,7 +24,7 @@ export function useAuth() {
     } finally {
       localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
       localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-      window.location.href = paths.login;
+      window.location.href = paths.home;
     }
   };
 

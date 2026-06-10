@@ -4,7 +4,7 @@ const AppError = require("@/utils/AppError");
 const userTrainingPlansService = require("./user-training-plans.service");
 
 class WorkoutSessionsService {
-  async startSession(userId, { planDayId, title, notes }) {
+  async startSession(userId, { planDayId, title, notes, isFreeWorkout = false }) {
     let sessionTitle = title || "Buổi tập mới";
     let exercisesToCreate = [];
 
@@ -25,16 +25,18 @@ class WorkoutSessionsService {
 
       sessionTitle = title || planDay.title;
 
-      // 2. Lấy thông tin bài tập chi tiết từ ngày tập
-      const dayDetails = await userTrainingPlansService.getDayDetails(userId, planDayId);
-      const planExercises = dayDetails.exercises || [];
+      if (!isFreeWorkout) {
+        // 2. Lấy thông tin bài tập chi tiết từ ngày tập
+        const dayDetails = await userTrainingPlansService.getDayDetails(userId, planDayId);
+        const planExercises = dayDetails.exercises || [];
 
-      exercisesToCreate = planExercises.map((pe) => ({
-        exerciseId: pe.exerciseId,
-        exerciseOrder: pe.exerciseOrder,
-        status: "pending",
-        notes: pe.note || null,
-      }));
+        exercisesToCreate = planExercises.map((pe) => ({
+          exerciseId: pe.exerciseId,
+          exerciseOrder: pe.exerciseOrder,
+          status: "pending",
+          notes: pe.note || null,
+        }));
+      }
     }
 
     // 3. Tạo session
@@ -43,7 +45,7 @@ class WorkoutSessionsService {
         userId,
         planDayId: planDayId || null,
         title: sessionTitle,
-        notes: notes || null,
+        notes: isFreeWorkout ? (notes || "Tập tự do") : (notes || null),
         startedAt: new Date(),
         status: "in_progress",
       },
@@ -240,8 +242,8 @@ class WorkoutSessionsService {
     return result;
   }
 
-  async getSessionByPlanDay(userId, planDayId) {
-    const session = await prisma.workoutSession.findFirst({
+  async getSessionsByPlanDay(userId, planDayId) {
+    const sessions = await prisma.workoutSession.findMany({
       where: {
         userId,
         planDayId,
@@ -261,7 +263,7 @@ class WorkoutSessionsService {
         createdAt: "desc",
       },
     });
-    return session;
+    return sessions;
   }
 }
 

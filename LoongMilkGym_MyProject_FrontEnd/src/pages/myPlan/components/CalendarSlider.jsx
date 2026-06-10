@@ -28,11 +28,8 @@ export default function CalendarSlider({
           const isSelected = wd.id === selectedDayId;
           const isToday = wd.scheduledDate.startsWith(todayStr);
           const weekdayLabel = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"][index];
-          const datePart = wd.scheduledDate.split("T")[0];
-          const isPast = datePart < todayStr;
-
           let statusDot = null;
-          if (wd.status === "completed" || (isPast && wd.status !== "rest")) {
+          if (wd.status === "completed") {
             statusDot = <Check className="w-2 h-2" />;
           } else if (wd.status === "rest") {
             statusDot = <span style={{ fontSize: "6px", fontWeight: "900" }}>R</span>;

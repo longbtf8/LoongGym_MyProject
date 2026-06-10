@@ -103,6 +103,13 @@ Dưới đây là phân tích chi tiết ý nghĩa và vai trò của các commi
     - Viết tài liệu thiết kế kỹ thuật chi tiết tại `Report/Page_Roadmap_Documentation.md`.
 *   **Ý nghĩa**: Tinh giản tối đa mã nguồn trang lộ trình chính giúp dễ bảo trì, hoàn thiện logic nghiệp vụ quản lý thời gian tập luyện và tăng cường tính thẩm mỹ cao cấp (Premium Aesthetics) cho giao diện.
 
+### 19. `feat/fix: handle empty customExercises delete bug, add customized restore modal visibility state`
+*   **Hành động**:
+    - **Backend**: Thêm xử lý rẽ nhánh tại `getDayDetails` trong `user-training-plans.service.js` để trả về mảng rỗng ngay lập tức khi danh sách bài tập tùy chỉnh trống, giúp tránh lỗi truy vấn database `in: []` trên MariaDB.
+    - **Frontend**: Tích hợp cờ trạng thái `customized: true` vào metadata khi người dùng sửa, xóa hoặc thêm mới bài tập. Cập nhật điều kiện hiển thị nút "Khôi phục lịch gốc" chỉ xuất hiện khi `customized === true` và ẩn đi sau khi khôi phục (`customized: false`).
+    - **UI/UX**: Khắc phục lỗi hiển thị đường nối giữa các số chỉ dẫn trong trang chi tiết bài tập bằng cách thay đổi giá trị thuộc tính `bottom` thành `bottom-0` để kết nối thẳng hàng sắc nét.
+*   **Ý nghĩa**: Khắc phục hoàn toàn lỗi sập ứng dụng khi xóa tất cả bài tập, tối ưu hóa giao diện nút khôi phục dựa trên trạng thái tùy chỉnh thực tế của người dùng và hoàn thiện tính thẩm mỹ cho giao diện.
+
 ---
 
 ## 🛠️ 2. Nguyên Tắc Cập Nhật Commit Chuẩn Mực

@@ -31,11 +31,11 @@ function MobileBottomSheet({
       {/* Backdrop mờ */}
       <div 
         onClick={onClose}
-        className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity duration-300"
+        className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-[100] transition-opacity duration-300"
       />
       
       {/* Bottom Sheet Drawer */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[var(--bg-secondary)]/95 backdrop-blur-2xl rounded-t-3xl border-t border-[var(--border-color)] px-6 pt-4 pb-10 shadow-2xl animate-slide-up max-h-[80vh] overflow-y-auto">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[var(--bg-secondary)]/95 backdrop-blur-2xl rounded-t-3xl border-t border-[var(--border-color)] px-6 pt-4 pb-10 shadow-2xl animate-slide-up max-h-[80vh] overflow-y-auto">
         {/* Thanh drag notch nhỏ đại diện cho việc vuốt */}
         <div 
           onClick={onClose}

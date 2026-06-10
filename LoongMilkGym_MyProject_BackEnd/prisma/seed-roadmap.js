@@ -19,6 +19,11 @@ const muscleMapUrls = {
   pull: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1780739562/LoongMilkGym_APP/muscle_maps/pull.jpg",
   legs: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1780739565/LoongMilkGym_APP/muscle_maps/legs.jpg",
   core: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1780739568/LoongMilkGym_APP/muscle_maps/core.jpg",
+  arms: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781024019/LoongMilkGym_APP/muscle_maps/arms.jpg",
+  shoulders: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781024668/LoongMilkGym_APP/muscle_maps/shoulders.jpg",
+  fullbody: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781024672/LoongMilkGym_APP/muscle_maps/fullbody.jpg",
+  chest: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781024676/LoongMilkGym_APP/muscle_maps/chest.jpg",
+  back: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781024679/LoongMilkGym_APP/muscle_maps/back.jpg",
 };
 
 const muscleGroups = [
@@ -254,11 +259,11 @@ const programsConfig = [
     difficulty: "beginner",
     coverImageUrl: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1780849521/LoongMilkGym_APP/program_covers/fullBody.jpg",
     days: [
-      { cycleDay: 1, title: "Toàn thân", focusArea: "Ngực, Lưng, Đùi trước, Vai, Core", muscleMapUrl: muscleMapUrls.core, exercises: fullBodyExercises },
+      { cycleDay: 1, title: "Toàn thân", focusArea: "Ngực, Lưng, Đùi trước, Vai, Core", muscleMapUrl: muscleMapUrls.fullbody, exercises: fullBodyExercises },
       { cycleDay: 2, title: "Nghỉ ngơi", focusArea: "Toàn thân", isRest: true },
-      { cycleDay: 3, title: "Toàn thân", focusArea: "Ngực, Lưng, Đùi trước, Vai, Core", muscleMapUrl: muscleMapUrls.core, exercises: fullBodyExercises },
+      { cycleDay: 3, title: "Toàn thân", focusArea: "Ngực, Lưng, Đùi trước, Vai, Core", muscleMapUrl: muscleMapUrls.fullbody, exercises: fullBodyExercises },
       { cycleDay: 4, title: "Nghỉ ngơi", focusArea: "Toàn thân", isRest: true },
-      { cycleDay: 5, title: "Toàn thân", focusArea: "Ngực, Lưng, Đùi trước, Vai, Core", muscleMapUrl: muscleMapUrls.core, exercises: fullBodyExercises },
+      { cycleDay: 5, title: "Toàn thân", focusArea: "Ngực, Lưng, Đùi trước, Vai, Core", muscleMapUrl: muscleMapUrls.fullbody, exercises: fullBodyExercises },
       { cycleDay: 6, title: "Nghỉ ngơi", focusArea: "Toàn thân", isRest: true },
       { cycleDay: 7, title: "Nghỉ ngơi", focusArea: "Toàn thân", isRest: true },
     ],
@@ -271,10 +276,10 @@ const programsConfig = [
     difficulty: "advanced",
     coverImageUrl: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1780849524/LoongMilkGym_APP/program_covers/broSplit.jpg",
     days: [
-      { cycleDay: 1, title: "Ngực", focusArea: "Ngực, Tay sau", muscleMapUrl: muscleMapUrls.push, exercises: chestExercises },
-      { cycleDay: 2, title: "Lưng", focusArea: "Lưng, Tay trước", muscleMapUrl: muscleMapUrls.pull, exercises: backExercises },
-      { cycleDay: 3, title: "Vai", focusArea: "Vai, Tay sau", muscleMapUrl: muscleMapUrls.push, exercises: shoulderExercises },
-      { cycleDay: 4, title: "Tay", focusArea: "Tay trước, Tay sau", muscleMapUrl: muscleMapUrls.push, exercises: armsExercises },
+      { cycleDay: 1, title: "Ngực", focusArea: "Ngực, Tay sau", muscleMapUrl: muscleMapUrls.chest, exercises: chestExercises },
+      { cycleDay: 2, title: "Lưng", focusArea: "Lưng, Tay trước", muscleMapUrl: muscleMapUrls.back, exercises: backExercises },
+      { cycleDay: 3, title: "Vai", focusArea: "Vai, Tay sau", muscleMapUrl: muscleMapUrls.shoulders, exercises: shoulderExercises },
+      { cycleDay: 4, title: "Tay", focusArea: "Tay trước, Tay sau", muscleMapUrl: muscleMapUrls.arms, exercises: armsExercises },
       { cycleDay: 5, title: "Chân", focusArea: "Đùi trước, Đùi sau, Mông, Bắp chân", muscleMapUrl: muscleMapUrls.legs, exercises: legsExercises },
       { cycleDay: 6, title: "Nghỉ ngơi", focusArea: "Toàn thân", isRest: true },
       { cycleDay: 7, title: "Nghỉ ngơi", focusArea: "Toàn thân", isRest: true },

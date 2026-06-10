@@ -18,5 +18,6 @@ router.get("/stats", authRequire, userTrainingPlansController.getStats);
 router.get("/days/:dayId", authRequire, validate(getDayDetailsSchema), userTrainingPlansController.getDayDetails);
 router.put("/days/:dayId", authRequire, validate(updateDayDetailsSchema), userTrainingPlansController.updateDayDetails);
 router.post("/days/:dayId/complete", authRequire, userTrainingPlansController.completeDay);
+router.post("/days/swap-dates", authRequire, userTrainingPlansController.swapDaysDates);
 
 module.exports = router;

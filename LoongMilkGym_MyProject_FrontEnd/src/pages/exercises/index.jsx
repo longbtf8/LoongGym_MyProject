@@ -26,6 +26,7 @@ export default function Exercises() {
   const [scheduleModalExercise, setScheduleModalExercise] = useState(null);
   const [selectedScheduleDayId, setSelectedScheduleDayId] = useState("");
   const [scheduleMessage, setScheduleMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     searchTerm,
@@ -107,8 +108,9 @@ export default function Exercises() {
   };
 
   const handleAddExerciseToDay = async () => {
-    if (!scheduleModalExercise || !selectedScheduleDayId) return;
+    if (!scheduleModalExercise || !selectedScheduleDayId || isSubmitting) return;
 
+    setIsSubmitting(true);
     try {
       const dayDetailsRes = await getDayDetails(selectedScheduleDayId).unwrap();
       const dayExercises = dayDetailsRes?.data?.exercises || [];
@@ -154,6 +156,8 @@ export default function Exercises() {
       }, 900);
     } catch (err) {
       setScheduleMessage("Không thể thêm bài tập. Hãy đăng nhập và tạo lộ trình trước.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -494,10 +498,10 @@ export default function Exercises() {
 
             <button
               onClick={handleAddExerciseToDay}
-              disabled={!selectedScheduleDayId || isAddingToSchedule || isFetchingDayDetails}
-              className="w-full h-11 rounded-xl bg-primary text-black text-sm font-black hover:bg-primary-hover disabled:opacity-60 cursor-pointer"
+              disabled={!selectedScheduleDayId || isAddingToSchedule || isFetchingDayDetails || isSubmitting}
+              className="w-full h-11 rounded-xl bg-primary text-black text-sm font-black hover:bg-primary-hover disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
             >
-              {isAddingToSchedule || isFetchingDayDetails ? "Đang thêm..." : "Thêm bài tập"}
+              {isAddingToSchedule || isFetchingDayDetails || isSubmitting ? "Đang thêm..." : "Thêm bài tập"}
             </button>
           </div>
         </div>

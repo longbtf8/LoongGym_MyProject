@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Dumbbell, Info, RefreshCw, Trash2, Sparkles, Pencil, Save, X, Plus, Activity } from "lucide-react";
+import { Dumbbell, Info, RefreshCw, Trash2, Sparkles, Pencil, Save, X, Plus, Activity, Video, Play } from "lucide-react";
 
 // ExerciseList: Component hiển thị danh sách bài tập chi tiết của ngày kèm theo tính năng Sửa, Xoá, Thay thế và Gợi ý bằng AI
 export default function ExerciseList({
   dayDetails,
   exercises,
   isLoadingDetails,
+  isPending,
   onOpenSwapModal,
   onRemoveExercise,
   onUpdateExerciseList,
@@ -14,6 +15,14 @@ export default function ExerciseList({
 }) {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editValues, setEditValues] = useState({ sets: 3, repsMax: 12, weightKg: 0 });
+  const [guideExercise, setGuideExercise] = useState(null);
+
+  const getYouTubeId = (url) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+  };
 
   // startEditing: Kích hoạt chế độ chỉnh sửa thông số Sets/Reps/Weight cho bài tập ở vị trí index
   const startEditing = (index, exercise) => {
@@ -164,21 +173,24 @@ export default function ExerciseList({
                   <>
                     <button 
                       onClick={() => startEditing(exIndex, ex)} 
-                      className="flex items-center gap-1 px-2 py-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-md text-[9px] font-bold cursor-pointer transition hover:border-primary text-[var(--text-color)]"
+                      disabled={isPending}
+                      className={`flex items-center gap-1 px-2 py-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-md text-[9px] font-bold cursor-pointer transition hover:border-primary text-[var(--text-color)] ${isPending ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
                     >
                       <Pencil className="w-2.5 h-2.5 text-primary" />
                       <span>Sửa</span>
                     </button>
                     <button 
                       onClick={() => onOpenSwapModal(exIndex)} 
-                      className="flex items-center gap-1 px-1.5 py-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-md text-[9px] font-bold cursor-pointer transition hover:border-primary text-[var(--text-color)]"
+                      disabled={isPending}
+                      className={`flex items-center gap-1 px-1.5 py-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-md text-[9px] font-bold cursor-pointer transition hover:border-primary text-[var(--text-color)] ${isPending ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
                     >
                       <RefreshCw className="w-2.5 h-2.5 text-primary" />
                       <span>Swap</span>
                     </button>
                     <button
                       onClick={() => onRemoveExercise(exIndex)}
-                      className="w-6 h-6 flex items-center justify-center bg-[var(--bg-color)] border border-[var(--border-color)] rounded-md text-[var(--text-muted)] cursor-pointer transition hover:border-rose-400 hover:text-rose-400"
+                      disabled={isPending}
+                      className={`w-6 h-6 flex items-center justify-center bg-[var(--bg-color)] border border-[var(--border-color)] rounded-md text-[var(--text-muted)] cursor-pointer transition hover:border-rose-400 hover:text-rose-400 ${isPending ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
                       title="Xoá bài tập khỏi ngày này"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -188,14 +200,16 @@ export default function ExerciseList({
                   <>
                     <button 
                       onClick={() => saveChanges(exIndex)} 
-                      className="flex items-center gap-1 px-2.5 py-1 bg-primary text-black rounded-md text-[9px] font-extrabold cursor-pointer transition hover:bg-primary-hover"
+                      disabled={isPending}
+                      className={`flex items-center gap-1 px-2.5 py-1 bg-primary text-black rounded-md text-[9px] font-extrabold cursor-pointer transition hover:bg-primary-hover ${isPending ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
                     >
                       <Save className="w-2.5 h-2.5" />
                       <span>Lưu</span>
                     </button>
                     <button 
                       onClick={cancelEditing} 
-                      className="flex items-center gap-1 px-2 py-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-md text-[9px] font-bold cursor-pointer transition hover:border-rose-400 text-rose-400"
+                      disabled={isPending}
+                      className={`flex items-center gap-1 px-2 py-1 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-md text-[9px] font-bold cursor-pointer transition hover:border-rose-400 text-rose-400 ${isPending ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
                     >
                       <X className="w-2.5 h-2.5" />
                       <span>Huỷ</span>
@@ -211,7 +225,7 @@ export default function ExerciseList({
                 <input 
                   type="number"
                   value={currentSets}
-                  disabled={!isEditing}
+                  disabled={isPending || !isEditing}
                   onChange={(e) => handleFieldChange("sets", parseInt(e.target.value) || 1)}
                   className={`w-full max-w-[65px] text-center text-xs font-black outline-none transition-all py-1 h-8 box-border ${
                     isEditing 
@@ -225,7 +239,7 @@ export default function ExerciseList({
                 <input 
                   type="number"
                   value={currentReps}
-                  disabled={!isEditing}
+                  disabled={isPending || !isEditing}
                   onChange={(e) => handleFieldChange("repsMax", parseInt(e.target.value) || 1)}
                   className={`w-full max-w-[65px] text-center text-xs font-black outline-none transition-all py-1 h-8 box-border ${
                     isEditing 
@@ -239,7 +253,7 @@ export default function ExerciseList({
                 <input 
                   type="number"
                   value={currentWeight}
-                  disabled={!isEditing}
+                  disabled={isPending || !isEditing}
                   step="0.5"
                   onChange={(e) => handleFieldChange("weightKg", parseFloat(e.target.value) || 0)}
                   className={`w-full max-w-[65px] text-center text-xs font-black outline-none transition-all py-1 h-8 box-border ${
@@ -253,13 +267,28 @@ export default function ExerciseList({
 
             <div className="flex justify-between items-center text-[10px] border-t border-[var(--border-color)] pt-1.5">
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] text-[var(--text-muted)]">Nghỉ ({ex.restSeconds}s)</span>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" defaultChecked className="sr-only peer" />
-                  <div className="w-7 h-4 bg-[var(--border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--text-muted)] after:border-[var(--border-color)] after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary peer-checked:after:bg-black peer-checked:after:translate-x-3"></div>
-                </label>
+                {ex.exercise?.videoUrl ? (
+                  <button
+                    type="button"
+                    onClick={() => setGuideExercise(ex.exercise)}
+                    className="flex items-center gap-1 text-[10px] font-black text-primary hover:text-primary/80 bg-transparent border-0 p-0 cursor-pointer"
+                  >
+                    <Video className="w-3.5 h-3.5 fill-primary/10 text-primary" />
+                    <span>Video hướng dẫn</span>
+                  </button>
+                ) : (
+                  <a
+                    href={`https://www.youtube.com/results?search_query=hướng+dẫn+tập+${encodeURIComponent(ex.exercise?.name || "")}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1 text-[10px] font-black text-primary hover:text-primary/80 bg-transparent border-0 p-0 cursor-pointer no-underline"
+                  >
+                    <Video className="w-3.5 h-3.5 text-primary" />
+                    <span>Video gợi ý</span>
+                  </a>
+                )}
               </div>
-              <button onClick={onShowAIModal} className="flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary border border-primary/20 rounded-md text-[9px] font-black cursor-pointer hover:bg-primary/20 transition">
+              <button onClick={onShowAIModal} disabled={isPending} className={`flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary border border-primary/20 rounded-md text-[9px] font-black cursor-pointer hover:bg-primary/20 transition ${isPending ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}>
                 <Sparkles className="w-3 h-3" />
                 <span>AI Form Analysis</span>
               </button>
@@ -268,10 +297,69 @@ export default function ExerciseList({
         );
       })}
 
-      <button onClick={() => onOpenSwapModal(null)} className="w-full border-2 border-dashed border-[var(--border-color)] bg-transparent rounded-2xl p-2.5 flex flex-col items-center justify-center gap-0.5 text-[var(--text-muted)] cursor-pointer transition-all hover:border-primary hover:text-[var(--text-color)]">
+      <button onClick={() => onOpenSwapModal(null)} disabled={isPending} className={`w-full border-2 border-dashed border-[var(--border-color)] bg-transparent rounded-2xl p-2.5 flex flex-col items-center justify-center gap-0.5 text-[var(--text-muted)] cursor-pointer transition-all hover:border-primary hover:text-[var(--text-color)] ${isPending ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}>
         <Plus className="w-4 h-4" />
         <span className="text-xs font-bold">Thêm bài tập mới</span>
       </button>
+
+      {/* Modal Video hướng dẫn */}
+      {guideExercise && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+          <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] w-full max-w-lg rounded-3xl p-5 flex flex-col gap-4 shadow-2xl relative animate-scale-up">
+            <div className="flex justify-between items-start gap-3">
+              <div className="min-w-0">
+                <span className="text-[10px] uppercase font-black tracking-wider text-primary">
+                  Video hướng dẫn
+                </span>
+                <h3 className="font-extrabold text-base text-[var(--text-color)] truncate">
+                  {guideExercise.name || "Bài tập"}
+                </h3>
+              </div>
+              <button
+                onClick={() => setGuideExercise(null)}
+                className="p-1.5 hover:bg-[var(--bg-color)] rounded-lg text-[var(--text-muted)] hover:text-[var(--text-color)] border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="aspect-video w-full rounded-2xl overflow-hidden bg-[var(--bg-color)] border border-[var(--border-color)]">
+              {getYouTubeId(guideExercise.videoUrl) ? (
+                <iframe
+                  src={`https://www.youtube.com/embed/${getYouTubeId(guideExercise.videoUrl)}?autoplay=1&rel=0`}
+                  title={`Video hướng dẫn ${guideExercise.name || "bài tập"}`}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center gap-3 p-6 text-center">
+                  {guideExercise.thumbnailUrl && (
+                    <img
+                      src={guideExercise.thumbnailUrl}
+                      alt={guideExercise.name || "Bài tập"}
+                      className="absolute inset-0 w-full h-full object-cover opacity-20"
+                    />
+                  )}
+                  <span className="relative text-xs text-[var(--text-muted)] font-bold">
+                    Video này cần mở bằng trình phát bên ngoài.
+                  </span>
+                  <a
+                    href={guideExercise.videoUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="relative h-10 px-4 rounded-xl bg-primary text-black text-xs font-black flex items-center justify-center gap-2 no-underline"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-black" />
+                    Mở video
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

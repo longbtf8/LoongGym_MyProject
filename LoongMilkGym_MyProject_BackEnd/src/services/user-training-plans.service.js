@@ -276,7 +276,7 @@ const buildProgramPlanDays = ({ program, startDate, count, startOffset = 0, dayM
     (index) => {
       const offset = startOffset + index;
       const programDay = getProgramDayForOffset(program.days, offset, dayMapping);
-      return programDay ? `Ngày ${offset + 1}: ${programDay.title}` : `Ngày ${offset + 1}`;
+      return programDay?.title || "Buổi tập";
     },
     (index) => {
       const programDay = getProgramDayForOffset(program.days, startOffset + index, dayMapping);
@@ -324,7 +324,9 @@ const appendUpcomingDaysIfNeeded = async (plan) => {
 
   const lastDay = plan.days[plan.days.length - 1];
   const nextStartDate = lastDay ? addDays(lastDay.scheduledDate, 1) : getDateOnly(plan.startDate);
-  const startOffset = diffDays(plan.startDate, nextStartDate);
+  const startOffset = Number.isInteger(lastDay?.metadata?.cycleOffset)
+    ? lastDay.metadata.cycleOffset + 1
+    : diffDays(plan.startDate, nextStartDate);
   let daysToCreate = [];
 
   if (plan.programId) {
@@ -410,7 +412,7 @@ const startProgramPlan = async (userId, programId, startDateInput, dayMappingInp
     ? dayMappingInput
     : null;
   const libraryExercises = await getExerciseLibrary();
-  const startDate = startDateInput ? new Date(startDateInput) : new Date();
+  const startDate = getDateOnly(startDateInput ? new Date(startDateInput) : new Date());
   const days = buildProgramPlanDays({
     program,
     startDate,
@@ -561,42 +563,47 @@ const getDayDetails = async (userId, dayId) => {
 
   // 4. Lấy danh sách bài tập (sử dụng customExercises từ metadata nếu có)
   let exercises = [];
-  const customExercises = Array.isArray(day.metadata?.customExercises)
+  const hasCustomExercises = day.metadata?.customExercises !== undefined && day.metadata?.customExercises !== null;
+  const customExercises = hasCustomExercises
     ? day.metadata.customExercises
     : [];
 
-  if (customExercises.length > 0) {
+  if (hasCustomExercises) {
     const customExs = customExercises;
-    const exIds = customExs.map(e => e.exerciseId);
-    
-    const dbExs = await prisma.exercise.findMany({
-      where: { id: { in: exIds } },
-      include: {
-        primaryEquipment: true,
-        muscles: {
-          include: {
-            muscleGroup: true
+    if (customExs.length === 0) {
+      exercises = [];
+    } else {
+      const exIds = customExs.map(e => e.exerciseId);
+      
+      const dbExs = await prisma.exercise.findMany({
+        where: { id: { in: exIds } },
+        include: {
+          primaryEquipment: true,
+          muscles: {
+            include: {
+              muscleGroup: true
+            }
           }
         }
-      }
-    });
+      });
 
-    exercises = customExs.map(ce => {
-      const exercise = dbExs.find(e => e.id === ce.exerciseId);
-      return {
-        id: ce.id || ce.exerciseId,
-        exerciseId: ce.exerciseId,
-        exerciseOrder: ce.exerciseOrder,
-        sets: ce.sets,
-        repsMin: ce.repsMin,
-        repsMax: ce.repsMax,
-        weightKg: ce.weightKg,
-        restSeconds: ce.restSeconds,
-        tempo: ce.tempo || "2-0-1-0",
-        note: ce.note || "",
-        exercise: exercise || null
-      };
-    }).sort((a, b) => a.exerciseOrder - b.exerciseOrder);
+      exercises = customExs.map(ce => {
+        const exercise = dbExs.find(e => e.id === ce.exerciseId);
+        return {
+          id: ce.id || ce.exerciseId,
+          exerciseId: ce.exerciseId,
+          exerciseOrder: ce.exerciseOrder,
+          sets: ce.sets,
+          repsMin: ce.repsMin,
+          repsMax: ce.repsMax,
+          weightKg: ce.weightKg,
+          restSeconds: ce.restSeconds,
+          tempo: ce.tempo || "2-0-1-0",
+          note: ce.note || "",
+          exercise: exercise || null
+        };
+      }).sort((a, b) => a.exerciseOrder - b.exerciseOrder);
+    }
   } else if (programDay && programDay.templates.length > 0) {
     exercises = programDay.templates[0].exercises;
   }
@@ -642,6 +649,7 @@ const updateDayDetails = async (userId, dayId, updateData) => {
 
   // Chuẩn bị dữ liệu cập nhật
   const data = {};
+  if (updateData.title !== undefined) data.title = updateData.title;
   if (updateData.status !== undefined) data.status = updateData.status;
   if (updateData.notes !== undefined) data.notes = updateData.notes;
   if (updateData.skipReason !== undefined) data.skipReason = updateData.skipReason;
@@ -662,7 +670,7 @@ const updateDayDetails = async (userId, dayId, updateData) => {
 };
 
 /**
- * Hoàn tất ngày tập, tính toán calo tiêu hao, cộng dồn thống kê cá nhân và dọn dẹp lịch sử > 30 ngày
+ * Hoàn tất ngày tập, tính toán calo tiêu hao, cộng dồn thống kê cá nhân và dọn lịch quá 30 ngày
  */
 const completeDay = async (userId, dayId, notes) => {
   // 1. Kiểm tra ngày tập hiện tại
@@ -721,8 +729,7 @@ const completeDay = async (userId, dayId, notes) => {
     }
   });
 
-  // 5. Xóa tự động các ngày tập (completed, skipped, rest) cách đây quá 30 ngày
-  const cutoffDate = new Date();
+  const cutoffDate = getDateOnly(new Date());
   cutoffDate.setDate(cutoffDate.getDate() - 30);
   await prisma.userTrainingPlanDay.deleteMany({
     where: {
@@ -780,6 +787,51 @@ const getTrainingPlanDays = async (userId, { from, to }) => {
   });
 };
 
+const swapDaysDates = async (userId, dayId1, dayId2) => {
+  const day1 = await prisma.userTrainingPlanDay.findUnique({
+    where: { id: dayId1 },
+    include: { plan: true },
+  });
+  const day2 = await prisma.userTrainingPlanDay.findUnique({
+    where: { id: dayId2 },
+    include: { plan: true },
+  });
+
+  if (!day1 || !day2) {
+    throw new AppError("Không tìm thấy ngày tập để hoán đổi.", httpCodes.notFound);
+  }
+
+  if (day1.plan.userId !== userId || day2.plan.userId !== userId) {
+    throw new AppError("Bạn không có quyền chỉnh sửa ngày tập này.", httpCodes.forbidden);
+  }
+
+  if (day1.status === "completed" || day2.status === "completed") {
+    throw new AppError("Không thể hoán đổi ngày tập đã hoàn thành.", httpCodes.badRequest);
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const updatedDay1 = await tx.userTrainingPlanDay.update({
+      where: { id: dayId1 },
+      data: {
+        title: day2.title,
+        notes: day2.notes,
+        metadata: day2.metadata || {},
+      },
+    });
+
+    const updatedDay2 = await tx.userTrainingPlanDay.update({
+      where: { id: dayId2 },
+      data: {
+        title: day1.title,
+        notes: day1.notes,
+        metadata: day1.metadata || {},
+      },
+    });
+
+    return [updatedDay1, updatedDay2];
+  });
+};
+
 module.exports = {
   getActivePlan,
   startProgramPlan,
@@ -789,5 +841,6 @@ module.exports = {
   updateDayDetails,
   completeDay,
   getStats,
-  getTrainingPlanDays
+  getTrainingPlanDays,
+  swapDaysDates
 };

@@ -239,9 +239,14 @@ export default function ExerciseDetail() {
               </h2>
 
               {exercise.steps && exercise.steps.length > 0 ? (
-                <div className="flex flex-col gap-8 relative pl-4 before:absolute before:left-[21px] before:top-4 before:bottom-4 before:w-[2px] before:bg-[var(--border-color)]">
+                <div className="flex flex-col gap-8 relative pl-4">
                   {exercise.steps.map((step, idx) => (
                     <div key={step.id || idx} className="flex gap-4 items-start relative">
+                      {/* Vertical line connecting steps */}
+                      {idx < exercise.steps.length - 1 && (
+                        <div className="absolute left-[15px] top-8 bottom-0 w-[2px] bg-[var(--border-color)]" />
+                      )}
+                      
                       {/* Step Number Badge */}
                       <div className="w-8 h-8 rounded-full bg-[var(--bg-color)] border border-[var(--text-primary)] text-[var(--text-primary)] font-extrabold flex items-center justify-center shrink-0 z-10 text-sm shadow-md">
                         {step.stepOrder || idx + 1}

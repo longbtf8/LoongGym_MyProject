@@ -114,6 +114,14 @@ export const roadmapApi = createApi({
       }),
       invalidatesTags: (result, error, { id }) => ["Roadmap", { type: "DayDetails", id }],
     }),
+    swapDaysDates: builder.mutation({
+      query: ({ dayId1, dayId2 }) => ({
+        url: "/user-training-plans/days/swap-dates",
+        method: "POST",
+        data: { dayId1, dayId2 },
+      }),
+      invalidatesTags: ["Roadmap", "DayDetails"],
+    }),
   }),
 });
 
@@ -134,4 +142,5 @@ export const {
   useGetCurrentPlanQuery,
   useGetTrainingPlanDaysQuery,
   useUpdateTrainingPlanDayStatusMutation,
+  useSwapDaysDatesMutation,
 } = roadmapApi;

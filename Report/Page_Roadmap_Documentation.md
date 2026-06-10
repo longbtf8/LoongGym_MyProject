@@ -83,3 +83,19 @@ Trong component `ExerciseList.jsx`, khi người dùng bấm nút "Sửa" một 
 *   **Tải lên đám mây**: 4 ảnh gym/fitness chất lượng cao đã được tải lên Cloudinary tại thư mục `LoongMilkGym_APP/program_covers/` để làm ảnh bìa cho 4 giáo án mặc định.
 *   **Cập nhật Database**: Đã cập nhật mảng cấu hình `programsConfig` trong file seed `seed-roadmap.js` trỏ trực tiếp đến các URL secure của Cloudinary và chạy lại lệnh seed database thành công.
 *   **Kết quả**: Giao diện tuyển chọn giáo án hiển thị ảnh bìa sắc nét, tốc độ tải tối ưu thông qua CDN của Cloudinary.
+
+---
+
+## 🔒 6. Cơ Chế Xử Lý Lỗi Rỗng & Logic Khôi Phục Cá Nhân Hóa (Customization & Restore Logic)
+
+### A. An Toàn Truy Vấn SQL Khi Xóa Hết Bài Tập
+Khi người dùng xóa toàn bộ bài tập trong một ngày tập, danh sách bài tập tùy chỉnh `customExercises` chuyển thành mảng rỗng `[]`.
+*   **Vấn đề**: Việc truyền danh sách rỗng vào câu lệnh Prisma query (`in: []`) có thể tạo ra lỗi cú pháp SQL `IN ()` hoặc lỗi validate driver trên hệ cơ sở dữ liệu MariaDB, dẫn tới sập API trả về mã lỗi 500.
+*   **Giải pháp**: Tại Service `getDayDetails`, hệ thống rẽ nhánh thông minh: Nếu cờ `hasCustomExercises` là `true` nhưng độ dài của mảng bài tập bằng `0`, hệ thống trả ngay về kết quả mảng bài tập trống mà không thực hiện bất kỳ truy vấn Prisma Database nào. Điều này bảo vệ an toàn cho kết nối database và ngăn chặn hoàn toàn lỗi sập trang.
+
+### B. Tránh Spam Khôi Phục Bằng Cờ Trạng Thái `customized`
+Để mang lại trải nghiệm người dùng gọn gàng và tránh hành vi lạm dụng/spam nút khôi phục khi chưa có sự thay đổi:
+*   **Ghi nhận tùy biến**: Khi người dùng thay đổi bất kỳ thông tin nào (sửa thông số, xóa bài, thêm bài, đổi bài), hệ thống Frontend gửi kèm thuộc tính `customized: true` lưu vào trường `metadata` của ngày tập trong DB.
+*   **Hiển thị có chọn lọc**: Nút "Khôi phục lịch gốc" đi kèm điều kiện chỉ hiển thị khi `metadata.customized === true`.
+*   **Xóa cờ sau khôi phục**: Khi kích hoạt modal xác nhận và đồng ý khôi phục, thuộc tính `customExercises` được gán về `null` và `customized` được đặt lại thành `false`, ẩn nút khôi phục trên UI ngay lập tức.
+

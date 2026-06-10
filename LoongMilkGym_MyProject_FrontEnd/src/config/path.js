@@ -11,6 +11,7 @@ const paths = {
   dashboard: "/dashboard",
   myPlan: "/my-plan",
   todayWorkout: "/today-workout",
+  nutrition: "/nutrition",
 };
 
 export default paths;

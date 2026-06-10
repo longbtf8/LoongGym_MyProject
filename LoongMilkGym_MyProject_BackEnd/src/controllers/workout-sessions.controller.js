@@ -63,7 +63,7 @@ const getSessionByPlanDay = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const { planDayId } = req.params;
-    const result = await workoutSessionsService.getSessionByPlanDay(userId, planDayId);
+    const result = await workoutSessionsService.getSessionsByPlanDay(userId, planDayId);
     return res.success(result, httpCodes.success, "Lấy buổi tập theo ngày kế hoạch thành công.");
   } catch (error) {
     next(error);

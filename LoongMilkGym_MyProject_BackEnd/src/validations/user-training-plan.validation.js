@@ -11,6 +11,7 @@ const updateDayDetailsSchema = z.object({
     dayId: z.string().uuid("ID ngày tập không đúng định dạng UUID"),
   }),
   body: z.object({
+    title: z.string().trim().min(1).max(150).optional(),
     status: z.enum(["pending", "completed", "skipped", "rest"]).optional(),
     notes: z.string().trim().nullable().optional(),
     skipReason: z.string().trim().nullable().optional(),

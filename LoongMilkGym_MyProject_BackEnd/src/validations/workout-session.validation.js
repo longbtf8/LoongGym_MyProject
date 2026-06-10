@@ -10,6 +10,7 @@ const startSessionSchema = z.object({
       .nullable(),
     title: z.string().trim().max(150, "Tiêu đề không được vượt quá 150 ký tự").optional().nullable(),
     notes: z.string().trim().optional().nullable(),
+    isFreeWorkout: z.boolean().optional(),
   }),
 });
 

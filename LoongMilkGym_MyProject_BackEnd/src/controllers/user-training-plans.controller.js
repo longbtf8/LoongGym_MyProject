@@ -87,6 +87,17 @@ const getStats = async (req, res, next) => {
   }
 };
 
+const swapDaysDates = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { dayId1, dayId2 } = req.body;
+    const result = await userTrainingPlansService.swapDaysDates(userId, dayId1, dayId2);
+    return res.success(result, httpCodes.success, "Hoán đổi ngày tập thành công.");
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getActivePlan,
   startProgramPlan,
@@ -95,5 +106,6 @@ module.exports = {
   getDayDetails,
   updateDayDetails,
   completeDay,
-  getStats
+  getStats,
+  swapDaysDates
 };

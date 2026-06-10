@@ -17,15 +17,18 @@ const ExerciseDetail = lazy(() => import("@/pages/exercises/detail/index.jsx"));
 const Dashboard = lazy(() => import("@/pages/dashboard/index.jsx"));
 const MyPlan = lazy(() => import("@/pages/myPlan/index.jsx"));
 const TodayWorkout = lazy(() => import("@/pages/todayWorkout/index.jsx"));
+const Nutrition = lazy(() => import("@/pages/nutrition/index.jsx"));
 
 // Layouts
-import { DefaultLayout, AuthLayout, MessageLayout } from "@/layouts";
+import DefaultLayout from "@/layouts/DefaultLayout";
+import AuthLayout from "@/layouts/AuthLayout";
+import MessageLayout from "@/layouts/MessageLayout";
 
 // Guards
-import GuestGuard from "@/components/Guards/GuestGuard";
 import AuthGuard from "@/components/Guards/AuthGuard";
+import GuestGuard from "@/components/Guards/GuestGuard";
 
-// Public Routes (Không cần đăng nhập, nhưng một số trang Auth sẽ được bảo vệ bởi GuestGuard)
+// Public Routes (Ai cũng xem được)
 const publicRoutes = [
   { path: paths.home, component: Home, layout: DefaultLayout },
   { path: paths.login, component: Login, layout: AuthLayout, guard: GuestGuard },
@@ -44,6 +47,7 @@ const privateRoutes = [
   { path: paths.dashboard, component: Dashboard, layout: DefaultLayout, guard: AuthGuard },
   { path: paths.myPlan, component: MyPlan, layout: DefaultLayout, guard: AuthGuard },
   { path: paths.todayWorkout, component: TodayWorkout, layout: DefaultLayout, guard: AuthGuard },
+  { path: paths.nutrition, component: Nutrition, layout: DefaultLayout, guard: AuthGuard },
 ];
 
 export { publicRoutes, privateRoutes };

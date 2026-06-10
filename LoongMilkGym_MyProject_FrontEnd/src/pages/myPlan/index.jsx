@@ -1,14 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Dumbbell, Activity, Check, Play, History, ChevronDown, ChevronUp } from "lucide-react";
-import { 
-  useGetActivePlanQuery, 
+import { Dumbbell, Activity, Check, Play, History, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
+import {
+  useGetActivePlanQuery,
   useGetStatsQuery,
-  useGetDayDetailsQuery, 
-  useUpdateDayDetailsMutation, 
-  useCompleteDayMutation 
+  useGetDayDetailsQuery,
+  useUpdateDayDetailsMutation,
+  useCompleteDayMutation,
+  useSwapDaysDatesMutation
 } from "@/services/roadmap/roadmapApi";
-import { useGetSessionByPlanDayQuery } from "@/services/workoutSession/workoutSessionApi";
+import { useGetSessionByPlanDayQuery as useGetSessionsByPlanDayQuery } from "@/services/workoutSession/workoutSessionApi";
 import LoadingScreen from "@/components/LoadingScreen";
 
 // Import modular components
@@ -20,6 +21,7 @@ import CancelModal from "./components/CancelModal";
 import SwapModal from "./components/SwapModal";
 import AIModal from "./components/AIModal";
 import SchedulerModal from "./components/SchedulerModal";
+import RestoreModal from "./components/RestoreModal";
 
 const toSavedExercise = (exercise, index) => ({
   id: exercise.id || exercise.exerciseId,
@@ -34,6 +36,18 @@ const toSavedExercise = (exercise, index) => ({
   note: exercise.note || "",
 });
 
+const getLocalDateString = (dateInput = new Date()) => {
+  const date = new Date(dateInput);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const getWorkoutDisplayTitle = (title = "Buổi tập") => {
+  return title.replace(/^Ngày\s+\d+\s*:\s*/i, "").trim() || "Buổi tập";
+};
+
 export default function MyPlan() {
   const navigate = useNavigate();
   const [selectedDayId, setSelectedDayId] = useState(null);
@@ -41,6 +55,7 @@ export default function MyPlan() {
   const [swapTargetIndex, setSwapTargetIndex] = useState(null);
   const [showAIModal, setShowAIModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [selectedProgramId, setSelectedProgramId] = useState(null);
 
   const [toast, setToast] = useState({ show: false, message: "" });
@@ -57,32 +72,80 @@ export default function MyPlan() {
 
   const activePlan = isPlanError ? null : activePlanRes?.data;
   const stats = statsRes?.data || { totalWorkoutDays: 0, totalCaloriesBurned: 0 };
-  const daysList = activePlan?.days || [];
+  const daysList = useMemo(() => activePlan?.days || [], [activePlan?.days]);
 
   const selectedIndex = daysList.findIndex(d => d.id === selectedDayId);
   const weekIdx = selectedIndex !== -1 ? Math.floor(selectedIndex / 7) : 0;
-  
-  const { data: dayDetailsRes, isLoading: isLoadingDetails } = useGetDayDetailsQuery(selectedDayId, {
+
+  const { data: dayDetailsRes, isLoading: isLoadingDetails, isFetching: isFetchingDetails } = useGetDayDetailsQuery(selectedDayId, {
     skip: !selectedDayId
   });
   const dayDetails = dayDetailsRes?.data;
   const exercises = dayDetails?.exercises || [];
+  const selectedWorkoutTitle = getWorkoutDisplayTitle(dayDetails?.day?.title);
 
-  const [updateDayDetails] = useUpdateDayDetailsMutation();
+  const todayStr = getLocalDateString();
+  const todayDay = daysList.find(d => d.scheduledDate?.startsWith(todayStr));
+  const isSelectedDayToday = dayDetails?.day?.scheduledDate?.startsWith(todayStr);
+  const isTodayCompleted = todayDay?.status === "completed";
+
+  const [updateDayDetails, { isLoading: isUpdating }] = useUpdateDayDetailsMutation();
   const [completeDay, { isLoading: isCompleting }] = useCompleteDayMutation();
+  const [swapDaysDates, { isLoading: isSwappingDates }] = useSwapDaysDatesMutation();
 
-  const { data: completedSessionRes } = useGetSessionByPlanDayQuery(selectedDayId, {
+  const isPending = isLoadingDetails || isFetchingDetails || isUpdating || isCompleting || isSwappingDates;
+
+  const handleRestoreOriginalExercises = async () => {
+    if (isPending) return;
+
+    try {
+      await updateDayDetails({
+        dayId: selectedDayId,
+        data: {
+          metadata: {
+            customExercises: null,
+            customized: false
+          }
+        }
+      }).unwrap();
+      setShowRestoreModal(false);
+      showToast("Đã khôi phục danh sách bài tập gốc.");
+    } catch (err) {
+      showToast("Không thể khôi phục danh sách bài tập.");
+    }
+  };
+
+  // State quản lý việc sửa/lưu ghi chú
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
+
+  // State quản lý việc thu gọn/mở rộng từng buổi tập trong lịch sử
+  const [expandedSessionIds, setExpandedSessionIds] = useState({});
+
+  const { data: completedSessionsRes } = useGetSessionsByPlanDayQuery(selectedDayId, {
     skip: !selectedDayId || !showHistory || dayDetails?.day?.status !== "completed"
   });
-  const completedSession = completedSessionRes?.data;
+  const completedSessions = useMemo(() => {
+    return [...(completedSessionsRes?.data || [])].sort((a, b) => {
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
+  }, [completedSessionsRes?.data]);
+
+  // Tự động mở rộng buổi tập duy nhất nếu danh sách chỉ có 1 buổi tập
+  useEffect(() => {
+    if (completedSessions.length === 1) {
+      const timer = setTimeout(() => {
+        setExpandedSessionIds({ [completedSessions[0].id]: true });
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [completedSessions]);
 
   useEffect(() => {
     if (daysList.length > 0) {
-      const todayStr = new Date().toISOString().split("T")[0];
-      const todayDay = daysList.find(d => d.scheduledDate.startsWith(todayStr));
+      const todayDay = daysList.find(d => d.scheduledDate?.startsWith(todayStr));
       const pendingDay = daysList.find(d => d.status === "pending");
       const targetDay = todayDay || pendingDay || daysList[0];
-      
+
       const exists = daysList.some(d => d.id === selectedDayId);
       if (!selectedDayId || !exists) {
         const timer = setTimeout(() => {
@@ -98,13 +161,15 @@ export default function MyPlan() {
         return () => clearTimeout(timer);
       }
     }
-  }, [daysList, selectedDayId, setSelectedDayId]);
+  }, [daysList, selectedDayId, setSelectedDayId, todayStr]);
 
   useEffect(() => {
     if (dayDetails?.day) {
       const timer = setTimeout(() => {
         setSessionNotes(dayDetails.day.notes || "");
         setShowHistory(false);
+        setIsEditingNotes(false);
+        setExpandedSessionIds({});
       }, 0);
       return () => clearTimeout(timer);
     }
@@ -149,7 +214,6 @@ export default function MyPlan() {
   }
 
   const weekDays = daysList.slice(weekIdx * 7, (weekIdx + 1) * 7);
-  const todayStr = new Date().toISOString().split("T")[0];
 
   // handlePrevWeek: Chuyển slider lịch hiển thị sang tuần trước đó
   const handlePrevWeek = () => {
@@ -169,10 +233,16 @@ export default function MyPlan() {
 
   // handleUpdateExerciseList: Lưu danh sách bài tập (ví dụ sau khi sửa Sets/Reps/Weight trực tiếp)
   const handleUpdateExerciseList = async (updatedExercises) => {
+    if (isPending) return;
     try {
       await updateDayDetails({
         dayId: selectedDayId,
-        data: { metadata: { customExercises: updatedExercises } }
+        data: {
+          metadata: {
+            customExercises: updatedExercises,
+            customized: true
+          }
+        }
       }).unwrap();
       showToast("Đã lưu thay đổi bài tập.");
     } catch {
@@ -182,6 +252,7 @@ export default function MyPlan() {
 
   // handleRemoveExercise: Xóa một bài tập ra khỏi danh sách của ngày
   const handleRemoveExercise = async (exerciseIndex) => {
+    if (isPending) return;
     const updatedExercises = exercises
       .filter((_, index) => index !== exerciseIndex)
       .map((ex, index) => toSavedExercise(ex, index));
@@ -189,7 +260,12 @@ export default function MyPlan() {
     try {
       await updateDayDetails({
         dayId: selectedDayId,
-        data: { metadata: { customExercises: updatedExercises } }
+        data: {
+          metadata: {
+            customExercises: updatedExercises,
+            customized: true
+          }
+        }
       }).unwrap();
       showToast("Đã xoá bài tập khỏi ngày này.");
     } catch {
@@ -199,12 +275,14 @@ export default function MyPlan() {
 
   // openSwapModal: Mở modal để chọn bài tập thay thế hoặc thêm bài mới
   const openSwapModal = (index = null) => {
+    if (isPending) return;
     setSwapTargetIndex(index);
     setShowSwapModal(true);
   };
 
   // handleSelectExercise: Thay thế bài tập tại vị trí chỉ định hoặc thêm bài tập mới vào cuối danh sách
   const handleSelectExercise = async (newExercise) => {
+    if (isPending) return;
     const updatedExercises = swapTargetIndex !== null
       ? exercises.map((ex, index) => {
           if (index === swapTargetIndex) {
@@ -239,7 +317,12 @@ export default function MyPlan() {
     try {
       await updateDayDetails({
         dayId: selectedDayId,
-        data: { metadata: { customExercises: updatedExercises } }
+        data: {
+          metadata: {
+            customExercises: updatedExercises,
+            customized: true
+          }
+        }
       }).unwrap();
       setShowSwapModal(false);
       showToast(swapTargetIndex !== null ? "Thay thế bài tập thành công!" : "Thêm bài tập mới thành công!");
@@ -261,6 +344,51 @@ export default function MyPlan() {
     }
   };
 
+  // handleSwapToToday: Đưa nội dung buổi tập được chọn về hôm nay
+  const handleSwapToToday = async () => {
+    if (isPending) return;
+    if (!selectedDayId || daysList.length === 0) return;
+
+    if (!todayDay) {
+      showToast("Không tìm thấy ngày tập của ngày hôm nay.");
+      return;
+    }
+
+    if (selectedDayId === todayDay.id) {
+      showToast("Ngày được chọn đã là ngày hôm nay rồi.");
+      return;
+    }
+
+    if (isTodayCompleted) {
+      try {
+        const exercisesToCopy = exercises.map((ex, index) => toSavedExercise(ex, index));
+        await updateDayDetails({
+          dayId: todayDay.id,
+          data: {
+            title: selectedWorkoutTitle,
+            metadata: { customExercises: exercisesToCopy },
+          }
+        }).unwrap();
+
+        showToast("🔄 Đã thay thế bài tập hôm nay bằng buổi tập này. Chuẩn bị tập thêm!");
+        navigate(`/today-workout?dayId=${todayDay.id}`);
+      } catch {
+        showToast("Lỗi khi thay thế bài tập hôm nay.");
+      }
+    } else {
+      try {
+        await swapDaysDates({
+          dayId1: selectedDayId,
+          dayId2: todayDay.id
+        }).unwrap();
+        showToast("🔄 Đã chuyển ngày tập thành công về hôm nay!");
+        setSelectedDayId(selectedDayId); // Refresh selected day view
+      } catch {
+        showToast("Lỗi khi hoán đổi ngày tập.");
+      }
+    }
+  };
+
   // handleCancelPlanSuccess: Xử lý sau khi huỷ lộ trình thành công bên trong Modal
   const handleCancelPlanSuccess = (message) => {
     setSelectedDayId(null);
@@ -271,13 +399,14 @@ export default function MyPlan() {
   return (
     <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] py-6 px-4 flex justify-center transition-colors duration-300 w-full">
       <div className="max-w-[1000px] w-full flex flex-col gap-4">
-        
+
         {/* Title */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h1 className="text-2xl font-black text-center sm:text-left tracking-tight !m-0">Lộ trình & Tracker Thông minh</h1>
           <button
             onClick={() => setShowCancelModal(true)}
-            className="self-center sm:self-auto px-3 py-2 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white text-xs font-black transition cursor-pointer"
+            disabled={isPending}
+            className="self-center sm:self-auto px-3 py-2 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white text-xs font-black transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
           >
             Huỷ lộ trình
           </button>
@@ -297,15 +426,31 @@ export default function MyPlan() {
 
         {/* Main Columns */}
         <div className="grid grid-cols-1 lg:grid-cols-[1.55fr_0.95fr] gap-4">
-          
+
           {/* CỘT TRÁI (BÀI TẬP) */}
           <div>
-            <div className="flex justify-between items-center mb-2.5">
-              <h2 className="text-sm font-black flex items-center gap-1.5">
-                <Dumbbell className="w-4 h-4 text-primary" />
-                {dayDetails?.day?.title || "Buổi tập"}
-              </h2>
-              <span className="text-[10px] text-[var(--text-muted)]">Dự kiến: 65 phút</span>
+            <div className="flex justify-between items-end mb-2.5">
+              <div className="flex flex-col gap-0.5">
+                <h2 className="text-sm font-black flex items-center gap-1.5">
+                  <Dumbbell className="w-4 h-4 text-primary" />
+                  {selectedWorkoutTitle}
+                </h2>
+                <span className="text-[10px] text-[var(--text-muted)] pl-5.5">Dự kiến: 65 phút</span>
+              </div>
+              
+              {activePlan?.programId && 
+               dayDetails?.day?.status !== "completed" && 
+               dayDetails?.day?.metadata?.customized === true && (
+                <button
+                  onClick={() => setShowRestoreModal(true)}
+                  disabled={isPending}
+                  className="flex items-center gap-1 text-[10px] font-bold text-rose-400 hover:text-rose-300 transition-colors border-0 bg-transparent cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                  title="Khôi phục lại danh sách bài tập ban đầu của giáo án"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Khôi phục lịch gốc</span>
+                </button>
+              )}
             </div>
 
             {dayDetails?.day?.status === "completed" && (
@@ -315,13 +460,26 @@ export default function MyPlan() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-3">
-                  <button
-                    onClick={() => navigate(`/today-workout?dayId=${selectedDayId}`)}
-                    className="h-11 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-color)] rounded-xl text-xs font-black flex items-center justify-center gap-2 hover:bg-[var(--border-color)] active:scale-[0.99] transition cursor-pointer"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    Tập lại buổi này
-                  </button>
+                  {isSelectedDayToday ? (
+                    <button
+                      onClick={() => navigate(`/today-workout?dayId=${selectedDayId}`)}
+                      className="h-11 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-color)] rounded-xl text-xs font-black flex items-center justify-center gap-2 hover:bg-[var(--border-color)] active:scale-[0.99] transition cursor-pointer"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      Tập thêm buổi này
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleSwapToToday}
+                      disabled={isPending}
+                      className="h-11 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl text-xs font-black flex items-center justify-center gap-2 hover:bg-emerald-500/20 active:scale-[0.99] transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
+                    >
+                      <Activity className="w-3.5 h-3.5" />
+                      {isTodayCompleted
+                        ? "Tập thêm buổi này hôm nay"
+                        : "Tập buổi này hôm nay"}
+                    </button>
+                  )}
 
                   <button
                     onClick={() => setShowHistory(!showHistory)}
@@ -339,50 +497,90 @@ export default function MyPlan() {
               <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[20px] p-4 mb-3 flex flex-col gap-3.5">
                 <div className="flex items-center gap-2 pb-2 border-b border-[var(--border-color)]">
                   <History className="w-4 h-4 text-primary" />
-                  <h3 className="text-xs font-black uppercase tracking-wider text-primary">Lịch sử chi tiết buổi tập</h3>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-primary">
+                    Lịch sử tập luyện ({completedSessions.length} buổi)
+                  </h3>
                 </div>
-                
-                {completedSession ? (
+
+                {completedSessions.length > 0 ? (
                   <div className="flex flex-col gap-3">
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="bg-[var(--bg-color)] p-2.5 rounded-xl border border-[var(--border-color)]">
-                        <span className="text-[10px] text-[var(--text-muted)] block">Thời lượng tập</span>
-                        <span className="font-extrabold">{completedSession.durationSeconds ? `${Math.round(completedSession.durationSeconds / 60)} phút` : "Chưa ghi nhận"}</span>
-                      </div>
-                      <div className="bg-[var(--bg-color)] p-2.5 rounded-xl border border-[var(--border-color)]">
-                        <span className="text-[10px] text-[var(--text-muted)] block">Độ khó (RPE)</span>
-                        <span className="font-extrabold text-primary">{completedSession.perceivedEffort ? `${completedSession.perceivedEffort}/10` : "Chưa đánh giá"}</span>
-                      </div>
-                    </div>
+                    {completedSessions.map((session, sIdx) => {
+                      const isExpanded = !!expandedSessionIds[session.id];
+                      const formattedDate = new Date(session.createdAt).toLocaleDateString("vi-VN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric"
+                      });
 
-                    {completedSession.notes && (
-                      <div className="bg-[var(--bg-color)] p-2.5 rounded-xl border border-[var(--border-color)] text-xs">
-                        <span className="text-[10px] text-[var(--text-muted)] block mb-1">Ghi chú buổi tập</span>
-                        <p className="m-0 italic text-[var(--text-color)]">{completedSession.notes}</p>
-                      </div>
-                    )}
-
-                    <div className="flex flex-col gap-2.5 mt-1">
-                      {completedSession.exercises?.map((se, idx) => (
-                        <div key={se.id} className="bg-[var(--bg-color)] p-3 rounded-xl border border-[var(--border-color)] flex flex-col gap-1.5">
-                          <span className="text-xs font-black block text-primary">{idx + 1}. {se.exercise?.name || "Bài tập"}</span>
-                          {se.sets && se.sets.length > 0 ? (
-                            <div className="flex flex-col gap-1">
-                              {se.sets.map((set, sIdx) => (
-                                <div key={set.id} className="flex items-center justify-between text-[11px] text-[var(--text-muted)] bg-[var(--bg-secondary)] px-2 py-1 rounded">
-                                  <span>Set {sIdx + 1} ({set.setType === "warmup" ? "Khởi động" : set.setType === "drop" ? "Dropset" : "Set chính"})</span>
-                                  <span className="font-semibold text-[var(--text-color)]">
-                                    {set.weightKg} kg × {set.reps} reps {set.rpe ? `(RPE: ${set.rpe})` : ""}
-                                  </span>
-                                </div>
-                              ))}
+                      return (
+                        <div key={session.id} className="border border-[var(--border-color)] rounded-xl bg-[var(--bg-color)] overflow-hidden">
+                          {/* Session Header Card */}
+                          <div
+                            onClick={() => {
+                              setExpandedSessionIds(prev => ({
+                                ...prev,
+                                [session.id]: !prev[session.id]
+                              }));
+                            }}
+                            className="p-3 flex items-center justify-between cursor-pointer hover:bg-[var(--bg-secondary)]/50 transition-colors"
+                          >
+	                            <div className="flex flex-col gap-1">
+	                              <span className="text-xs font-black text-[var(--text-color)]">
+	                                Lần {sIdx + 1} - {formattedDate}
+	                              </span>
+                              <div className="flex items-center gap-3 text-[10px] text-[var(--text-muted)]">
+                                <span>Thời lượng: {session.durationSeconds ? `${Math.round(session.durationSeconds / 60)} phút` : "N/A"}</span>
+                                <span>•</span>
+                                <span>RPE: {session.perceivedEffort ? `${session.perceivedEffort}/10` : "Chưa đánh giá"}</span>
+                              </div>
                             </div>
-                          ) : (
-                            <span className="text-[10px] text-[var(--text-muted)] italic">Không có set tập nào được ghi nhận.</span>
+
+                            {completedSessions.length > 1 && (
+                              <div className="p-1 border-0 bg-transparent text-[var(--text-muted)] hover:text-[var(--text-color)] text-[10px] font-bold flex items-center gap-1">
+                                {isExpanded ? "Ẩn" : "Xem chi tiết"}
+                                {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Session Expanded Details */}
+                          {isExpanded && (
+                            <div className="p-3 border-t border-[var(--border-color)] bg-[var(--bg-secondary)]/20 flex flex-col gap-3">
+                              {session.notes && (
+                                <div className="bg-[var(--bg-color)] p-2.5 rounded-xl border border-[var(--border-color)] text-xs">
+                                  <span className="text-[10px] text-[var(--text-muted)] block mb-0.5">Ghi chú buổi tập:</span>
+                                  <p className="m-0 italic text-[var(--text-color)]">{session.notes}</p>
+                                </div>
+                              )}
+
+                              <div className="flex flex-col gap-2.5">
+                                {session.exercises?.map((se, idx) => (
+                                  <div key={se.id} className="bg-[var(--bg-color)] p-2.5 rounded-xl border border-[var(--border-color)] flex flex-col gap-1.5">
+                                    <span className="text-xs font-black block text-primary">{idx + 1}. {se.exercise?.name || "Bài tập"}</span>
+                                    {se.sets && se.sets.length > 0 ? (
+                                      <div className="flex flex-col gap-1">
+                                        {se.sets.map((set, setIdx) => (
+                                          <div key={set.id} className="flex items-center justify-between text-[11px] text-[var(--text-muted)] bg-[var(--bg-secondary)] px-2 py-1 rounded">
+                                            <span>Set {setIdx + 1} ({set.setType === "warmup" ? "Khởi động" : set.setType === "drop" ? "Dropset" : "Set chính"})</span>
+                                            <span className="font-semibold text-[var(--text-color)]">
+                                              {set.weightKg} kg × {set.reps} reps {set.rpe ? `(RPE: ${set.rpe})` : ""}
+                                            </span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <span className="text-[10px] text-[var(--text-muted)] italic">Không có set tập nào được ghi nhận.</span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           )}
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-4 text-xs text-[var(--text-muted)]">
@@ -393,19 +591,35 @@ export default function MyPlan() {
             )}
 
             {dayDetails?.day?.status !== "completed" && dayDetails?.day?.status !== "rest" && dayDetails?.day && (
-              <button
-                onClick={() => navigate(`/today-workout?dayId=${selectedDayId}`)}
-                className="w-full h-11 bg-primary text-black rounded-xl text-xs font-black flex items-center justify-center gap-2 hover:bg-primary-hover active:scale-[0.99] transition cursor-pointer shadow-md shadow-primary/5 mb-3 border-0"
-              >
-                <Play className="w-3.5 h-3.5 fill-black" />
-                Bắt đầu buổi tập hôm nay (Theo dõi Set & Reps)
-              </button>
+              <>
+                {isSelectedDayToday ? (
+                  <button
+                    onClick={() => navigate(`/today-workout?dayId=${selectedDayId}`)}
+                    className="w-full h-11 bg-primary text-black rounded-xl text-xs font-black flex items-center justify-center gap-2 hover:bg-primary-hover active:scale-[0.99] transition cursor-pointer shadow-md shadow-primary/5 mb-3 border-0"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-black" />
+                    Bắt đầu buổi tập hôm nay (Theo dõi Set & Reps)
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleSwapToToday}
+                    disabled={isPending}
+                    className="w-full h-11 bg-emerald-500 text-white rounded-xl text-xs font-black flex items-center justify-center gap-2 hover:bg-emerald-600 active:scale-[0.99] transition cursor-pointer shadow-md shadow-emerald-500/15 mb-3 border-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
+                  >
+                    <Activity className="w-3.5 h-3.5" />
+                    {isTodayCompleted
+                      ? "Tập thêm buổi này hôm nay (Thay thế bài tập hôm nay)"
+                      : "Tập buổi này hôm nay (Thay thế buổi tập hiện tại)"}
+                  </button>
+                )}
+              </>
             )}
 
             <ExerciseList
               dayDetails={dayDetails}
               exercises={exercises}
               isLoadingDetails={isLoadingDetails}
+              isPending={isPending}
               onOpenSwapModal={openSwapModal}
               onRemoveExercise={handleRemoveExercise}
               onUpdateExerciseList={handleUpdateExerciseList}
@@ -421,6 +635,7 @@ export default function MyPlan() {
             selectedDayId={selectedDayId}
             exercises={exercises}
             isCompleting={isCompleting}
+            isPending={isPending}
             onCompleteWorkout={handleCompleteWorkout}
             showToast={showToast}
           />
@@ -434,29 +649,50 @@ export default function MyPlan() {
                 <Activity className="w-3.5 h-3.5 text-primary" />
                 Ghi chú buổi tập (Session Notes)
               </span>
-              <button
-                onClick={async () => {
-                  try {
-                    await updateDayDetails({
-                      dayId: selectedDayId,
-                      data: { notes: sessionNotes }
-                    }).unwrap();
-                    showToast("📝 Đã lưu ghi chú thành công!");
-                  } catch {
-                    showToast("Lỗi khi lưu ghi chú.");
-                  }
-                }}
-                className="px-3.5 py-1.5 bg-primary text-black rounded-xl text-[10px] font-black hover:bg-primary-hover transition border-0 cursor-pointer shadow-sm shadow-primary/5"
-              >
-                Lưu ghi chú
-              </button>
+              {isEditingNotes ? (
+                <button
+                  onClick={async () => {
+                    try {
+                      await updateDayDetails({
+                        dayId: selectedDayId,
+                        data: { notes: sessionNotes }
+                      }).unwrap();
+                      setIsEditingNotes(false);
+                      showToast("📝 Đã lưu ghi chú thành công!");
+                    } catch {
+                      showToast("Lỗi khi lưu ghi chú.");
+                    }
+                  }}
+                  className="px-3.5 py-1.5 bg-primary text-black rounded-xl text-[10px] font-black hover:bg-primary-hover transition border-0 cursor-pointer shadow-sm shadow-primary/5"
+                >
+                  Lưu ghi chú
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsEditingNotes(true)}
+                  disabled={isPending}
+                  className="px-3.5 py-1.5 bg-[var(--bg-color)] border border-[var(--border-color)] text-[var(--text-color)] hover:border-primary hover:text-primary rounded-xl text-[10px] font-black transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
+                >
+                  {dayDetails?.day?.notes ? "Sửa ghi chú" : "Thêm ghi chú"}
+                </button>
+              )}
             </div>
             <textarea
               rows={3}
-              placeholder="Ghi lại cảm nhận, chấn thương hoặc lưu ý cho buổi tập này..."
+              placeholder={isEditingNotes ? "Ghi lại cảm nhận, chấn thương hoặc lưu ý cho buổi tập này..." : "Không có ghi chú nào cho buổi tập này. Click để thêm..."}
               value={sessionNotes}
               onChange={(e) => setSessionNotes(e.target.value)}
-              className="w-full bg-[var(--bg-color)] border border-[var(--border-color)] rounded-xl p-2 text-xs text-[var(--text-color)] outline-none resize-none focus:border-primary"
+              readOnly={!isEditingNotes || isPending}
+              onClick={() => {
+                if (!isEditingNotes && !isPending) {
+                  setIsEditingNotes(true);
+                }
+              }}
+              className={`w-full border rounded-xl p-2 text-xs text-[var(--text-color)] outline-none resize-none transition-all duration-200 ${
+                isEditingNotes
+                  ? "bg-[var(--bg-color)] border-primary focus:border-primary"
+                  : "bg-[var(--bg-color)]/30 border-[var(--border-color)] cursor-pointer hover:border-primary/50 opacity-80"
+              }`}
             />
           </div>
         )}
@@ -477,6 +713,14 @@ export default function MyPlan() {
         onSuccess={handleCancelPlanSuccess}
       />
 
+      {/* MODAL KHÔI PHỤC LỊCH */}
+      <RestoreModal
+        isOpen={showRestoreModal}
+        onClose={() => setShowRestoreModal(false)}
+        onConfirm={handleRestoreOriginalExercises}
+        isPending={isPending}
+      />
+
       {/* Modal AI Form Analysis */}
       <AIModal
         isOpen={showAIModal}
@@ -494,6 +738,7 @@ export default function MyPlan() {
         swapTargetIndex={swapTargetIndex}
         dayDetails={dayDetails}
         onSelectExercise={handleSelectExercise}
+        isPending={isPending}
       />
     </div>
   );

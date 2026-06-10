@@ -18,6 +18,31 @@ const getDashboardSummary = async (userId) => {
 
   const profile = user.profile || {};
 
+  // Fetch real today's nutrition totals & targets
+  const todayStr = new Date().toISOString().split("T")[0];
+  let nutritionData = {
+    protein: 0,
+    proteinTarget: 160,
+    carbs: 0,
+    carbsTarget: 300,
+    fat: 0,
+    fatTarget: 80,
+  };
+
+  try {
+    const nutritionInfo = await require("./nutrition.service").getTodayNutrition(userId, todayStr);
+    nutritionData = {
+      protein: nutritionInfo.totals.protein,
+      proteinTarget: nutritionInfo.target.proteinGTarget ? Math.round(Number(nutritionInfo.target.proteinGTarget)) : 160,
+      carbs: nutritionInfo.totals.carbs,
+      carbsTarget: nutritionInfo.target.carbsGTarget ? Math.round(Number(nutritionInfo.target.carbsGTarget)) : 300,
+      fat: nutritionInfo.totals.fat,
+      fatTarget: nutritionInfo.target.fatGTarget ? Math.round(Number(nutritionInfo.target.fatGTarget)) : 80,
+    };
+  } catch (err) {
+    // Fallback to defaults on error
+  }
+
   return {
     user: {
       id: user.id,
@@ -29,14 +54,7 @@ const getDashboardSummary = async (userId) => {
     },
     todayWorkout: null,
     recoveryScore: 85,
-    nutrition: {
-      protein: 0,
-      proteinTarget: 160,
-      carbs: 0,
-      carbsTarget: 300,
-      fat: 0,
-      fatTarget: 80,
-    },
+    nutrition: nutritionData,
     stats: {
       completedWorkoutsThisWeek: 0,
       totalWorkoutMinutesThisWeek: 0,

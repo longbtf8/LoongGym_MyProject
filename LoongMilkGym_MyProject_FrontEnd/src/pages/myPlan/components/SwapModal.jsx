@@ -35,7 +35,8 @@ export default function SwapModal({
   onClose, 
   swapTargetIndex, 
   dayDetails, 
-  onSelectExercise 
+  onSelectExercise,
+  isPending
 }) {
   const [searchKeyword, setSearchKeyword] = useState("");
 
@@ -65,7 +66,8 @@ export default function SwapModal({
           </h3>
           <button 
             onClick={onClose}
-            className="text-[var(--text-muted)] hover:text-[var(--text-color)] text-sm font-bold border-0 bg-transparent cursor-pointer"
+            disabled={isPending}
+            className={`text-[var(--text-muted)] hover:text-[var(--text-color)] text-sm font-bold border-0 bg-transparent cursor-pointer ${isPending ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
           >
             ✕
           </button>
@@ -123,7 +125,8 @@ export default function SwapModal({
                 </div>
                 <button
                   onClick={() => onSelectExercise(exercise)}
-                  className="px-2.5 py-1 bg-primary text-black rounded-lg text-[10px] font-black cursor-pointer hover:bg-primary-hover transition"
+                  disabled={isPending}
+                  className={`px-2.5 py-1 bg-primary text-black rounded-lg text-[10px] font-black cursor-pointer hover:bg-primary-hover transition ${isPending ? "opacity-50 pointer-events-none cursor-not-allowed" : ""}`}
                 >
                   {swapTargetIndex !== null ? "Chọn" : "Thêm"}
                 </button>

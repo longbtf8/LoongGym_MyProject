@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, CalendarPlus, Flame, Heart } from "lucide-react";
 
 const difficultyMap = {
@@ -9,13 +9,17 @@ const difficultyMap = {
 };
 
 export default function ExerciseCard({ exercise, isFavorite = false, onToggleFavorite, onAddToSchedule }) {
+  const navigate = useNavigate();
   const primaryMuscle = exercise.muscles?.find((m) => m.role === "primary")?.muscleGroup?.name || "Toàn thân";
   const equipmentName = exercise.primaryEquipment?.name || "Tự trọng";
   const diffInfo = difficultyMap[exercise.difficulty] || { label: exercise.difficulty, color: "text-[var(--text-color)]" };
 
   return (
     <div className="group h-full pb-1">
-      <div className="h-full bg-[var(--bg-secondary)] border border-[var(--border-color)] group-hover:border-primary/40 rounded-xl sm:rounded-2xl overflow-hidden flex flex-col transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl group-hover:shadow-primary/5">
+      <div 
+        onClick={() => navigate(`/exercises/${exercise.slug}`)}
+        className="h-full bg-[var(--bg-secondary)] border border-[var(--border-color)] group-hover:border-primary/40 rounded-xl sm:rounded-2xl overflow-hidden flex flex-col transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl group-hover:shadow-primary/5 cursor-pointer"
+      >
         {/* Thumbnail Area */}
         <div className="relative aspect-video w-full overflow-hidden bg-[var(--input-bg)]">
           {exercise.thumbnailUrl ? (
@@ -44,7 +48,10 @@ export default function ExerciseCard({ exercise, isFavorite = false, onToggleFav
           <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex items-center gap-1.5">
             <button
               type="button"
-              onClick={() => onAddToSchedule?.(exercise)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToSchedule?.(exercise);
+              }}
               className="w-8 h-8 rounded-lg bg-[var(--bg-color)]/85 backdrop-blur-md border border-[var(--border-color)]/40 text-[var(--text-color)] hover:text-primary hover:border-primary/40 flex items-center justify-center transition cursor-pointer"
               title="Thêm vào lịch tập"
             >
@@ -52,7 +59,10 @@ export default function ExerciseCard({ exercise, isFavorite = false, onToggleFav
             </button>
             <button
               type="button"
-              onClick={() => onToggleFavorite?.(exercise.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFavorite?.(exercise.id);
+              }}
               className={`w-8 h-8 rounded-lg backdrop-blur-md border flex items-center justify-center transition cursor-pointer ${
                 isFavorite
                   ? "bg-rose-500 text-white border-rose-400"
@@ -86,6 +96,7 @@ export default function ExerciseCard({ exercise, isFavorite = false, onToggleFav
             
             <Link
               to={`/exercises/${exercise.slug}`}
+              onClick={(e) => e.stopPropagation()}
               className="bg-primary text-black hover:bg-primary-hover dark:bg-[#2a3014] dark:text-primary dark:hover:bg-[#343b19] font-bold text-[10px] sm:text-xs px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg flex items-center justify-center gap-0.5 sm:gap-1 transition-all active:scale-95 shadow-sm w-full sm:w-auto lg:w-full xl:w-auto text-center whitespace-nowrap"
             >
               <span>Chi tiết</span>

@@ -9,6 +9,7 @@ export default function AnalysisSidebar({
   selectedDayId,
   exercises,
   isCompleting,
+  isPending,
   onCompleteWorkout,
   showToast
 }) {
@@ -75,7 +76,7 @@ export default function AnalysisSidebar({
   const isCompletedOrPast = dayDetails?.day?.status === "completed" || isPast;
   const isRest = dayDetails?.day?.status === "rest";
 
-  const isButtonDisabled = isCompleting || isCompletedOrPast || isRest || isFuture;
+  const isButtonDisabled = isCompleting || isCompletedOrPast || isRest || isFuture || isPending;
 
   let buttonText = "Hoàn tất buổi tập";
   if (isCompletedOrPast) {
