@@ -382,7 +382,7 @@ export default function Recovery() {
 
         {/* ALERT NOTIFICATION */}
         {alert && (
-          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[99999] pointer-events-none">
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[99999] pointer-events-none">
             <div
               className={`flex items-center gap-3 px-5 py-3 rounded-2xl shadow-[0_10px_35px_rgba(0,0,0,0.4)] border backdrop-blur-md text-center animate-scale-in max-w-sm ${
                 alert.type === "success"
