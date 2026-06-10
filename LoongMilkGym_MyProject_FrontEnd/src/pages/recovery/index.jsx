@@ -382,24 +382,31 @@ export default function Recovery() {
 
         {/* ALERT NOTIFICATION */}
         {alert && (
-          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[99999] pointer-events-none">
+          <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[99999] pointer-events-none w-full max-w-md px-4 flex justify-center">
             <div
-              className={`flex items-center gap-3 px-5 py-3 rounded-2xl shadow-[0_10px_35px_rgba(0,0,0,0.4)] border backdrop-blur-md text-center animate-scale-in max-w-sm ${
+              className={`flex items-center gap-3.5 px-4.5 py-3 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.35)] border backdrop-blur-xl animate-slide-down pointer-events-auto max-w-sm w-full ${
                 alert.type === "success"
-                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                  ? "bg-emerald-950/80 border-emerald-500/40 text-emerald-300"
                   : alert.type === "error"
-                  ? "bg-red-500/10 border-red-500/30 text-red-400"
-                  : "bg-blue-500/10 border-blue-500/30 text-blue-400"
+                  ? "bg-red-950/80 border-red-500/40 text-red-300"
+                  : "bg-neutral-900/90 border-neutral-700/50 text-white"
               }`}
             >
-              {alert.type === "success" ? (
-                <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-              ) : alert.type === "error" ? (
-                <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
-              ) : (
-                <Info className="w-5 h-5 text-blue-400 flex-shrink-0" />
-              )}
-              <span className="text-xs font-black leading-snug">{alert.text}</span>
+              <div className="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-xl bg-white/10">
+                {alert.type === "success" ? (
+                  <CheckCircle2 className="w-4.5 h-4.5 text-emerald-400" />
+                ) : alert.type === "error" ? (
+                  <AlertTriangle className="w-4.5 h-4.5 text-red-400" />
+                ) : (
+                  <Info className="w-4.5 h-4.5 text-blue-400" />
+                )}
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-[10px] font-black tracking-wider uppercase opacity-60">
+                  {alert.type === "success" ? "Thành công" : alert.type === "error" ? "Cảnh báo" : "Thông tin"}
+                </p>
+                <p className="text-xs font-bold leading-normal text-white">{alert.text}</p>
+              </div>
             </div>
           </div>
         )}
