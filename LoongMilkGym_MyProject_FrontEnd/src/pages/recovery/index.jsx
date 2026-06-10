@@ -384,28 +384,38 @@ export default function Recovery() {
         {alert && (
           <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[99999] pointer-events-none w-full max-w-md px-4 flex justify-center">
             <div
-              className={`flex items-center gap-3.5 px-4.5 py-3 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.35)] border backdrop-blur-xl animate-slide-down pointer-events-auto max-w-sm w-full ${
-                alert.type === "success"
-                  ? "bg-emerald-950/80 border-emerald-500/40 text-emerald-300"
-                  : alert.type === "error"
-                  ? "bg-red-950/80 border-red-500/40 text-red-300"
-                  : "bg-neutral-900/90 border-neutral-700/50 text-white"
-              }`}
+              className={`flex items-center gap-3.5 px-4.5 py-3 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] border backdrop-blur-xl animate-slide-down pointer-events-auto max-w-sm w-full bg-[var(--bg-secondary)]/95 border-[var(--border-color)] text-[var(--text-color)]`}
             >
-              <div className="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-xl bg-white/10">
+              <div
+                className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-xl ${
+                  alert.type === "success"
+                    ? "bg-emerald-500/15"
+                    : alert.type === "error"
+                    ? "bg-red-500/15"
+                    : "bg-primary/15"
+                }`}
+              >
                 {alert.type === "success" ? (
-                  <CheckCircle2 className="w-4.5 h-4.5 text-emerald-400" />
+                  <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500" />
                 ) : alert.type === "error" ? (
-                  <AlertTriangle className="w-4.5 h-4.5 text-red-400" />
+                  <AlertTriangle className="w-4.5 h-4.5 text-red-500" />
                 ) : (
-                  <Info className="w-4.5 h-4.5 text-blue-400" />
+                  <Info className="w-4.5 h-4.5 text-primary" />
                 )}
               </div>
               <div className="flex-1 text-left">
-                <p className="text-[10px] font-black tracking-wider uppercase opacity-60">
+                <p
+                  className={`text-[9px] font-black tracking-wider uppercase ${
+                    alert.type === "success"
+                      ? "text-emerald-500"
+                      : alert.type === "error"
+                      ? "text-red-500"
+                      : "text-primary"
+                  }`}
+                >
                   {alert.type === "success" ? "Thành công" : alert.type === "error" ? "Cảnh báo" : "Thông tin"}
                 </p>
-                <p className="text-xs font-bold leading-normal text-white">{alert.text}</p>
+                <p className="text-xs font-bold leading-normal text-[var(--text-color)]">{alert.text}</p>
               </div>
             </div>
           </div>
