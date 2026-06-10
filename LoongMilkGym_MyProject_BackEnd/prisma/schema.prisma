@@ -37,6 +37,10 @@ model User {
   workoutSessions WorkoutSession[]
   nutritionTargets NutritionTarget[]
   mealLogs         MealLog[]
+  bodyMetrics     BodyMetric[]
+  recoveryLogs    RecoveryLog[]
+  injuryLogs      InjuryLog[]
+  progressPhotos  ProgressPhoto[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -497,3 +501,74 @@ model MealLogItem {
 
   @@map("meal_log_items")
 }
+
+//Nhóm 6 Phục hồi & Theo dõi sức khỏe
+
+model BodyMetric {
+  id             String    @id @default(uuid())
+  userId         String    @map("user_id")
+  measuredAt     DateTime  @default(now()) @map("measured_at")
+  weightKg       Float?    @map("weight_kg")
+  bodyFatPercent Float?    @map("body_fat_percent")
+  muscleMassKg   Float?    @map("muscle_mass_kg")
+  waistCm        Float?    @map("waist_cm")
+  chestCm        Float?    @map("chest_cm")
+  armCm          Float?    @map("arm_cm")
+  thighCm        Float?    @map("thigh_cm")
+  notes          String?   @db.Text
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("body_metrics")
+}
+
+model RecoveryLog {
+  id               String   @id @default(uuid())
+  userId           String   @map("user_id")
+  logDate          DateTime @map("log_date") @db.Date
+  recoveryScore    Int      @map("recovery_score")
+  sleepHours       Float    @map("sleep_hours")
+  sorenessLevel    Int      @map("soreness_level")
+  stressLevel      Int      @map("stress_level")
+  energyLevel      Int      @map("energy_level")
+  hrvMs            Float?   @map("hrv_ms")
+  restingHeartRate Int?     @map("resting_heart_rate")
+  notes            String?  @db.Text
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, logDate])
+  @@map("recovery_logs")
+}
+
+model InjuryLog {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  bodyPart    String    @map("body_part") @db.VarChar(100)
+  severity    String    @default("mild") @db.VarChar(30)
+  painLevel   Int       @map("pain_level")
+  description String?   @db.Text
+  startedAt   DateTime  @map("started_at") @db.Date
+  resolvedAt  DateTime? @map("resolved_at") @db.Date
+  status      String    @default("active") @db.VarChar(30)
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("injury_logs")
+}
+
+model ProgressPhoto {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  photoUrl  String   @map("photo_url") @db.Text
+  photoType String   @map("photo_type") @db.VarChar(30)
+  takenAt   DateTime @map("taken_at") @db.Date
+  visibility String  @default("private") @db.VarChar(30)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("progress_photos")
+}
+

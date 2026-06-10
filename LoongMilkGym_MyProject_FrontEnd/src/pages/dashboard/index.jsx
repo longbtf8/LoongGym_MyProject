@@ -44,7 +44,13 @@ function Dashboard() {
   };
 
   // Điểm số phục hồi
-  const recoveryScore = apiData?.recoveryScore || 85;
+  const recovery = apiData?.recovery || {
+    recoveryScore: 0,
+    sleepHoursText: "--",
+    energyText: "--",
+    sorenessText: "--",
+    hasLog: false,
+  };
 
   return (
     <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] transition-colors duration-300 py-6 sm:py-10 px-4 sm:px-6 lg:px-8 pb-28 lg:pb-12">
@@ -76,7 +82,7 @@ function Dashboard() {
             <NutritionTracker nutrition={nutrition} />
 
             {/* KHU VỰC F: CHỈ SỐ PHỤC HỒI */}
-            <RecoveryScore recoveryScore={recoveryScore} />
+            <RecoveryScore recovery={recovery} />
           </div>
 
           {/* ════ CỘT LỚN 3 ════ */}

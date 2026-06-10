@@ -4,6 +4,7 @@ import { dashboardApi } from "@/services/dashboard/dashboardApi";
 import { roadmapApi } from "@/services/roadmap/roadmapApi";
 import { workoutSessionApi } from "@/services/workoutSession/workoutSessionApi";
 import { nutritionApi } from "@/services/nutrition/nutritionApi";
+import { recoveryApi } from "@/services/recovery/recoveryApi";
 import { configureStore } from "@reduxjs/toolkit";
 
 export const store = configureStore({
@@ -14,6 +15,7 @@ export const store = configureStore({
     [roadmapApi.reducerPath]: roadmapApi.reducer,
     [workoutSessionApi.reducerPath]: workoutSessionApi.reducer,
     [nutritionApi.reducerPath]: nutritionApi.reducer,
+    [recoveryApi.reducerPath]: recoveryApi.reducer,
   },
   middleware: (getDefaultMiddleware) => [
     ...getDefaultMiddleware(),
@@ -23,5 +25,6 @@ export const store = configureStore({
     roadmapApi.middleware,
     workoutSessionApi.middleware,
     nutritionApi.middleware,
+    recoveryApi.middleware,
   ],
 });

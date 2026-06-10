@@ -43,6 +43,40 @@ const getDashboardSummary = async (userId) => {
     // Fallback to defaults on error
   }
 
+  // Fetch real recovery data for today
+  let recoveryData = {
+    recoveryScore: 0,
+    sleepHoursText: "--",
+    energyText: "--",
+    sorenessText: "--",
+    hasLog: false,
+  };
+
+  try {
+    const today = new Date();
+    const utcToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+    const todayRecovery = await prisma.recoveryLog.findUnique({
+      where: {
+        userId_logDate: {
+          userId,
+          logDate: utcToday,
+        },
+      },
+    });
+
+    if (todayRecovery) {
+      recoveryData = {
+        recoveryScore: todayRecovery.recoveryScore,
+        sleepHoursText: `${todayRecovery.sleepHours}h`,
+        energyText: todayRecovery.energyLevel >= 8 ? "Cao" : todayRecovery.energyLevel >= 5 ? "Vừa" : "Thấp",
+        sorenessText: todayRecovery.sorenessLevel >= 8 ? "Nhiều" : todayRecovery.sorenessLevel >= 4 ? "Vừa" : "Nhẹ",
+        hasLog: true,
+      };
+    }
+  } catch (err) {
+    // ignore
+  }
+
   return {
     user: {
       id: user.id,
@@ -53,7 +87,7 @@ const getDashboardSummary = async (userId) => {
       fitnessLevel: profile.fitnessLevel || "beginner",
     },
     todayWorkout: null,
-    recoveryScore: 85,
+    recovery: recoveryData,
     nutrition: nutritionData,
     stats: {
       completedWorkoutsThisWeek: 0,

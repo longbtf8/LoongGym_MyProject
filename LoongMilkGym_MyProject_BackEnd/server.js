@@ -31,4 +31,4 @@ app.listen(port, () => {
   console.log(`Server đang chạy tại port ${port}`);
 });
 
-// Reload trigger for new routes: user-training-plans
+// Reload trigger for new routes: user-training-plans, recovery

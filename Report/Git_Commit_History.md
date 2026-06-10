@@ -110,6 +110,14 @@ Dưới đây là phân tích chi tiết ý nghĩa và vai trò của các commi
     - **UI/UX**: Khắc phục lỗi hiển thị đường nối giữa các số chỉ dẫn trong trang chi tiết bài tập bằng cách thay đổi giá trị thuộc tính `bottom` thành `bottom-0` để kết nối thẳng hàng sắc nét.
 *   **Ý nghĩa**: Khắc phục hoàn toàn lỗi sập ứng dụng khi xóa tất cả bài tập, tối ưu hóa giao diện nút khôi phục dựa trên trạng thái tùy chỉnh thực tế của người dùng và hoàn thiện tính thẩm mỹ cho giao diện.
 
+### 20. `feat/fix: recovery & health tracking system, input validations, medical tooltips, and centered SVG score circles`
+*   **Hành động**:
+    - **Database & Backend**: Định nghĩa 4 models mới (`RecoveryLog`, `InjuryLog`, `BodyMetric`, `ProgressPhoto`) trong Prisma schema, viết service, controller và API routes cho các thao tác quản lý chỉ số cơ thể, hình ảnh tiến trình, nhật ký phục hồi (RHR, HRV) và chấn thương. Tích hợp Zod validation bảo mật chặt chẽ.
+    - **Frontend UI/UX**: Xây dựng trang `/recovery` với giao diện 3 tab Glassmorphism cao cấp, kết hợp công cụ tính thời gian ngủ, slider đổi màu và lưới 10 mức chọn đau cơ/năng lượng/stress.
+    - **Tính năng cao cấp**: Triển khai thuật toán tính điểm phục hồi động thời gian thực (`calculateLiveScore`) cập nhật trực tiếp lên vòng tròn điểm SVG lộng lẫy và đồng bộ ngược về Dashboard. Thêm bảng giải thích thuật ngữ y khoa trực quan và validate chặn các giá trị âm/không thực tế ngay tại Client.
+    - **Sửa lỗi CSS**: Căn chỉnh tuyệt đối vòng tròn điểm số phục hồi ở Dashboard và trang Recovery để căn giữa hoàn hảo.
+*   **Ý nghĩa**: Bổ sung phân hệ theo dõi sức khỏe và phục hồi toàn diện, tạo trải nghiệm tương tác trực quan cao cấp, ngăn chặn tối đa dữ liệu ảo và nâng tầm thẩm mỹ chuyên nghiệp cho toàn bộ hệ thống.
+
 ---
 
 ## 🛠️ 2. Nguyên Tắc Cập Nhật Commit Chuẩn Mực

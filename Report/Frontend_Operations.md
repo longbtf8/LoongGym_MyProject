@@ -149,3 +149,22 @@ Trang tổng quan cá nhân `/dashboard` được thiết kế theo xu hướng 
 ## 🧭 9. Phân Hệ Lộ Trình & Tracker Tập Luyện (Roadmap Module)
 
 Để biết thêm chi tiết thiết kế hệ thống, nguyên lý hoạt động và giải pháp mô-đun hóa độc lập (Direction B) của trang Lộ trình tập luyện, vui lòng tham khảo tài liệu [Page_Roadmap_Documentation.md](Page_Roadmap_Documentation.md).
+
+---
+
+## 🛌 10. Phân Hệ Phục Hồi & Theo Dõi Sức Khỏe (Recovery Page & Dynamic UI)
+Trang Phục hồi `/recovery` được xây dựng như một bảng điều khiển sức khỏe cao cấp gồm 3 thẻ Tab tương tác trực quan:
+*   **Tab 1: Nhật Ký Phục Hồi (Daily Health Questionnaire)**:
+    -   **Thanh trượt Giờ ngủ (Sleep Slider)**: Cho phép kéo chọn từ 2 - 14h kèm bộ công cụ tính toán nhanh từ giờ ngủ và giờ thức.
+    -   **Lưới 10 nút bấm chọn (Soreness, Energy, Stress)**: Cải tiến thay thế slider thông thường bằng 10 nút bấm dạng khối bo tròn góc phản hồi tức thời trạng thái sinh lý chi tiết cho từng khoảng điểm giúp người dùng nhập đúng cảm nhận.
+    -   **Thông tin nhịp tim (RHR & HRV)**: Ô nhập liệu chỉ số sinh học kết hợp phần giới thiệu tích hợp thiết bị thông minh (Smartwatches).
+*   **Tab 2: Số Đo & Tiến Trình (Metrics & Progress Photos)**:
+    -   Form nhập chỉ số cân nặng, mỡ cơ thể, khối cơ và 4 số đo vòng (Ngực, Eo, Bắp tay, Đùi).
+    -   Trình upload ảnh trực quan cho 3 góc chụp tiến trình cơ thể (Trước, Bên, Sau).
+*   **Tab 3: Theo Dõi Chấn Thương (Injury Tracker)**:
+    -   Cho phép khai báo vùng chấn thương, phân cấp mức độ (Nhẹ, Vừa, Nặng), độ đau (1-10) và cập nhật trạng thái đã phục hồi để xóa cảnh báo.
+*   **Các tính năng tương tác Premium khác**:
+    -   **Vòng Tròn Điểm Động (Live Score Gauge)**: Sử dụng SVG tròn khuyết và hàm tính điểm cục bộ `calculateLiveScore()` để **ước tính trực tiếp điểm số phục hồi theo thời gian thực** khi người dùng đang điều chỉnh các thanh trượt/chọn nút, tạo phản hồi sinh động tức thời.
+    -   **Giải Thích Thuật Ngữ (Glossary Tooltips)**: Tích hợp icon `ⓘ` bên cạnh mỗi chỉ số sức khỏe, khi bấm sẽ mở bảng giải thích cặn kẽ y khoa (Cortisol, CNS Fatigue, DOMS, HRV, RHR) trực tiếp trên trang.
+    -   **Căn Chỉnh Hoàn Hảo (Layout Fix)**: Khóa khung chứa SVG của điểm số phục hồi ở cả Dashboard và Recovery page với kích cỡ cố định `w-36 h-36` / `w-28 h-28` kết hợp `mx-auto` và định vị tuyệt đối `absolute` để đảm bảo văn bản hiển thị luôn nằm chính xác ở tâm đường viền tròn.
+

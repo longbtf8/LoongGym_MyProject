@@ -175,5 +175,26 @@ Hàm dịch vụ `getDashboardSummary` tại backend đóng vai trò tổng hợ
     -   Liên kết gọi trực tiếp dịch vụ `NutritionService` để lấy tổng lượng Calo, Carb, Fat, Protein thực tế người dùng đã nạp trong ngày hôm nay so với mục tiêu ngày đã cài đặt.
     -   Tổng hợp số lượng buổi tập đã hoàn thành trong tuần, chuỗi ngày tập liên tục (streak) và trả về danh sách hành động nhanh được cá nhân hóa.
 
+---
+
+## 🛌 13. Phân Hệ Phục Hồi & Theo Dõi Sức Khỏe (Recovery & Health Tracker Engine)
+Phân hệ này chịu trách nhiệm lưu trữ, tính toán điểm phục hồi sinh học và quản lý chấn thương thực tế:
+*   **Bảng Cơ Sở Dữ Liệu Model**:
+    -   `RecoveryLog`: Lưu trữ thông tin giấc ngủ, đau mỏi, năng lượng, căng thẳng và các chỉ số tim mạch nghỉ ngơi (`restingHeartRate`), biến thiên nhịp tim (`hrvMs`).
+    -   `InjuryLog`: Theo dõi trạng thái chấn thương (`active`, `resolved`), vị trí đau (`bodyPart`), ngày bắt đầu và phục hồi.
+    -   `BodyMetric`: Lưu trữ số đo cân nặng, tỷ lệ mỡ, cơ và số đo các vòng theo ngày.
+    -   `ProgressPhoto`: Lưu trữ URL ảnh chụp trước/sau để so sánh tiến trình thể chất.
+*   **Thuật Toán Tính Điểm Phục Hồi (Recovery Score Algorithm)**:
+    -   Tự động tính toán tổng điểm trên thang 100 dựa theo các trọng số khoa học thể thao:
+        -   **Sleep Hours (35% weight)**: Ngủ từ 7.5 - 9h đạt 100 điểm. Ít hơn 5h hoặc nhiều hơn 11h bị trừ điểm nặng theo mô hình tuyến tính giảm dần.
+        -   **Soreness Level (25% weight)**: Mức đau cơ 1-10 ánh xạ từ 100 điểm (không đau) xuống 5 điểm (đau cực hạn).
+        -   **Energy Level (20% weight)**: Mức năng lượng 1-10 ánh xạ từ 5 điểm (kiệt quệ) lên 100 điểm (sung mãn).
+        -   **Stress Level (20% weight)**: Mức căng thẳng 1-10 ánh xạ từ 100 điểm (thư giãn) xuống 5 điểm (stress cực hạn).
+*   **Đồng Bộ Dashboard Service**:
+    -   API `/dashboard/summary` tích hợp truy cập trực tiếp `RecoveryLog` của ngày hôm nay để trả về chỉ số phục hồi thực tế đã lưu thay vi dữ liệu tĩnh, giúp bảng điều khiển phản ánh tức thời tình trạng thể chất của người dùng.
+*   **Ràng Buộc Validation Chặt Chẽ (`recovery.validation.js`)**:
+    -   Đảm bảo các số liệu nhập vào nằm trong phạm vi sinh học thực tế, chặn hoàn toàn các giá trị âm hoặc không thực tế (ví dụ: nhịp tim RHR phải từ 30-220 BPM, biến thiên nhịp tim HRV phải từ 10-250 ms, cân nặng từ 30-250 kg, các vòng đo từ 10-200 cm).
+
+
 
 
