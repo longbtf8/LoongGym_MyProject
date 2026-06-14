@@ -19,6 +19,7 @@ const MyPlan = lazy(() => import("@/pages/myPlan/index.jsx"));
 const TodayWorkout = lazy(() => import("@/pages/todayWorkout/index.jsx"));
 const Nutrition = lazy(() => import("@/pages/nutrition/index.jsx"));
 const Recovery = lazy(() => import("@/pages/recovery/index.jsx"));
+const AICoach = lazy(() => import("@/pages/aiCoach/index.jsx"));
 
 // Layouts
 import DefaultLayout from "@/layouts/DefaultLayout";
@@ -50,6 +51,7 @@ const privateRoutes = [
   { path: paths.todayWorkout, component: TodayWorkout, layout: DefaultLayout, guard: AuthGuard },
   { path: paths.nutrition, component: Nutrition, layout: DefaultLayout, guard: AuthGuard },
   { path: paths.recovery, component: Recovery, layout: DefaultLayout, guard: AuthGuard },
+  { path: paths.aiCoach, component: AICoach, layout: DefaultLayout, guard: AuthGuard },
 ];
 
 export { publicRoutes, privateRoutes };

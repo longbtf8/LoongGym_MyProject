@@ -1,0 +1,134 @@
+import React from "react";
+import { Loader2, Bot, Sparkles } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import ActionCard from "./ActionCard";
+
+function ChatMessages({
+  messages,
+  loadingMessages,
+  isGenerating,
+  userName,
+  userInitial,
+  activeConversationId,
+  QUICK_ACTIONS,
+  handleSendMessage,
+  actionProcessingId,
+  handleExecuteAction,
+  handleRejectAction,
+  chatEndRef,
+}) {
+  if (loadingMessages) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-3">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <span className="text-xs font-bold text-[var(--text-muted)]">Đang tải lịch sử hội thoại...</span>
+      </div>
+    );
+  }
+
+  if (messages.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[70%] max-w-lg mx-auto text-center gap-6 px-4 animate-slide-down">
+        <div className="w-16 h-16 rounded-full bg-primary/15 border border-primary/35 text-primary flex items-center justify-center animate-bounce shadow-lg shadow-primary/10">
+          <Sparkles className="w-8 h-8" />
+        </div>
+        <div>
+          <h3 className="text-lg font-black text-[var(--text-color)] mb-2">Chào mừng {userName} đến với AI Coach!</h3>
+          <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed m-0 font-medium">
+            Tôi là trợ lý huấn luyện viên thông minh của bạn. Tôi có thể giúp bạn sắp xếp lại lịch tập, thay đổi bài tập do chấn thương/mệt mỏi, phân tích chỉ số phục hồi, dinh dưỡng và đưa ra các đề xuất điều chỉnh lịch tập luyện tự động!
+          </p>
+        </div>
+
+        <div className="w-full flex flex-col gap-2.5 mt-2">
+          <span className="text-[10px] font-black uppercase tracking-wider text-[var(--text-muted)] text-left">Đề xuất câu hỏi nhanh:</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left">
+            {QUICK_ACTIONS.map((act) => {
+              const Icon = act.icon;
+              return (
+                <button
+                  key={act.label}
+                  onClick={() => handleSendMessage(act.prompt)}
+                  className="p-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-primary/45 rounded-2xl text-xs font-bold text-[var(--text-color)] hover:text-[var(--text-primary)] transition-all flex items-center gap-3 cursor-pointer text-left shadow-sm group border-0"
+                >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${act.color} group-hover:scale-105 transition-transform`}>
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <span className="flex-1 truncate">{act.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-gradient-to-b from-transparent to-[var(--bg-secondary)]/5">
+      {messages.map((msg) => {
+        const isAi = msg.role === "assistant";
+        return (
+          <div 
+            key={msg.id} 
+            className={`flex gap-3 max-w-[85%] sm:max-w-[75%] ${isAi ? "mr-auto" : "ml-auto flex-row-reverse"}`}
+          >
+            <div className={`w-8.5 h-8.5 rounded-full shrink-0 flex items-center justify-center text-xs font-bold border ${
+              isAi 
+                ? "bg-neutral-800 text-primary border-neutral-700 dark:bg-neutral-900" 
+                : "bg-primary text-black border-primary"
+            }`}>
+              {isAi ? <Bot className="w-4.5 h-4.5" /> : userInitial}
+            </div>
+
+            <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+              <span className={`text-[9px] font-extrabold text-[var(--text-muted)] ${isAi ? "text-left" : "text-right"}`}>
+                {isAi ? "AI Coach" : userName}
+              </span>
+
+              <div className={`
+                p-3.5 rounded-2xl text-xs sm:text-sm font-medium leading-relaxed shadow-sm border
+                ${isAi 
+                  ? "bg-[var(--bg-secondary)] text-[var(--text-color)] border-[var(--border-color)] rounded-tl-none" 
+                  : "bg-primary/10 text-[var(--text-color)] border-primary/20 rounded-tr-none ml-auto"
+                }
+              `}>
+                <div className="prose dark:prose-invert max-w-none text-xs sm:text-sm font-medium font-sans">
+                  <ReactMarkdown>
+                    {msg.content}
+                  </ReactMarkdown>
+                </div>
+
+                {msg.metadata?.recommendation && (
+                  <ActionCard
+                    recommendation={msg.metadata.recommendation}
+                    actionProcessingId={actionProcessingId}
+                    handleExecuteAction={handleExecuteAction}
+                    handleRejectAction={handleRejectAction}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+
+      {isGenerating && (
+        <div className="flex gap-3 max-w-[75%] mr-auto animate-pulse">
+          <div className="w-8.5 h-8.5 rounded-full bg-neutral-800 border border-neutral-700 text-primary flex items-center justify-center">
+            <Loader2 className="w-4.5 h-4.5 animate-spin" />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[9px] font-extrabold text-[var(--text-muted)]">AI Coach đang trả lời...</span>
+            <div className="px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl rounded-tl-none text-xs text-[var(--text-muted)] italic font-semibold">
+              Đang phân tích dữ liệu và soạn câu trả lời...
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <div ref={chatEndRef} />
+    </div>
+  );
+}
+
+export default ChatMessages;

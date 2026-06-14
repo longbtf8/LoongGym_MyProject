@@ -13,6 +13,7 @@ const paths = {
   todayWorkout: "/today-workout",
   nutrition: "/nutrition",
   recovery: "/recovery",
+  aiCoach: "/ai-coach",
 };
 
 export default paths;

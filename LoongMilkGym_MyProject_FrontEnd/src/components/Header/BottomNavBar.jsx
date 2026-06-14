@@ -13,7 +13,7 @@ function BottomNavBar({ showMobileMenu, setShowMobileMenu }) {
     { label: "Trang chủ", path: paths.home, icon: Home },
     { label: "Lịch tập", path: paths.myPlan, icon: CalendarDays },
     { label: "Thư viện", path: paths.exercises, icon: Dumbbell },
-    { label: "AI Coach", path: "/ai-coach-placeholder", icon: Sparkles },
+    { label: "AI Coach", path: paths.aiCoach, icon: Sparkles },
   ];
 
   return (

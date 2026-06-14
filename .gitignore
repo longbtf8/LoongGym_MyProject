@@ -49,3 +49,8 @@ Thumbs.db
 
 # Exclude local system report folder from git deployment
 /Report/
+
+# Exclude agent skills and lock files
+.agents/
+skills-lock.json
+**/skills-lock.json

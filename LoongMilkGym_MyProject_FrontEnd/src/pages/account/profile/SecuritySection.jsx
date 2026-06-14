@@ -185,7 +185,7 @@ function SecuritySection() {
             <span className="text-xs text-[var(--text-muted)] font-bold">Không tìm thấy thiết bị nào đang hoạt động</span>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
             {devices.map((device, idx) => {
               const DeviceIcon = getDeviceIcon(device.deviceName);
               // Xác định thiết bị hiện tại dựa trên trường isCurrent từ Backend

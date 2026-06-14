@@ -373,7 +373,7 @@ async function main() {
         proteinG: Math.round((dr.protein * p.mult) * 10) / 10,
         carbsG: Math.round((dr.carbs * p.mult) * 10) / 10,
         fatG: Math.round((dr.fat * p.mult) * 10) / 10,
-        metadata: { source: "NIN_VN", category: "Sữa & Đồ uống" }
+        metadata: { source: "NIN_VN", category: "Sữa & Đồ uống", unit: "ml" }
       });
     }
   }

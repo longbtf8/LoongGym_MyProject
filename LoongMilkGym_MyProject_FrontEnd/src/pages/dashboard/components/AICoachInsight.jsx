@@ -1,5 +1,7 @@
 import React from "react";
 import { Sparkles, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import paths from "@/config/path";
 
 function AICoachInsight() {
   return (
@@ -18,10 +20,13 @@ function AICoachInsight() {
         "Hôm nay recovery tốt, tập buổi Push với cường độ trung bình để tối ưu hóa sự phát triển cơ bắp mà không gây quá tải."
       </div>
 
-      <button className="w-full py-3 bg-[var(--bg-color)] border border-[var(--border-color)] hover:border-primary/45 rounded-2xl text-xs font-bold text-[var(--text-color)] hover:text-[var(--text-primary)] transition-all flex items-center justify-center gap-2 cursor-pointer">
+      <Link 
+        to={paths.aiCoach}
+        className="w-full py-3 bg-[var(--bg-color)] border border-[var(--border-color)] hover:border-primary/45 rounded-2xl text-xs font-bold text-[var(--text-color)] hover:text-[var(--text-primary)] transition-all flex items-center justify-center gap-2 cursor-pointer no-underline"
+      >
         Hỏi AI Coach
         <ArrowRight className="w-3.5 h-3.5" />
-      </button>
+      </Link>
     </div>
   );
 }

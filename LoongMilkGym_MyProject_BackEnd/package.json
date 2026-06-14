@@ -15,8 +15,10 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@ai-sdk/deepseek": "^2.0.38",
     "@prisma/adapter-mariadb": "^7.8.0",
     "@prisma/client": "^6.19.3",
+    "ai": "^6.0.205",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^1.41.0",
@@ -32,6 +34,7 @@
     "multer-storage-cloudinary": "^4.0.0",
     "mysql2": "^3.22.3",
     "nodemailer": "^8.0.10",
+    "pusher": "^5.3.4",
     "ua-parser-js": "^2.0.10",
     "zod": "^4.4.3"
   },

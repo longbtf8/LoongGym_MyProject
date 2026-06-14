@@ -205,6 +205,72 @@ const fetchWithTimeout = async (url, options = {}, timeout = 2500) => {
   }
 };
 
+const isLiquidByName = (name) => {
+  if (!name) return false;
+  const lowerName = name.toLowerCase();
+  if (lowerName.includes("vú sữa")) return false;
+  if (lowerName.includes("bánh sữa")) return false;
+  if (lowerName.includes("kẹo sữa")) return false;
+  if (lowerName.includes("sữa chua khô")) return false;
+  
+  const liquidKeywords = [
+    "nước", "sữa", "bia", "rượu", "beverage", "drink", "water", "juice", "soda", "coke", 
+    "milk", "yogurt drink", "tea", "coffee", "trà", "cà phê", "cafe", "sting", "pepsi", "coca", "redbull",
+    "monster", "monter", "chất lỏng", "canh", "súp", "soup", "smoothie", "shake", "nước ngọt"
+  ];
+  return liquidKeywords.some(keyword => lowerName.includes(keyword));
+};
+
+const detectFoodUnitAndSize = (p) => {
+  let unit = "g";
+  let size = 100;
+
+  // 1. Try to read serving_size string (e.g. "250 ml", "100 g", "330ml")
+  const servingSizeStr = ((p.serving_size || p.quantity || "") + "").toLowerCase();
+  
+  if (
+    servingSizeStr.includes("ml") || 
+    servingSizeStr.includes(" l") || 
+    servingSizeStr.includes("cl") ||
+    servingSizeStr.includes("fluid") ||
+    servingSizeStr.includes("oz")
+  ) {
+    unit = "ml";
+  } else {
+    // Check categories or name for beverage/drink keywords
+    const categoriesList = p.categories_tags || [];
+    const categoriesStr = (Array.isArray(categoriesList) ? categoriesList.join(", ") : (p.categories || "")).toLowerCase();
+    const nameStr = ((p.product_name_vi || p.product_name || "") + "").toLowerCase();
+    
+    if (isLiquidByName(nameStr) || isLiquidByName(categoriesStr)) {
+      unit = "ml";
+    }
+  }
+
+  // 2. Try to parse serving size quantity
+  if (p.serving_quantity) {
+    const parsed = Number(p.serving_quantity);
+    if (!isNaN(parsed) && parsed > 0) {
+      size = parsed;
+    }
+  } else {
+    // Try to extract number from serving_size string (e.g. "250 ml" -> 250)
+    const match = servingSizeStr.match(/(\d+[\.,]?\d*)\s*(ml|g|l|cl)/);
+    if (match) {
+      const val = parseFloat(match[1].replace(",", "."));
+      if (!isNaN(val) && val > 0) {
+        if (match[2] === "l") {
+          size = val * 1000; // convert L to ml
+        } else {
+          size = val;
+        }
+      }
+    }
+  }
+
+  return { unit, size };
+};
+
 const searchFoods = async (searchQuery) => {
   const query = searchQuery ? searchQuery.trim() : "";
   if (!query) {
@@ -214,13 +280,15 @@ const searchFoods = async (searchQuery) => {
     });
     return list.map((item) => {
       let imageUrl = null;
+      let unit = "g";
       if (item.metadata) {
         try {
           const meta = typeof item.metadata === "string" ? JSON.parse(item.metadata) : item.metadata;
           imageUrl = meta?.imageUrl || null;
+          unit = meta?.unit || "g";
         } catch {}
       }
-      return { ...item, imageUrl };
+      return { ...item, imageUrl, unit };
     });
   }
 
@@ -237,13 +305,15 @@ const searchFoods = async (searchQuery) => {
 
   const formattedLocalFoods = localFoods.map((item) => {
     let imageUrl = null;
+    let unit = "g";
     if (item.metadata) {
       try {
         const meta = typeof item.metadata === "string" ? JSON.parse(item.metadata) : item.metadata;
         imageUrl = meta?.imageUrl || null;
+        unit = meta?.unit || "g";
       } catch {}
     }
-    return { ...item, imageUrl };
+    return { ...item, imageUrl, unit };
   });
 
   // 2. Open Food Facts API Search (only if search query is at least 2 chars)
@@ -267,11 +337,14 @@ const searchFoods = async (searchQuery) => {
             const carbs = Number(nutriments.carbohydrates_100g || nutriments.carbohydrates || 0);
             const fat = Number(nutriments.fat_100g || nutriments.fat || 0);
             const imageUrl = p.image_front_small_url || p.image_small_url || p.image_url || null;
+            
+            const { unit, size } = detectFoodUnitAndSize(p);
+
             return {
               id: `ext-${p.code || Math.random().toString(36).substring(2, 9)}`,
               name: brand ? `${name} (${brand})` : name,
               brand: brand || null,
-              servingSizeG: 100,
+              servingSizeG: size,
               calories,
               proteinG: protein,
               carbsG: carbs,
@@ -279,6 +352,7 @@ const searchFoods = async (searchQuery) => {
               isExternal: true,
               barcode: p.code || null,
               imageUrl,
+              unit,
             };
           });
       }
@@ -317,13 +391,16 @@ const getFoodByBarcode = async (barcode) => {
 
   if (localItem) {
     let imageUrl = null;
+    let unit = "g";
     try {
       const meta = typeof localItem.metadata === "string" ? JSON.parse(localItem.metadata) : localItem.metadata;
       imageUrl = meta?.imageUrl || null;
+      unit = meta?.unit || "g";
     } catch {}
     return {
       ...localItem,
       imageUrl,
+      unit,
     };
   }
 
@@ -343,12 +420,14 @@ const getFoodByBarcode = async (barcode) => {
         const fat = Number(nutriments.fat_100g || nutriments.fat || 0);
         const imageUrl = p.image_front_small_url || p.image_small_url || p.image_url || null;
 
+        const { unit, size } = detectFoodUnitAndSize(p);
+
         // Save to local cache
         const cachedFood = await prisma.foodItem.create({
           data: {
             name: brand ? `${name} (${brand})` : name,
             brand: brand || null,
-            servingSizeG: 100,
+            servingSizeG: size,
             calories,
             proteinG: protein,
             carbsG: carbs,
@@ -357,6 +436,7 @@ const getFoodByBarcode = async (barcode) => {
               barcode: cleanBarcode,
               source: "openfoodfacts",
               imageUrl,
+              unit,
             },
           },
         });
@@ -364,6 +444,7 @@ const getFoodByBarcode = async (barcode) => {
         return {
           ...cachedFood,
           imageUrl,
+          unit,
         };
       }
     }
@@ -389,13 +470,16 @@ const createOrGetFoodItem = async (data) => {
 
     if (existing) {
       let imageUrl = null;
+      let unit = "g";
       try {
         const meta = typeof existing.metadata === "string" ? JSON.parse(existing.metadata) : existing.metadata;
         imageUrl = meta?.imageUrl || null;
+        unit = meta?.unit || "g";
       } catch {}
       return {
         ...existing,
         imageUrl,
+        unit,
       };
     }
   }
@@ -406,13 +490,16 @@ const createOrGetFoodItem = async (data) => {
 
   if (existingByName) {
     let imageUrl = null;
+    let unit = "g";
     try {
       const meta = typeof existingByName.metadata === "string" ? JSON.parse(existingByName.metadata) : existingByName.metadata;
       imageUrl = meta?.imageUrl || null;
+      unit = meta?.unit || "g";
     } catch {}
     return {
       ...existingByName,
       imageUrl,
+      unit,
     };
   }
 
@@ -430,6 +517,7 @@ const createOrGetFoodItem = async (data) => {
         barcode: data.barcode || null,
         source: "openfoodfacts",
         imageUrl: data.imageUrl || null,
+        unit: data.unit || "g",
       },
     },
   });
@@ -437,6 +525,7 @@ const createOrGetFoodItem = async (data) => {
   return {
     ...created,
     imageUrl: data.imageUrl || null,
+    unit: data.unit || "g",
   };
 };
 

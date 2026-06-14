@@ -41,6 +41,8 @@ model User {
   recoveryLogs    RecoveryLog[]
   injuryLogs      InjuryLog[]
   progressPhotos  ProgressPhoto[]
+  aiConversations   AiConversation[]
+  aiRecommendations AiRecommendation[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -571,4 +573,65 @@ model ProgressPhoto {
 
   @@map("progress_photos")
 }
+
+model AiConversation {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  title       String?  @db.VarChar(200)
+  contextType String?  @map("context_type") @db.VarChar(50)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages        AiMessage[]
+  recommendations AiRecommendation[]
+
+  @@map("ai_conversations")
+}
+
+model AiMessage {
+  id             String   @id @default(uuid())
+  conversationId String   @map("conversation_id")
+  role           String   @db.VarChar(20)
+  content        String   @db.LongText
+  metadata       Json     @default("{}")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("ai_messages")
+}
+
+model AiRecommendation {
+  id                 String   @id @default(uuid())
+  userId             String   @map("user_id")
+  conversationId     String?  @map("conversation_id")
+  recommendationType String   @map("recommendation_type") @db.VarChar(50)
+  title              String?  @db.VarChar(200)
+  payload            Json
+  status             String   @default("pending") @db.VarChar(30)
+  appliedAt          DateTime? @map("applied_at")
+  expiresAt          DateTime? @map("expires_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation AiConversation? @relation(fields: [conversationId], references: [id])
+
+  @@map("ai_recommendations")
+}
+
+model AiKnowledgeDocument {
+  id         String   @id @default(uuid())
+  title      String   @db.VarChar(250)
+  sourceType String   @map("source_type") @db.VarChar(50)
+  sourceId   String?  @map("source_id")
+  content    String   @db.LongText
+  metadata   Json     @default("{}")
+  embedding  Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@fulltext([title, content])
+  @@map("ai_knowledge_documents")
+}
+
 

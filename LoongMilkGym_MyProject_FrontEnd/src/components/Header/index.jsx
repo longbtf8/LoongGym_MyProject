@@ -19,7 +19,7 @@ const NAV_ITEMS = [
   { label: "Bảng điều khiển", path: paths.dashboard },
   { label: "Lịch tập", path: paths.myPlan },
   { label: "Thư viện", path: paths.exercises },
-  { label: "AI Coach", path: "#" },
+  { label: "AI Coach", path: paths.aiCoach },
   { label: "Cửa hàng", path: "#" },
   { label: "Cộng đồng", path: "#" },
 ];
