@@ -1,5 +1,15 @@
-import { useEffect } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
+// Sub-components
+import HeroSection from "./components/HeroSection";
+import WeeklyStatsPreview from "./components/WeeklyStatsPreview";
+import PopularExercises from "./components/PopularExercises";
+import MuscleGroupGoals from "./components/MuscleGroupGoals";
+import RecommendedPrograms from "./components/RecommendedPrograms";
+import HIITBanner from "./components/HIITBanner";
+import ProgressMedals from "./components/ProgressMedals";
+import TestimonialQuote from "./components/TestimonialQuote";
 
 function Home() {
   const navigate = useNavigate();
@@ -14,15 +24,32 @@ function Home() {
   }, [token, navigate]);
 
   return (
-    <div style={{ padding: "20px", fontFamily: "sans-serif" }}>
-      <h1>Trang chủ (Home Page)</h1>
-      <p>Chào mừng bạn đến với LoongMilkGym!</p>
-      <nav style={{ marginTop: "20px" }}>
-        <Link to="/login" style={{ marginRight: "15px" }}>
-          Đăng nhập
-        </Link>
-        <Link to="/register">Đăng ký</Link>
-      </nav>
+    <div className="flex flex-col gap-6 sm:gap-10 pb-12 overflow-hidden">
+      
+      {/* Section 1: Hero Banner */}
+      <HeroSection />
+
+      {/* Section 2: Quick stats overview with charts */}
+      <WeeklyStatsPreview />
+
+      {/* Section 3: Popular Exercises */}
+      <PopularExercises />
+
+      {/* Section 4: Target Muscle Groups */}
+      <MuscleGroupGoals />
+
+      {/* Section 5: Recommended Programs */}
+      <RecommendedPrograms />
+
+      {/* Section 6: HIIT Promo Banner */}
+      <HIITBanner />
+
+      {/* Section 7: Weekly Progress & Achievements */}
+      <ProgressMedals />
+
+      {/* Section 8: Motivational Quote Banner */}
+      <TestimonialQuote />
+
     </div>
   );
 }
