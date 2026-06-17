@@ -1,5 +1,5 @@
 import React from "react";
-import { Settings } from "lucide-react";
+import { Settings, Sparkles } from "lucide-react";
 
 function MacroTargetsModal({
   showSettings,
@@ -17,6 +17,7 @@ function MacroTargetsModal({
   targetWater,
   setTargetWater,
   handleSaveTargets,
+  handleAutoCalculateTargets,
   isSavingTarget,
 }) {
   if (!showSettings) return null;
@@ -112,7 +113,16 @@ function MacroTargetsModal({
             </div>
           </div>
         </div>
-
+        
+        <button
+          type="button"
+          onClick={handleAutoCalculateTargets}
+          className="w-full h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 border-0 mt-1"
+        >
+          <Sparkles className="w-4 h-4" />
+          Tự động tính theo chỉ số cơ thể
+        </button>
+        
         <div className="flex gap-3 mt-2">
           <button
             type="button"

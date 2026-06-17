@@ -56,6 +56,13 @@ export const recoveryApi = createApi({
       }),
       invalidatesTags: ["Recovery"],
     }),
+    deleteProgressPhoto: builder.mutation({
+      query: (id) => ({
+        url: `/recovery/photos/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Recovery"],
+    }),
   }),
 });
 
@@ -66,4 +73,5 @@ export const {
   useUpdateInjuryMutation,
   useLogBodyMetricMutation,
   useUploadProgressPhotoMutation,
+  useDeleteProgressPhotoMutation,
 } = recoveryApi;

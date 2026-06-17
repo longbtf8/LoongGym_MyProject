@@ -309,8 +309,9 @@ const uploadExerciseImage = async (exercise, existingExercise) => {
     return existingExercise.thumbnailUrl;
   }
 
+  let localPath = null;
   try {
-    const localPath = await downloadImage(exercise);
+    localPath = await downloadImage(exercise);
     const result = await cloudinary.uploader.upload(localPath, {
       folder: "LoongMilkGym_APP/exercises",
       public_id: exercise.slug,
@@ -318,9 +319,18 @@ const uploadExerciseImage = async (exercise, existingExercise) => {
       resource_type: "image",
     });
 
+    try {
+      await fs.unlink(localPath);
+    } catch {}
+
     return result.secure_url;
   } catch (error) {
     console.warn(`[Cảnh báo] Không thể tải/upload ảnh cho ${exercise.slug} lên Cloudinary, sử dụng URL gốc làm fallback:`, error.message);
+    if (localPath) {
+      try {
+        await fs.unlink(localPath);
+      } catch {}
+    }
     return exercise.thumbnailUrl;
   }
 };
@@ -505,6 +515,11 @@ async function main() {
   await upsertEquipment();
   await upsertArmExercises();
   await upsertPrograms();
+
+  // Clean up local image directory
+  try {
+    await fs.rm(IMAGE_DIR, { recursive: true, force: true });
+  } catch {}
 
   console.log("Seed roadmap hoàn tất.");
 }

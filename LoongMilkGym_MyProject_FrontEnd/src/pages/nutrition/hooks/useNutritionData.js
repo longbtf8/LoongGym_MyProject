@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import {
   useGetTodayNutritionQuery,
   useSaveNutritionTargetMutation,
@@ -19,10 +20,13 @@ const getLocalDateString = (dateInput = new Date()) => {
 };
 
 export function useNutritionData() {
+  const { userInfo } = useAuth();
   const todayStr = getLocalDateString();
 
   // Queries & Mutations
-  const { data: nutritionRes, isLoading } = useGetTodayNutritionQuery(todayStr);
+  const { data: nutritionRes, isLoading } = useGetTodayNutritionQuery(todayStr, {
+    refetchOnMountOrArgChange: true,
+  });
   const nutritionData = nutritionRes?.data;
 
   const [saveTarget, { isLoading: isSavingTarget }] = useSaveNutritionTargetMutation();
@@ -99,6 +103,86 @@ export function useNutritionData() {
       setTargetWater(2000);
     }
     setShowSettings(true);
+  };
+
+  // Tự động tính toán mục tiêu tối ưu theo chỉ số cơ thể từ UserProfile
+  const handleAutoCalculateTargets = () => {
+    const profile = userInfo?.profile;
+    if (!profile) {
+      showToast("Vui lòng cập nhật đầy đủ thông tin chiều cao, cân nặng trong Hồ sơ cá nhân trước.");
+      return;
+    }
+
+    const height = Number(profile.heightCm || profile.displayHeight);
+    const weight = Number(profile.weightKg || profile.displayWeight);
+    const gender = profile.gender;
+    const birthDate = profile.birthDate;
+    const goal = profile.goal;
+    const fitnessLevel = profile.fitnessLevel;
+
+    if (!height || !weight || !gender || !birthDate) {
+      showToast("Cần bổ sung Chiều cao, Cân nặng, Giới tính, Ngày sinh ở Hồ sơ cá nhân để tính tự động.");
+      return;
+    }
+
+    // Tính tuổi
+    const today = new Date();
+    const dob = new Date(birthDate);
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    if (age <= 0) age = 25;
+
+    // Tính BMR (Mifflin-St Jeor)
+    let bmr = 0;
+    const gLower = gender.toLowerCase();
+    if (gLower === "male" || gLower === "nam" || gLower.startsWith("m")) {
+      bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+    } else {
+      bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+    }
+
+    // Tỉ lệ hoạt động (Activity factor)
+    let factor = 1.375;
+    if (fitnessLevel === "beginner") factor = 1.2;
+    else if (fitnessLevel === "intermediate") factor = 1.375;
+    else if (fitnessLevel === "advanced") factor = 1.55;
+
+    let calGoal = bmr * factor;
+
+    // Điều chỉnh theo mục tiêu
+    if (goal === "lose_weight" || goal === "giam_can") {
+      calGoal -= 500;
+    } else if (goal === "gain_muscle" || goal === "tang_co") {
+      calGoal += 300;
+    }
+
+    calGoal = Math.max(1200, Math.round(calGoal));
+
+    // Tính toán Macro
+    // Protein: 2.0g trên mỗi kg cân nặng
+    const proteinG = Math.round(weight * 2.0);
+    // Fat: 25% tổng năng lượng
+    const fatG = Math.round((calGoal * 0.25) / 9);
+    // Carbs: phần calo còn lại
+    const carbsG = Math.round((calGoal - (proteinG * 4) - (fatG * 9)) / 4);
+
+    // Chất xơ: 14g cho mỗi 1000kcal
+    const fiberG = Math.round((calGoal / 1000) * 14);
+    // Nước: 35ml cho mỗi kg cân nặng
+    const waterMl = Math.round(weight * 35);
+
+    // Cập nhật giá trị vào form
+    setTargetCalories(calGoal);
+    setTargetProtein(proteinG);
+    setTargetCarbs(carbsG);
+    setTargetFat(fatG);
+    setTargetFiber(fiberG);
+    setTargetWater(waterMl);
+
+    showToast("⚡ Đã tự động tính toán mục tiêu tối ưu từ chỉ số cơ thể!");
   };
 
   // Save targets
@@ -268,6 +352,40 @@ export function useNutritionData() {
     }
   };
 
+  // Thêm nhanh món ăn từ gợi ý AI
+  const handleQuickAddFood = async (item) => {
+    try {
+      let mealLogId = nutritionData?.mealLogs?.[0]?.id;
+      if (!mealLogId) {
+        const createRes = await createMealLog({
+          mealDate: todayStr,
+          mealType: "Today",
+          note: "Nhật ký bữa ăn tổng hợp",
+        }).unwrap();
+        mealLogId = createRes?.data?.id;
+      }
+
+      if (!mealLogId) {
+        showToast("Không thể tạo nhật ký ăn uống.");
+        return;
+      }
+
+      const payload = {
+        customFoodName: `${item.name} (${item.portion})`,
+        quantityG: 100,
+        calories: Number(item.calories) || 0,
+        proteinG: Number(item.protein) || 0,
+        carbsG: Number(item.carbs) || 0,
+        fatG: Number(item.fat) || 0,
+      };
+
+      await addMealItem({ mealLogId, data: payload }).unwrap();
+      showToast(`🥗 Đã nạp thêm ${item.name} thành công!`);
+    } catch (err) {
+      showToast(err?.data?.message || "Không thể thêm món gợi ý.");
+    }
+  };
+
   // Delete food item
   const handleDeleteItem = async (itemId) => {
     try {
@@ -403,7 +521,9 @@ export function useNutritionData() {
     getFoodUnit,
     openTargetSettings,
     handleSaveTargets,
+    handleAutoCalculateTargets,
     handleAddFoodItem,
+    handleQuickAddFood,
     handleDeleteItem,
     handleSelectLibraryFood,
     handleBarcodeScanned,
@@ -411,5 +531,7 @@ export function useNutritionData() {
     isLoading: isLoading || isSearchingBarcode,
     isSavingTarget,
     isAddingItem,
+    userInfo,
+    mealLogs: nutritionData?.mealLogs || [],
   };
 }

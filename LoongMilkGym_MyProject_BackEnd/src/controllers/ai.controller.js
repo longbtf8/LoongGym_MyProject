@@ -102,6 +102,17 @@ const authorizeChannel = async (req, res, next) => {
   }
 };
 
+// Xử lý lấy gợi ý bữa ăn/món ăn từ AI dựa trên năng lượng còn thiếu
+const getNutritionSuggestions = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const result = await aiService.getNutritionSuggestions(userId);
+    return res.success(result, httpCodes.success, "Lấy gợi ý món ăn thành công.");
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createConversation,
   getConversations,
@@ -111,4 +122,5 @@ module.exports = {
   executeRecommendation,
   rejectRecommendation,
   authorizeChannel,
+  getNutritionSuggestions,
 };

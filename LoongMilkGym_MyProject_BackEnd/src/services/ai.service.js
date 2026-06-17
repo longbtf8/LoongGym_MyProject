@@ -61,7 +61,7 @@ const searchKnowledge = async (queryText) => {
   if (!queryText || queryText.trim().length < 3) return [];
   try {
     return await prisma.$queryRawUnsafe(
-      `SELECT title, sourceType, content FROM ai_knowledge_documents 
+      `SELECT title, source_type AS sourceType, content FROM ai_knowledge_documents 
        WHERE MATCH(title, content) AGAINST (?) 
        LIMIT 3`,
       queryText
@@ -241,6 +241,136 @@ const authorizeChannel = (userId, socketId, channelName) => {
   return pusher.authorizeChannel(socketId, channelName);
 };
 
+// Gợi ý món ăn từ AI dựa trên lượng calo và dinh dưỡng còn thiếu trong ngày
+const getNutritionSuggestions = async (userId) => {
+  const nutritionService = require("./nutrition.service");
+  const todayStr = new Date().toISOString().split("T")[0];
+  const nutrition = await nutritionService.getTodayNutrition(userId, todayStr);
+  
+  const targetCal = nutrition.target.caloriesTarget ?? 2000;
+  const targetPro = nutrition.target.proteinGTarget ?? 150;
+  const targetCarbs = nutrition.target.carbsGTarget ?? 200;
+  const targetFat = nutrition.target.fatGTarget ?? 60;
+
+  const currentCal = nutrition.totals.calories;
+  const currentPro = nutrition.totals.protein;
+  const currentCarbs = nutrition.totals.carbs;
+  const currentFat = nutrition.totals.fat;
+
+  // Lượng còn thiếu
+  const remCal = Math.max(0, targetCal - currentCal);
+  const remPro = Math.max(0, targetPro - currentPro);
+  const remCarbs = Math.max(0, targetCarbs - currentCarbs);
+  const remFat = Math.max(0, targetFat - currentFat);
+
+  if (remCal < 50) {
+    return {
+      metGoal: true,
+      remaining: { calories: remCal, protein: remPro, carbs: remCarbs, fat: remFat },
+      suggestions: [
+        {
+          name: "Sữa chua Hy Lạp ít béo",
+          portion: "100g",
+          calories: 60,
+          protein: 10,
+          carbs: 4,
+          fat: 0,
+          reason: "Vì bạn đã gần đạt hoặc đạt mốc calo hôm nay, một chút sữa chua Hy Lạp sẽ giúp bổ sung nốt lượng protein còn thiếu mà không làm thừa calo."
+        },
+        {
+          name: "Trà xanh ấm hoặc Nước lọc chanh",
+          portion: "250ml",
+          calories: 0,
+          protein: 0,
+          carbs: 0,
+          fat: 0,
+          reason: "Calo của bạn đã đủ cho ngày hôm nay. Hãy bổ sung thêm nước lọc hoặc trà xanh để hỗ trợ trao đổi chất và phục hồi cơ bắp."
+        }
+      ]
+    };
+  }
+
+  const prompt = `Bạn là một chuyên gia dinh dưỡng và PT thể hình cao cấp.
+Hôm nay người dùng còn thiếu các chỉ số dinh dưỡng sau để đạt mục tiêu trong ngày:
+- Lượng Calo còn thiếu: ${remCal} kcal
+- Protein còn thiếu: ${remPro} g
+- Tinh bột (Carbs) còn thiếu: ${remCarbs} g
+- Chất béo (Fat) còn thiếu: ${remFat} g
+
+Hãy gợi ý chính xác 3 món ăn hoặc bữa ăn nhẹ phổ biến tại Việt Nam phù hợp để bù đắp phần dinh dưỡng còn thiếu này. 
+Mỗi món ăn phải thực tế, dễ mua hoặc dễ chế biến.
+
+Yêu cầu trả về kết quả dạng JSON thuần túy (không bọc trong thẻ nhãn \`\`\`json hay bất cứ text nào khác ngoài chuỗi JSON). JSON phải là một mảng gồm 3 đối tượng có các trường sau:
+[
+  {
+    "name": "Tên món ăn (Ví dụ: Ức gà áp chảo, Sữa lắc chuối bơ đậu phộng...)",
+    "portion": "Khẩu phần gợi ý (Ví dụ: 150g, 1 cốc...)",
+    "calories": 250,
+    "protein": 25,
+    "carbs": 15,
+    "fat": 5,
+    "reason": "Mô tả ngắn gọn (1-2 câu) tại sao món này tốt cho việc bù đắp lượng dinh dưỡng còn thiếu hôm nay"
+  }
+]`;
+
+  try {
+    const { generateText } = require("ai");
+    const aiConfig = require("@/config/ai.config");
+    const result = await generateText({
+      model: gateway(aiConfig.modelName),
+      prompt: prompt,
+      maxTokens: 1000,
+    });
+
+    let jsonText = result.text.trim();
+    if (jsonText.startsWith("```")) {
+      jsonText = jsonText.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+    }
+
+    const suggestions = JSON.parse(jsonText);
+    return {
+      metGoal: false,
+      remaining: { calories: remCal, protein: remPro, carbs: remCarbs, fat: remFat },
+      suggestions
+    };
+  } catch (err) {
+    console.error("Lỗi gọi AI gợi ý món ăn:", err);
+    return {
+      metGoal: false,
+      remaining: { calories: remCal, protein: remPro, carbs: remCarbs, fat: remFat },
+      suggestions: [
+        {
+          name: "Ức gà áp chảo & Khoai lang luộc",
+          portion: "150g ức gà + 100g khoai lang",
+          calories: Math.round(remCal * 0.6),
+          protein: Math.round(remPro * 0.7),
+          carbs: Math.round(remCarbs * 0.7),
+          fat: Math.round(remFat * 0.4),
+          reason: "Bữa ăn giàu đạm sạch và carb phức giúp bù đắp nhanh năng lượng và protein mà không làm tăng mỡ thừa."
+        },
+        {
+          name: "Sữa whey protein lắc cùng chuối",
+          portion: "1 muỗng Whey + 1 quả chuối + 250ml nước",
+          calories: 260,
+          protein: 26,
+          carbs: 28,
+          fat: 2,
+          reason: "Cung cấp protein hấp thụ nhanh cho cơ bắp cùng nguồn carbs tốt từ chuối giúp phục hồi thể lực sau tập."
+        },
+        {
+          name: "Trứng luộc và Hạnh nhân",
+          portion: "2 quả trứng luộc + 15g hạt hạnh nhân",
+          calories: 240,
+          protein: 15,
+          carbs: 3,
+          fat: 18,
+          reason: "Thích hợp khi bạn còn thiếu nhiều protein và chất béo tốt nhưng không muốn nạp quá nhiều carbs tinh bột."
+        }
+      ]
+    };
+  }
+};
+
 module.exports = {
   createConversation,
   getConversations,
@@ -250,4 +380,5 @@ module.exports = {
   executeRecommendation,
   rejectRecommendation,
   authorizeChannel,
+  getNutritionSuggestions,
 };

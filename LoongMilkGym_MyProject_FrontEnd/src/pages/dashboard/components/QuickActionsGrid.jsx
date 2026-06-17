@@ -17,7 +17,7 @@ function QuickActionsGrid() {
       </Link>
 
       <Link 
-        to="/route-placeholder"
+        to={paths.myPlan}
         className="flex flex-col items-center justify-center p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-primary/40 rounded-2xl transition-all group no-underline shadow-sm"
       >
         <div className="w-9 h-9 rounded-full bg-cyan-500/10 text-cyan-500 flex items-center justify-center mb-2.5 transition-colors group-hover:bg-cyan-500 group-hover:text-black">

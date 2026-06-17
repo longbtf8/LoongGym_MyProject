@@ -19,7 +19,7 @@ export default function PlanSelector({
   onOpenScheduler,
   onSuccess
 }) {
-  const { data: programsRes, isLoading: isLoadingPrograms } = useGetWorkoutProgramsQuery({ limit: 6 });
+  const { data: programsRes, isLoading: isLoadingPrograms } = useGetWorkoutProgramsQuery({ limit: 20 });
   const programs = programsRes?.data?.data || [];
 
   const [customPlanTitle, setCustomPlanTitle] = useState("Lộ trình tự chọn của tôi");

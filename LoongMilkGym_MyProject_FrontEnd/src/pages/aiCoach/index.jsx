@@ -17,7 +17,7 @@ import ChatFooter from "./components/ChatFooter";
 function AICoach() {
   const { userInfo, userName, userInitial } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const chatEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
   // Sử dụng Custom Hook quản lý toàn bộ trạng thái và logic AI Coach
   const {
@@ -45,10 +45,17 @@ function AICoach() {
     { label: "Hôm nay tôi mệt", prompt: "Hôm nay tôi mệt mỏi và kiệt sức, tôi có nên tập không hay nên nghỉ ngơi?", icon: Heart, color: "text-purple-500 bg-purple-500/10" },
   ];
 
-  // Tự động cuộn xuống cuối khung chat khi có tin nhắn mới
+  // Tự động cuộn xuống cuối khung chat khi có tin nhắn mới hoặc đổi hội thoại
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isGenerating]);
+    if (chatContainerRef.current) {
+      setTimeout(() => {
+        chatContainerRef.current.scrollTo({
+          top: chatContainerRef.current.scrollHeight,
+          behavior: "smooth"
+        });
+      }, 50);
+    }
+  }, [messages, isGenerating, activeConversationId]);
 
   // Định dạng ngày hiển thị ở Sidebar
   const formatDateString = (dateInput) => {
@@ -127,7 +134,7 @@ function AICoach() {
           actionProcessingId={actionProcessingId}
           handleExecuteAction={handleExecuteAction}
           handleRejectAction={handleRejectAction}
-          chatEndRef={chatEndRef}
+          chatContainerRef={chatContainerRef}
         />
 
         {/* Bong bóng nhập liệu và gửi tin nhắn */}

@@ -14,6 +14,8 @@ export function useAICoach(userInfo) {
 
   const pusherRef = useRef(null);
   const channelRef = useRef(null);
+  const isNewConversationRef = useRef(false);
+  const sendingRef = useRef(false);
 
   // Loại bỏ khối ACTION JSON thô khỏi tin nhắn hiển thị
   const stripActionBlock = (text) => {
@@ -95,7 +97,8 @@ export function useAICoach(userInfo) {
 
   // Gửi tin nhắn mới (cho cả quick action và gõ trực tiếp)
   const handleSendMessage = async (text) => {
-    if (!text.trim() || isGenerating) return;
+    if (!text.trim() || isGenerating || sendingRef.current) return;
+    sendingRef.current = true;
 
     let currentConvId = activeConversationId;
     setIsGenerating(true);
@@ -113,6 +116,7 @@ export function useAICoach(userInfo) {
 
     try {
       if (currentConvId === "temp-new") {
+        isNewConversationRef.current = true;
         const title = text.length > 40 ? `${text.substring(0, 40)}...` : text;
         const convRes = await httpRequest.post("/ai/conversations", {
           title,
@@ -125,6 +129,7 @@ export function useAICoach(userInfo) {
           setActiveConversationId(newConv.id);
           currentConvId = newConv.id;
         } else {
+          isNewConversationRef.current = false;
           throw new Error("Không thể khởi tạo cuộc hội thoại trong DB.");
         }
       }
@@ -160,6 +165,8 @@ export function useAICoach(userInfo) {
         }
       ]);
       setIsGenerating(false);
+    } finally {
+      sendingRef.current = false;
     }
   };
 
@@ -228,9 +235,20 @@ export function useAICoach(userInfo) {
     }
   };
 
+  // Tải danh sách cuộc hội thoại ban đầu khi component mount hoặc userInfo thay đổi
+  useEffect(() => {
+    if (userInfo?.id) {
+      fetchConversations(true);
+    }
+  }, [userInfo?.id]);
+
   // Tải danh sách khi đổi cuộc hội thoại
   useEffect(() => {
     if (activeConversationId && activeConversationId !== "temp-new") {
+      if (isNewConversationRef.current) {
+        isNewConversationRef.current = false;
+        return;
+      }
       fetchMessages(activeConversationId);
     } else {
       setMessages([]);

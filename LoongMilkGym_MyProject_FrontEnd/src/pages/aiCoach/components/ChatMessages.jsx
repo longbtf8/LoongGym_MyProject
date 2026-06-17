@@ -15,7 +15,7 @@ function ChatMessages({
   actionProcessingId,
   handleExecuteAction,
   handleRejectAction,
-  chatEndRef,
+  chatContainerRef,
 }) {
   if (loadingMessages) {
     return (
@@ -28,35 +28,38 @@ function ChatMessages({
 
   if (messages.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[70%] max-w-lg mx-auto text-center gap-6 px-4 animate-slide-down">
-        <div className="w-16 h-16 rounded-full bg-primary/15 border border-primary/35 text-primary flex items-center justify-center animate-bounce shadow-lg shadow-primary/10">
-          <Sparkles className="w-8 h-8" />
-        </div>
-        <div>
-          <h3 className="text-lg font-black text-[var(--text-color)] mb-2">Chào mừng {userName} đến với AI Coach!</h3>
-          <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed m-0 font-medium">
-            Tôi là trợ lý huấn luyện viên thông minh của bạn. Tôi có thể giúp bạn sắp xếp lại lịch tập, thay đổi bài tập do chấn thương/mệt mỏi, phân tích chỉ số phục hồi, dinh dưỡng và đưa ra các đề xuất điều chỉnh lịch tập luyện tự động!
-          </p>
-        </div>
+      <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center py-6 px-4">
+        <div className="max-w-lg w-full text-center flex flex-col items-center gap-6 animate-slide-down">
+          <div className="w-16 h-16 rounded-full bg-primary/15 border border-primary/35 text-primary flex items-center justify-center animate-bounce shadow-lg shadow-primary/10">
+            <Sparkles className="w-8 h-8" />
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-[var(--text-color)] mb-2">Chào mừng {userName} đến với AI Coach!</h3>
+            <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed m-0 font-medium">
+              Tôi là trợ lý huấn luyện viên thông minh của bạn. Tôi có thể giúp bạn sắp xếp lại lịch tập, thay đổi bài tập do chấn thương/mệt mỏi, phân tích chỉ số phục hồi, dinh dưỡng và đưa ra các đề xuất điều chỉnh lịch tập luyện tự động!
+            </p>
+          </div>
 
-        <div className="w-full flex flex-col gap-2.5 mt-2">
-          <span className="text-[10px] font-black uppercase tracking-wider text-[var(--text-muted)] text-left">Đề xuất câu hỏi nhanh:</span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left">
-            {QUICK_ACTIONS.map((act) => {
-              const Icon = act.icon;
-              return (
-                <button
-                  key={act.label}
-                  onClick={() => handleSendMessage(act.prompt)}
-                  className="p-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-primary/45 rounded-2xl text-xs font-bold text-[var(--text-color)] hover:text-[var(--text-primary)] transition-all flex items-center gap-3 cursor-pointer text-left shadow-sm group border-0"
-                >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${act.color} group-hover:scale-105 transition-transform`}>
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <span className="flex-1 truncate">{act.label}</span>
-                </button>
-              );
-            })}
+          <div className="w-full flex flex-col gap-2.5 mt-2">
+            <span className="text-[10px] font-black uppercase tracking-wider text-[var(--text-muted)] text-left">Đề xuất câu hỏi nhanh:</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left">
+              {QUICK_ACTIONS.map((act) => {
+                const Icon = act.icon;
+                return (
+                  <button
+                    key={act.label}
+                    onClick={() => handleSendMessage(act.prompt)}
+                    disabled={isGenerating}
+                    className="p-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-primary/45 rounded-2xl text-xs font-bold text-[var(--text-color)] hover:text-[var(--text-primary)] transition-all flex items-center gap-3 cursor-pointer text-left shadow-sm group border-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${act.color} group-hover:scale-105 transition-transform`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <span className="flex-1 truncate">{act.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -64,7 +67,7 @@ function ChatMessages({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-gradient-to-b from-transparent to-[var(--bg-secondary)]/5">
+    <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-gradient-to-b from-transparent to-[var(--bg-secondary)]/5">
       {messages.map((msg) => {
         const isAi = msg.role === "assistant";
         return (
@@ -126,7 +129,6 @@ function ChatMessages({
         </div>
       )}
       
-      <div ref={chatEndRef} />
     </div>
   );
 }

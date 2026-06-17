@@ -89,18 +89,41 @@ const execute = async (userId, id) => {
       }
     } else if (recommendationType === "nutrition_adjust") {
       const { calories, protein, carbs, fat } = payload;
-      const currentProfile = await tx.userProfile.findUnique({ where: { userId } });
-      const currentMeta = currentProfile?.metadata || {};
-      await tx.userProfile.update({
-        where: { userId },
-        data: {
-          metadata: {
-            ...currentMeta,
-            targetCalories: calories,
-            targetProtein: protein,
-            targetCarbs: carbs,
-            targetFat: fat,
+      
+      // Update general calorieGoal in userProfile
+      if (calories) {
+        await tx.userProfile.updateMany({
+          where: { userId },
+          data: {
+            calorieGoal: Math.round(calories),
           },
+        });
+      }
+
+      // Upsert daily nutrition target for today's date in UTC
+      const today = new Date();
+      const targetDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+
+      await tx.nutritionTarget.upsert({
+        where: {
+          userId_targetDate: {
+            userId,
+            targetDate,
+          },
+        },
+        update: {
+          caloriesTarget: calories ? Math.round(calories) : undefined,
+          proteinGTarget: protein ? Math.round(protein) : undefined,
+          carbsGTarget: carbs ? Math.round(carbs) : undefined,
+          fatGTarget: fat ? Math.round(fat) : undefined,
+        },
+        create: {
+          userId,
+          targetDate,
+          caloriesTarget: calories ? Math.round(calories) : 2000,
+          proteinGTarget: protein ? Math.round(protein) : 150,
+          carbsGTarget: carbs ? Math.round(carbs) : 200,
+          fatGTarget: fat ? Math.round(fat) : 60,
         },
       });
     }

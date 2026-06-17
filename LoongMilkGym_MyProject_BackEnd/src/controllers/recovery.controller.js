@@ -68,6 +68,17 @@ const uploadProgressPhoto = async (req, res, next) => {
   }
 };
 
+const deleteProgressPhoto = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const photoId = req.params.id;
+    const result = await recoveryService.deleteProgressPhoto(userId, photoId);
+    return res.success(result, httpCodes.success, "Xóa ảnh tiến trình thành công.");
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getTodayOverview,
   logRecovery,
@@ -75,4 +86,5 @@ module.exports = {
   updateInjury,
   logBodyMetric,
   uploadProgressPhoto,
+  deleteProgressPhoto,
 };

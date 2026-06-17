@@ -10,6 +10,7 @@ import NutritionOverviewCard from "./components/NutritionOverviewCard";
 import MacrosGrid from "./components/MacrosGrid";
 import AddFoodForm from "./components/AddFoodForm";
 import LoggedFoodsList from "./components/LoggedFoodsList";
+import AIFoodSuggestions from "./components/AIFoodSuggestions";
 
 export default function NutritionPage() {
   const navigate = useNavigate();
@@ -70,7 +71,9 @@ export default function NutritionPage() {
     getFoodUnit,
     openTargetSettings,
     handleSaveTargets,
+    handleAutoCalculateTargets,
     handleAddFoodItem,
+    handleQuickAddFood,
     handleDeleteItem,
     handleSelectLibraryFood,
     handleBarcodeScanned,
@@ -78,6 +81,7 @@ export default function NutritionPage() {
     isLoading,
     isSavingTarget,
     isAddingItem,
+    mealLogs,
   } = useNutritionData();
 
   if (isLoading) {
@@ -86,7 +90,7 @@ export default function NutritionPage() {
 
   const nutritionData = { totals, target, mealLogs: [{ items: searchResults }] }; // Mock structure for target settings
   // Real nutrition data references
-  const actualNutritionData = { target, totals, mealLogs: totals.mealLogs || [] };
+  const actualNutritionData = { target, totals, mealLogs };
 
   return (
     <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] py-8 px-4 w-full flex justify-center pb-24">
@@ -151,6 +155,12 @@ export default function NutritionPage() {
           isFatExceeded={isFatExceeded}
         />
 
+        {/* AI recommended suggestions section */}
+        <AIFoodSuggestions
+          calRemaining={calRemaining}
+          handleQuickAddFood={handleQuickAddFood}
+        />
+
         {/* Bottom Section: Add food form & Logged list */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-start">
           
@@ -209,6 +219,7 @@ export default function NutritionPage() {
           targetWater={targetWater}
           setTargetWater={setTargetWater}
           handleSaveTargets={handleSaveTargets}
+          handleAutoCalculateTargets={handleAutoCalculateTargets}
           isSavingTarget={isSavingTarget}
         />
 

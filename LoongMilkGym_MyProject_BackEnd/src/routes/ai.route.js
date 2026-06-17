@@ -22,6 +22,9 @@ router.delete("/conversations/:id", authRequire, validate(getConversationMessage
 // Route lấy toàn bộ tin nhắn trong 1 phòng hội thoại cụ thể
 router.get("/conversations/:id/messages", authRequire, validate(getConversationMessagesSchema), aiController.getConversationMessages);
 
+// Route gợi ý món ăn từ AI dựa trên lượng calo thiếu hụt
+router.get("/nutrition-suggestions", authRequire, aiController.getNutritionSuggestions);
+
 // Route gửi tin nhắn mới và bắt đầu luồng AI stream
 router.post("/conversations/:id/messages", authRequire, validate(createMessageSchema), aiController.createMessage);
 

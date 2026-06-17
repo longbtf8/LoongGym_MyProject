@@ -66,6 +66,7 @@ export default function Recovery() {
     setLocalPhotoFile,
     handleLogMetrics,
     handlePhotoUpload,
+    handleDeletePhoto,
     isLoggingMetric,
     isUploadingPhoto,
     // Injury states & handles
@@ -274,6 +275,7 @@ export default function Recovery() {
               recovery={recovery}
               latestMetrics={latestMetrics}
               latestPhotos={latestPhotos}
+              handleDeletePhoto={handleDeletePhoto}
             />
           </div>
 

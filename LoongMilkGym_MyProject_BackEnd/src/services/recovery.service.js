@@ -252,6 +252,29 @@ const uploadProgressPhoto = async (userId, data) => {
   });
 };
 
+const deleteProgressPhoto = async (userId, photoId) => {
+  const photo = await prisma.progressPhoto.findUnique({
+    where: { id: photoId },
+  });
+
+  if (!photo) {
+    throw new AppError("Không tìm thấy ảnh tiến trình.", httpCodes.notFound);
+  }
+
+  if (photo.userId !== userId) {
+    throw new AppError("Bạn không có quyền xóa ảnh này.", httpCodes.forbidden);
+  }
+
+  // Delete from Cloudinary if it is a Cloudinary URL
+  const { deleteOldImage } = require("@/utils/cloudinary");
+  await deleteOldImage(photo.photoUrl);
+
+  // Delete from database
+  return prisma.progressPhoto.delete({
+    where: { id: photoId },
+  });
+};
+
 module.exports = {
   getTodayOverview,
   logRecovery,
@@ -259,5 +282,6 @@ module.exports = {
   updateInjury,
   logBodyMetric,
   uploadProgressPhoto,
+  deleteProgressPhoto,
   calculateRecoveryScore,
 };

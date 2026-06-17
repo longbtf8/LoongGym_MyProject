@@ -5,7 +5,8 @@ import {
   useLogInjuryMutation,
   useUpdateInjuryMutation,
   useLogBodyMetricMutation,
-  useUploadProgressPhotoMutation
+  useUploadProgressPhotoMutation,
+  useDeleteProgressPhotoMutation
 } from "@/services/recovery/recoveryApi";
 
 export function useRecoveryData() {
@@ -21,6 +22,7 @@ export function useRecoveryData() {
   const [updateInjury, { isLoading: isUpdatingInjury }] = useUpdateInjuryMutation();
   const [logBodyMetric, { isLoading: isLoggingMetric }] = useLogBodyMetricMutation();
   const [uploadProgressPhoto, { isLoading: isUploadingPhoto }] = useUploadProgressPhotoMutation();
+  const [deleteProgressPhoto, { isLoading: isDeletingPhoto }] = useDeleteProgressPhotoMutation();
 
   // Alert Auto-dismiss
   useEffect(() => {
@@ -213,30 +215,44 @@ export function useRecoveryData() {
 
   const handlePhotoUpload = async (e) => {
     e.preventDefault();
-    let finalUrl = photoUrl;
-    
-    if (localPhotoFile) {
-      finalUrl = URL.createObjectURL(localPhotoFile);
-    }
 
-    if (!finalUrl) {
+    if (!localPhotoFile && !photoUrl.trim()) {
       triggerAlert("error", "Vui lòng chọn tệp ảnh hoặc nhập đường dẫn URL ảnh");
       return;
     }
 
     try {
-      await uploadProgressPhoto({
-        photoUrl: finalUrl,
-        photoType,
-        takenAt: todayDateStr,
-        visibility: "private"
-      }).unwrap();
+      if (localPhotoFile) {
+        const formData = new FormData();
+        formData.append("photo", localPhotoFile);
+        formData.append("photoType", photoType);
+        formData.append("takenAt", todayDateStr);
+        formData.append("visibility", "private");
+        await uploadProgressPhoto(formData).unwrap();
+      } else {
+        await uploadProgressPhoto({
+          photoUrl: photoUrl.trim(),
+          photoType,
+          takenAt: todayDateStr,
+          visibility: "private"
+        }).unwrap();
+      }
       triggerAlert("success", "Đăng tải ảnh tiến trình thành công!");
       setPhotoUrl("");
       setLocalPhotoFile(null);
       refetch();
     } catch (err) {
       triggerAlert("error", err?.data?.message || "Không thể đăng tải ảnh");
+    }
+  };
+
+  const handleDeletePhoto = async (photoId) => {
+    try {
+      await deleteProgressPhoto(photoId).unwrap();
+      triggerAlert("success", "Đã xóa ảnh tiến trình thành công!");
+      refetch();
+    } catch (err) {
+      triggerAlert("error", err?.data?.message || "Không thể xóa ảnh");
     }
   };
 
@@ -366,8 +382,10 @@ export function useRecoveryData() {
     setLocalPhotoFile,
     handleLogMetrics,
     handlePhotoUpload,
+    handleDeletePhoto,
     isLoggingMetric,
     isUploadingPhoto,
+    isDeletingPhoto,
     // Injury states & handles
     bodyPart,
     setBodyPart,

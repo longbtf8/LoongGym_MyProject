@@ -1,11 +1,15 @@
 import React from "react";
-import { Dumbbell, Clock, Flame } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Dumbbell, Clock, Flame, CalendarPlus } from "lucide-react";
+import paths from "@/config/path";
 
 function TodayWorkoutCard({ workout }) {
-  const title = workout?.title || "Ngực & Tay sau";
-  const exercisesCount = workout?.exercisesCount || 8;
-  const duration = workout?.duration || 60;
-  const difficulty = workout?.difficulty || "Khó";
+  const navigate = useNavigate();
+  const hasWorkout = workout && workout.title;
+  const title = workout?.title || "Chưa có lịch tập";
+  const exercisesCount = workout?.exercisesCount || 0;
+  const duration = workout?.duration || 0;
+  const difficulty = workout?.difficulty || "--";
 
   return (
     <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 shadow-sm flex flex-col justify-between min-h-[300px]">
@@ -33,9 +37,22 @@ function TodayWorkoutCard({ workout }) {
         </div>
       </div>
 
-      <button className="w-full py-3.5 bg-primary border border-primary text-black hover:bg-primary-hover font-extrabold text-sm rounded-2xl transition-all duration-200 active:scale-95 cursor-pointer mt-4 shadow-md shadow-primary/10">
-        Bắt đầu tập
-      </button>
+      {hasWorkout ? (
+        <button
+          onClick={() => navigate(paths.todayWorkout)}
+          className="w-full py-3.5 bg-primary border border-primary text-black hover:bg-primary-hover font-extrabold text-sm rounded-2xl transition-all duration-200 active:scale-95 cursor-pointer mt-4 shadow-md shadow-primary/10 border-0"
+        >
+          Bắt đầu tập
+        </button>
+      ) : (
+        <button
+          onClick={() => navigate(paths.myPlan)}
+          className="w-full py-3.5 bg-[var(--bg-color)] border border-[var(--border-color)] hover:border-primary/40 text-[var(--text-color)] font-extrabold text-sm rounded-2xl transition-all duration-200 active:scale-95 cursor-pointer mt-4 flex items-center justify-center gap-2"
+        >
+          <CalendarPlus className="w-4 h-4 text-primary" />
+          Tạo lịch tập
+        </button>
+      )}
     </div>
   );
 }

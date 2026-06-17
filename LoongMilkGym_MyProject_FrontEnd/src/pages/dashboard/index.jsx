@@ -62,6 +62,7 @@ function Dashboard() {
           userName={userName} 
           userInitial={userInitial} 
           displayGoal={displayGoal} 
+          workout={apiData?.todayWorkout}
         />
 
         {/* ═══ GRID 3 CỘT (DESKTOP) ═══ */}

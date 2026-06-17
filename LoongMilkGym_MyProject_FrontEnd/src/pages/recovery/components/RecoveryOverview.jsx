@@ -1,11 +1,12 @@
 import React from "react";
-import { Sparkles, Moon, Activity, Zap, Smile } from "lucide-react";
+import { Sparkles, Moon, Activity, Zap, Smile, Trash2 } from "lucide-react";
 
 function RecoveryOverview({
   liveScore,
   recovery,
   latestMetrics,
   latestPhotos,
+  handleDeletePhoto,
 }) {
   return (
     <div className="flex flex-col gap-6">
@@ -120,8 +121,18 @@ function RecoveryOverview({
           </h3>
           <div className="grid grid-cols-2 gap-2 mt-1">
             {latestPhotos.slice(0, 2).map((photo) => (
-              <div key={photo.id} className="relative aspect-square rounded-2xl overflow-hidden border border-[var(--border-color)]">
+              <div key={photo.id} className="relative aspect-square rounded-2xl overflow-hidden border border-[var(--border-color)] group/photo">
                 <img src={photo.photoUrl} alt={photo.photoType} className="w-full h-full object-cover" />
+                
+                <button
+                  type="button"
+                  onClick={() => handleDeletePhoto(photo.id)}
+                  className="absolute top-1.5 right-1.5 p-1 bg-red-500/80 hover:bg-red-600 rounded-lg text-white opacity-0 group-hover/photo:opacity-100 transition-opacity duration-200 border-0 cursor-pointer flex items-center justify-center shadow-md"
+                  title="Xóa ảnh này"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+
                 <span className="absolute bottom-1 right-1 bg-black/60 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md">
                   {photo.photoType === "front" ? "Trước" : photo.photoType === "back" ? "Sau" : "Nghiêng"}
                 </span>
