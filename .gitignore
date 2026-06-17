@@ -48,7 +48,7 @@ Thumbs.db
 *.sw?
 
 # Exclude local system report folder from git deployment
-/Report/
+# /Report/
 
 # Exclude agent skills and lock files
 .agents/
