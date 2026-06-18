@@ -3,6 +3,7 @@ import { Award, CheckCircle, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useGetDashboardSummaryQuery } from "@/services/dashboard/dashboardApi";
+import { useGetActivePlanQuery } from "@/services/roadmap/roadmapApi";
 import paths from "@/config/path";
 
 const ACHIEVEMENT_SLIDES = [
@@ -47,23 +48,81 @@ function ProgressMedals() {
     skip: !isLoggedIn,
   });
 
+  // Fetch active training plan days
+  const { data: activePlanData } = useGetActivePlanQuery(undefined, {
+    skip: !isLoggedIn,
+  });
+
   const apiStats = isLoggedIn ? responseData?.data?.stats : null;
+  const activePlan = isLoggedIn ? activePlanData?.data : null;
 
   // Compute actual daily progress values (0 or 100%)
-  const dailyWorkouts = apiStats?.weeklyWorkoutDaysMap || [1, 0, 1, 0, 0, 1, 0]; // Monday - Sunday
-  const weeklyWorkoutMinutes = apiStats?.weeklyWorkoutMinutesMap || [30, 0, 45, 0, 0, 50, 0];
+  const dailyWorkouts = apiStats?.weeklyWorkoutDaysMap || [0, 0, 0, 0, 0, 0, 0];
+  const weeklyWorkoutMinutes = apiStats?.weeklyWorkoutMinutesMap || [0, 0, 0, 0, 0, 0, 0];
   
-  const days = [
-    { name: "Hai", active: dailyWorkouts[0] === 1, value: dailyWorkouts[0] === 1 ? 100 : 0, mins: weeklyWorkoutMinutes[0] },
-    { name: "Ba", active: dailyWorkouts[1] === 1, value: dailyWorkouts[1] === 1 ? 100 : 0, mins: weeklyWorkoutMinutes[1] },
-    { name: "Tư", active: dailyWorkouts[2] === 1, value: dailyWorkouts[2] === 1 ? 100 : 0, mins: weeklyWorkoutMinutes[2] },
-    { name: "Năm", active: dailyWorkouts[3] === 1, value: dailyWorkouts[3] === 1 ? 100 : 0, mins: weeklyWorkoutMinutes[3] },
-    { name: "Sáu", active: dailyWorkouts[4] === 1, value: dailyWorkouts[4] === 1 ? 100 : 0, mins: weeklyWorkoutMinutes[4] },
-    { name: "Bảy", active: dailyWorkouts[5] === 1, value: dailyWorkouts[5] === 1 ? 100 : 0, mins: weeklyWorkoutMinutes[5] },
-    { name: "CN", active: dailyWorkouts[6] === 1, value: dailyWorkouts[6] === 1 ? 100 : 0, mins: weeklyWorkoutMinutes[6] },
-  ];
+  // Calculate current week dates (Monday to Sunday)
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const diffToMonday = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+  const monday = new Date(today);
+  monday.setDate(diffToMonday);
+  monday.setHours(0, 0, 0, 0);
 
-  const completedCount = apiStats ? apiStats.completedWorkoutsThisWeek : 3;
+  const weekDays = ["Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy", "CN"];
+  const days = weekDays.map((name, index) => {
+    if (isLoggedIn) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + index);
+
+      // Find matching day in active plan
+      const planDay = activePlan?.days?.find((pd) => {
+        const pdDate = new Date(pd.scheduledDate);
+        return pdDate.getFullYear() === d.getFullYear() &&
+               pdDate.getMonth() === d.getMonth() &&
+               pdDate.getDate() === d.getDate();
+      });
+
+      const isCompleted = planDay?.status === "completed" || dailyWorkouts[index] === 1;
+      const mins = isCompleted 
+        ? (weeklyWorkoutMinutes[index] || planDay?.metadata?.durationMinutes || 45) 
+        : (planDay?.metadata?.durationMinutes || 0);
+
+      // Determine if there is a scheduled workout on this day
+      const isScheduled = planDay && planDay.title && !["nghỉ ngơi", "nghỉ", "rest"].includes(planDay.title.toLowerCase());
+
+      return {
+        name,
+        active: isCompleted,
+        isScheduled: isScheduled && !isCompleted,
+        title: planDay?.title || (isCompleted ? "Bài tập thể chất" : "Nghỉ ngơi"),
+        mins: mins || (isScheduled ? 30 : 0),
+      };
+    } else {
+      // Mock data for beautiful presentation if not logged in
+      const mockActive = [true, false, true, false, false, false, false];
+      const mockScheduled = [false, false, false, false, true, false, true];
+      const mockTitles = [
+        "Ngực & Tay sau",
+        "Nghỉ ngơi",
+        "Lưng & Bắp tay",
+        "Nghỉ ngơi",
+        "Chân & Bụng",
+        "Nghỉ ngơi",
+        "Vai & Tay trước",
+      ];
+      const mockMins = [30, 0, 45, 0, 50, 0, 45];
+
+      return {
+        name,
+        active: mockActive[index],
+        isScheduled: mockScheduled[index],
+        title: mockTitles[index],
+        mins: mockMins[index],
+      };
+    }
+  });
+
+  const completedCount = apiStats ? apiStats.completedWorkoutsThisWeek : 2;
 
   // Achievement carousel state
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -116,6 +175,17 @@ function ProgressMedals() {
     setDragOffset(0);
   };
 
+  // Navigation handlers with smooth scroll to top
+  const handleNavigateDashboard = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    navigate(isLoggedIn ? paths.dashboard : paths.login);
+  };
+
+  const handleNavigatePlan = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    navigate(isLoggedIn ? paths.myPlan : paths.login);
+  };
+
   return (
     <section className="w-full py-10">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -139,10 +209,10 @@ function ProgressMedals() {
           </div>
 
           {/* Biểu đồ tiến độ cao cấp */}
-          <div className="relative h-44 w-full flex items-end justify-between px-2 pt-8 border-b border-[var(--border-color)] pb-3 mb-4 z-10">
+          <div className="relative h-36 w-full flex items-end justify-between px-2 pt-6 z-10">
             
             {/* Background Grid Lines */}
-            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-50 pb-8 pt-8 px-1">
+            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-50 pb-2 pt-6 px-1">
               <div className="border-t border-dashed border-[var(--border-color)] w-full text-[8px] text-[var(--text-muted)] font-bold pt-0.5">60 phút</div>
               <div className="border-t border-dashed border-[var(--border-color)] w-full text-[8px] text-[var(--text-muted)] font-bold pt-0.5">30 phút</div>
               <div className="border-t border-dashed border-[var(--border-color)] w-full text-[8px] text-[var(--text-muted)] font-bold pt-0.5">Lịch nghỉ</div>
@@ -152,41 +222,59 @@ function ProgressMedals() {
             {days.map((day, idx) => {
               const fillPercentage = day.active 
                 ? Math.min(100, Math.max(25, (day.mins / 60) * 100)) 
-                : 0;
+                : day.isScheduled 
+                  ? Math.min(100, Math.max(25, (day.mins / 60) * 100))
+                  : 0;
 
               return (
-                <div key={idx} className="flex-1 h-full flex flex-col items-center justify-end gap-2 group relative z-10">
+                <div key={idx} className="flex-1 h-full flex flex-col items-center justify-end group relative z-10">
                   
                   {/* Thin Pill Bar Container */}
-                  <div className="w-3.5 bg-[var(--bg-color)]/60 dark:bg-[var(--bg-color)]/20 border border-[var(--border-color)] h-[75%] rounded-full overflow-hidden flex items-end relative shadow-inner">
-                    {day.active && (
+                  <div className="w-4 bg-[var(--bg-color)]/60 dark:bg-[var(--bg-color)]/20 border border-[var(--border-color)] h-[85%] rounded-full overflow-hidden flex items-end relative shadow-inner">
+                    {day.active ? (
                       <div 
                         style={{ height: `${fillPercentage}%` }}
                         className="w-full rounded-full transition-all duration-700 bg-gradient-to-t from-primary/80 to-primary relative"
                       >
                         <div className="absolute top-0 left-0 right-0 h-1.5 bg-white/40 rounded-full animate-pulse" />
                       </div>
-                    )}
+                    ) : day.isScheduled ? (
+                      <div 
+                        style={{ height: `${fillPercentage}%` }}
+                        className="w-full rounded-full transition-all duration-700 bg-primary/10 border border-dashed border-primary/40 relative h-full"
+                      />
+                    ) : null}
                   </div>
-                  
-                  {/* Day Label Badge */}
-                  <span className={`text-[10px] font-black tracking-tight select-none transition-all duration-200 px-1.5 py-0.5 rounded-md ${
-                    day.active 
-                      ? "bg-primary text-black scale-105 shadow-sm shadow-primary/20" 
-                      : "text-[var(--text-muted)]"
-                  }`}>
-                    {day.name}
-                  </span>
 
                   {/* Enhanced Tooltip */}
-                  <div className="absolute bottom-[90%] left-1/2 -translate-x-1/2 bg-black/90 text-white text-[9px] font-black px-2 py-1 rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50 shadow-lg border border-white/10 flex flex-col items-center">
-                    <span>Thứ {day.name}</span>
-                    <span className="text-primary font-bold">{day.active ? `${day.mins} phút` : "Nghỉ ngơi"}</span>
+                  <div className="absolute bottom-[90%] left-1/2 -translate-x-1/2 bg-black/95 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50 shadow-lg border border-white/10 flex flex-col items-center">
+                    <span className="text-[9px] text-gray-400">Thứ {day.name}</span>
+                    <span className="text-primary font-black mt-0.5">{day.title}</span>
+                    <span className="text-[9px] text-gray-300 mt-0.5">
+                      {day.active ? `Đã tập (${day.mins} phút)` : day.isScheduled ? `Lịch tập (${day.mins} phút)` : "Nghỉ ngơi"}
+                    </span>
                   </div>
 
                 </div>
               );
             })}
+          </div>
+
+          {/* Days Label Row (Aligned perfectly at the bottom) */}
+          <div className="w-full flex justify-between px-2 pt-3 pb-2 border-t border-[var(--border-color)] mt-2 mb-4 z-10">
+            {days.map((day, idx) => (
+              <div key={idx} className="flex-1 flex justify-center">
+                <span className={`text-[11px] sm:text-xs font-black tracking-tight select-none transition-all duration-200 px-2 py-0.5 rounded-md ${
+                  day.active 
+                    ? "bg-primary text-black scale-105 shadow-sm shadow-primary/20" 
+                    : day.isScheduled 
+                      ? "border border-dashed border-primary/40 text-primary bg-primary/5"
+                      : "text-[var(--text-muted)]"
+                }`}>
+                  {day.name}
+                </span>
+              </div>
+            ))}
           </div>
 
           <div className="flex items-center justify-between mt-auto z-10">
@@ -195,7 +283,7 @@ function ProgressMedals() {
               {completedCount}/7 Ngày hoàn thành
             </div>
             <button 
-              onClick={() => navigate(isLoggedIn ? paths.myPlan : paths.login)}
+              onClick={handleNavigatePlan}
               className="text-xs font-black text-[var(--text-primary)] hover:opacity-85 flex items-center gap-0.5 cursor-pointer bg-transparent border-0"
             >
               Chi tiết lịch tập
@@ -293,7 +381,7 @@ function ProgressMedals() {
           </div>
 
           <button
-            onClick={() => navigate(isLoggedIn ? paths.dashboard : paths.login)}
+            onClick={handleNavigateDashboard}
             className="w-full py-3 bg-[var(--bg-color)] border border-[var(--border-color)] hover:border-primary/45 text-[var(--text-color)] font-extrabold text-xs rounded-xl hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shadow-sm cursor-pointer"
           >
             {isLoggedIn ? "Xem bảng điều khiển" : "Đăng nhập để bắt đầu"}
