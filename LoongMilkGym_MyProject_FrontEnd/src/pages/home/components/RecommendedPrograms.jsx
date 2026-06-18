@@ -1,7 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Play, ChevronRight, Dumbbell, AlertTriangle, ArrowRight } from "lucide-react";
-import { useGetWorkoutProgramsQuery, useGetActivePlanQuery } from "@/services/roadmap/roadmapApi";
+import { Calendar, Play, ChevronRight, Dumbbell, AlertTriangle, ArrowRight, Loader2, Check } from "lucide-react";
+import { 
+  useGetWorkoutProgramsQuery, 
+  useGetActivePlanQuery,
+  useStartProgramPlanMutation 
+} from "@/services/roadmap/roadmapApi";
 import { useAuth } from "@/hooks/useAuth";
 import paths from "@/config/path";
 
@@ -45,15 +49,23 @@ function RecommendedPrograms() {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
   
+  // State for confirm modal
+  const [confirmProgram, setConfirmProgram] = useState(null);
+  // State for toast message
+  const [toastMsg, setToastMsg] = useState("");
+
   // Fetch programs list
   const { data: apiData, isLoading: isLoadingPrograms } = useGetWorkoutProgramsQuery();
   
   // Fetch active plan if logged in
-  const { data: activePlanRes, isLoading: isLoadingActivePlan } = useGetActivePlanQuery(undefined, {
+  const { data: activePlanRes, isLoading: isLoadingActivePlan, refetch: refetchActivePlan } = useGetActivePlanQuery(undefined, {
     skip: !isLoggedIn,
   });
 
   const activePlan = isLoggedIn && activePlanRes?.data ? activePlanRes.data : null;
+
+  // Start plan mutation
+  const [startProgramPlan, { isLoading: isStarting }] = useStartProgramPlanMutation();
 
   // Use API programs if available, otherwise mock
   const programs = apiData?.data && apiData.data.length > 0
@@ -80,11 +92,107 @@ function RecommendedPrograms() {
     document.getElementById("alternative-plans-section")?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleActionClick = (program) => {
+    if (!isLoggedIn) {
+      navigate(paths.login);
+      return;
+    }
+    setConfirmProgram(program);
+  };
+
+  const handleConfirmStart = async () => {
+    if (!confirmProgram) return;
+    try {
+      await startProgramPlan({ programId: confirmProgram.id }).unwrap();
+      setToastMsg(`Đã kích hoạt lộ trình ${confirmProgram.title} thành công!`);
+      setConfirmProgram(null);
+      refetchActivePlan();
+      
+      // Navigate to plan page after a short delay
+      setTimeout(() => {
+        navigate(paths.myPlan);
+      }, 1500);
+    } catch (err) {
+      setToastMsg("Không thể kích hoạt lộ trình này. Vui lòng thử lại!");
+      setConfirmProgram(null);
+    }
+  };
+
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (toastMsg) {
+      const timer = setTimeout(() => {
+        setToastMsg("");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMsg]);
+
   const isLoading = isLoadingPrograms || (isLoggedIn && isLoadingActivePlan);
 
   return (
-    <section className="w-full py-10">
+    <section className="w-full py-10 relative">
       
+      {/* Toast Notification */}
+      {toastMsg && (
+        <div className="fixed top-24 right-4 z-[99999] bg-[var(--bg-secondary)] border border-primary/30 text-[var(--text-color)] rounded-xl px-4 py-3 flex items-center gap-2 shadow-2xl animate-bounce">
+          <Check className="w-4 h-4 text-primary" />
+          <span className="text-sm font-semibold">{toastMsg}</span>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmProgram && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-fade-in">
+          <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2rem] p-6 sm:p-8 w-full max-w-[440px] flex flex-col gap-5 shadow-2xl">
+            <div className="flex items-center gap-3 text-primary">
+              <Dumbbell className="w-6 h-6 animate-pulse" />
+              <h3 className="font-black text-lg text-[var(--text-color)] m-0">
+                {activePlan ? "Thay thế lộ trình" : "Bắt đầu lộ trình mới"}
+              </h3>
+            </div>
+            
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed m-0">
+              {activePlan ? (
+                <>
+                  Bạn có chắc chắn muốn hủy lộ trình hiện tại và thay thế bằng lộ trình{" "}
+                  <strong className="text-[var(--text-color)]">{confirmProgram.title}</strong> không? Lịch trình cũ của bạn sẽ bị hủy bỏ hoàn toàn.
+                </>
+              ) : (
+                <>
+                  Bạn có chắc chắn muốn bắt đầu lộ trình{" "}
+                  <strong className="text-[var(--text-color)]">{confirmProgram.title}</strong> không? Giáo án này sẽ được thiết lập vào lịch của bạn.
+                </>
+              )}
+            </p>
+
+            <div className="flex items-center justify-end gap-3 mt-2">
+              <button
+                onClick={() => setConfirmProgram(null)}
+                disabled={isStarting}
+                className="px-4 py-2.5 bg-[var(--bg-color)] border border-[var(--border-color)] text-[var(--text-color)] font-extrabold text-xs rounded-xl hover:border-primary/40 transition cursor-pointer disabled:opacity-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleConfirmStart}
+                disabled={isStarting}
+                className="flex items-center gap-1.5 px-5 py-2.5 bg-primary text-black font-extrabold text-xs rounded-xl hover:bg-primary-hover hover:scale-105 transition cursor-pointer border-0 disabled:opacity-70"
+              >
+                {isStarting ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Đang xử lý...
+                  </>
+                ) : (
+                  "Đồng ý"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ═══ 1. HIỂN THỊ LỘ TRÌNH ĐANG THAM GIA (NẾU CÓ) ═══ */}
       {activePlan && (
         <div className="mb-12 bg-gradient-to-r from-primary/10 via-indigo-500/5 to-transparent border border-primary/20 rounded-[2.5rem] p-6 sm:p-8 relative overflow-hidden shadow-sm">
@@ -149,16 +257,6 @@ function RecommendedPrograms() {
         </button>
       </div>
 
-      {/* Warning banner when user already has an active plan */}
-      {activePlan && (
-        <div className="mb-6 flex items-start gap-2.5 p-3.5 bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 rounded-2xl text-xs max-w-xl">
-          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-          <div>
-            <span className="font-extrabold">Lưu ý:</span> Khi chọn lộ trình mới bên dưới, hệ thống sẽ **hủy bỏ** lộ trình hiện tại của bạn để thiết lập lộ trình mới. Dữ liệu lịch cũ sẽ được làm sạch.
-          </div>
-        </div>
-      )}
-
       {/* ═══ 3. DANH SÁCH LỘ TRÌNH ═══ */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -211,7 +309,7 @@ function RecommendedPrograms() {
                 </div>
 
                 <button
-                  onClick={() => navigate(paths.myPlan)}
+                  onClick={() => handleActionClick(program)}
                   className={`flex items-center justify-center gap-1.5 px-4 py-2.5 font-black text-xs rounded-xl transition-all duration-200 cursor-pointer border-0 ${
                     program.accent
                       ? "bg-primary text-black hover:bg-primary-hover shadow-md shadow-primary/15"

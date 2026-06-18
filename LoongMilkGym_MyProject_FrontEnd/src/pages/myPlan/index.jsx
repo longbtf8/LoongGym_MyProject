@@ -397,7 +397,7 @@ export default function MyPlan() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] py-6 px-4 flex justify-center transition-colors duration-300 w-full">
+    <div className="w-full bg-[var(--bg-color)] text-[var(--text-color)] py-6 px-4 flex justify-center transition-colors duration-300">
       <div className="max-w-[1000px] w-full flex flex-col gap-4">
 
         {/* Title */}

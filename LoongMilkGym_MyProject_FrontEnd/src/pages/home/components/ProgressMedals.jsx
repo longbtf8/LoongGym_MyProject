@@ -1,9 +1,42 @@
-import React from "react";
-import { Award, CheckCircle, ChevronRight, Zap, Flame, Lock } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Award, CheckCircle, ChevronRight, Zap, Flame, ShieldAlert } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useGetDashboardSummaryQuery } from "@/services/dashboard/dashboardApi";
 import paths from "@/config/path";
+
+const ACHIEVEMENT_SLIDES = [
+  {
+    id: 1,
+    image: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781799368/LoongMilkGym_APP/homepage/achievement_1.jpg",
+    title: "Chiến binh kỷ luật",
+    desc: "Duy trì tập luyện kiên trì mỗi ngày",
+  },
+  {
+    id: 2,
+    image: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781799371/LoongMilkGym_APP/homepage/achievement_2.jpg",
+    title: "Bứt phá giới hạn",
+    desc: "Đạt mốc tiêu thụ hơn 1000 Kcal",
+  },
+  {
+    id: 3,
+    image: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781799373/LoongMilkGym_APP/homepage/achievement_3.jpg",
+    title: "Vô song sức mạnh",
+    desc: "Hoàn thành các bài tập tạ nặng",
+  },
+  {
+    id: 4,
+    image: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781799375/LoongMilkGym_APP/homepage/achievement_4.jpg",
+    title: "Chiến tích phục hồi",
+    desc: "Tối ưu hóa giấc ngủ & cơ bắp",
+  },
+  {
+    id: 5,
+    image: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781799376/LoongMilkGym_APP/homepage/achievement_5.jpg",
+    title: "Ý chí sắt đá",
+    desc: "Chinh phục lộ trình huấn luyện khắt khe",
+  },
+];
 
 function ProgressMedals() {
   const navigate = useNavigate();
@@ -31,36 +64,31 @@ function ProgressMedals() {
   ];
 
   const completedCount = apiStats ? apiStats.completedWorkoutsThisWeek : 3;
-  const currentStreak = apiStats ? apiStats.currentStreak : 2;
-  const totalCalories = apiStats ? apiStats.caloriesBurnedThisWeek : 850;
 
-  // Unlocked logic for 3 achievements
-  const achievements = [
-    {
-      id: "streak",
-      title: "Kỷ luật thép",
-      desc: "Chuỗi 3 ngày liên tiếp",
-      icon: Flame,
-      color: "from-orange-500 to-red-500 text-orange-500",
-      unlocked: currentStreak >= 3,
-    },
-    {
-      id: "sessions",
-      title: "Kiên trì",
-      desc: "Tập luyện 3 buổi/tuần",
-      icon: Zap,
-      color: "from-primary to-green-500 text-primary",
-      unlocked: completedCount >= 3,
-    },
-    {
-      id: "calories",
-      title: "Chinh phục",
-      desc: "Đốt cháy > 500 Kcal",
-      icon: Award,
-      color: "from-blue-500 to-indigo-500 text-blue-400",
-      unlocked: totalCalories >= 500,
-    },
-  ];
+  // Achievement carousel state
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isFading, setIsFading] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIsFading(true);
+      setTimeout(() => {
+        setCurrentSlide((prev) => (prev + 1) % ACHIEVEMENT_SLIDES.length);
+        setIsFading(false);
+      }, 500);
+    }, 3500); // Auto-next every 3.5 seconds
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleDotClick = (idx) => {
+    if (idx === currentSlide) return;
+    setIsFading(true);
+    setTimeout(() => {
+      setCurrentSlide(idx);
+      setIsFading(false);
+    }, 500);
+  };
 
   return (
     <section className="w-full py-10">
@@ -68,7 +96,7 @@ function ProgressMedals() {
         
         {/* CỘT TRÁI: TIẾN ĐỘ HÀNG TUẦN (7/12 cols) */}
         <div className="lg:col-span-7 flex flex-col p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2rem] shadow-sm">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-lg font-black text-[var(--text-color)] m-0 leading-tight">
                 Tiến độ hàng tuần
@@ -83,20 +111,20 @@ function ProgressMedals() {
             </span>
           </div>
 
-          {/* Biểu đồ tiến độ */}
-          <div className="flex items-end justify-between gap-4 h-32 pt-4 border-b border-[var(--border-color)] pb-3">
+          {/* Biểu đồ tiến độ (Fixed Height & CSS alignment) */}
+          <div className="flex items-end justify-between gap-3.5 h-36 pt-2 border-b border-[var(--border-color)] pb-2.5 mb-4">
             {days.map((day, idx) => (
-              <div key={idx} className="flex-1 flex flex-col items-center gap-2 group relative">
+              <div key={idx} className="flex-1 h-full flex flex-col items-center gap-1.5 group relative">
                 {/* Thanh tiến trình */}
-                <div className="w-full bg-[var(--bg-color)] border border-[var(--border-color)] h-full rounded-lg overflow-hidden flex items-end">
+                <div className="w-full bg-[var(--bg-color)] border border-[var(--border-color)] flex-1 rounded-md overflow-hidden flex items-end">
                   <div 
                     style={{ height: day.active ? "100%" : "0%" }}
-                    className="w-full rounded-md transition-all duration-700 bg-primary"
+                    className="w-full rounded-sm transition-all duration-700 bg-primary"
                   />
                 </div>
                 
                 {/* Label ngày */}
-                <span className={`text-[10px] font-black ${day.active ? "text-[var(--text-color)]" : "text-[var(--text-muted)]"}`}>
+                <span className={`text-[10px] font-black m-0 leading-none ${day.active ? "text-[var(--text-color)]" : "text-[var(--text-muted)]"}`}>
                   {day.name}
                 </span>
 
@@ -110,7 +138,7 @@ function ProgressMedals() {
             ))}
           </div>
 
-          <div className="flex items-center justify-between mt-4">
+          <div className="flex items-center justify-between mt-auto">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
               <CheckCircle className="w-4 h-4 text-green-500" />
               {completedCount}/7 Ngày hoàn thành
@@ -125,72 +153,68 @@ function ProgressMedals() {
           </div>
         </div>
 
-        {/* CỘT PHẢI: HUY HIỆU / THÀNH TỰU (5/12 cols) */}
-        <div className="lg:col-span-5 flex flex-col p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2rem] shadow-sm">
+        {/* CỘT PHẢI: HUY HIỆU / THÀNH TỰU VỚI SLIDESHOW ẢNH (5/12 cols) */}
+        <div className="lg:col-span-5 flex flex-col p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2rem] shadow-sm overflow-hidden">
           <div className="mb-4">
             <h3 className="text-lg font-black text-[var(--text-color)] m-0 leading-tight">
-              Bảng thành tựu tuần
+              Khoảnh khắc thành tựu
             </h3>
             <p className="text-xs text-[var(--text-muted)] mt-1">
               Thực hiện thử thách để mở khóa các danh hiệu đặc quyền.
             </p>
           </div>
 
-          {/* Cabinet of Achievements */}
-          <div className="flex flex-col gap-3.5 my-auto">
-            {achievements.map((ach) => {
-              const Icon = ach.icon;
-              return (
-                <div 
-                  key={ach.id}
-                  className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all duration-300 ${
-                    ach.unlocked 
-                      ? "bg-gradient-to-r from-gray-500/5 to-transparent border-[var(--border-color)] shadow-sm" 
-                      : "bg-gray-500/[0.02] border-[var(--border-color)] opacity-55"
+          {/* Premium Auto-Looping Image Carousel */}
+          <div className="relative flex-1 w-full aspect-video sm:aspect-auto sm:h-44 rounded-2xl overflow-hidden border border-[var(--border-color)] shadow-inner mb-4 group">
+            
+            {/* Achievement Image with Zoom & Fade transition */}
+            <img 
+              src={ACHIEVEMENT_SLIDES[currentSlide].image} 
+              alt={ACHIEVEMENT_SLIDES[currentSlide].title} 
+              className={`w-full h-full object-cover group-hover:scale-[1.03] transition-all duration-700 ease-out ${
+                isFading ? "opacity-30 scale-95 blur-sm" : "opacity-100 scale-100"
+              }`}
+            />
+            
+            {/* Dark gradient mask */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
+
+            {/* Slide content overlay */}
+            <div className={`absolute bottom-3 left-3 right-3 text-left transition-all duration-500 ${
+              isFading ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+            }`}>
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/20 border border-primary/35 rounded-md text-primary text-[8px] font-black tracking-widest uppercase mb-1.5">
+                <Award className="w-2.5 h-2.5" />
+                Thành tựu tuần
+              </div>
+              <h4 className="text-sm font-black text-white m-0 tracking-tight">
+                {ACHIEVEMENT_SLIDES[currentSlide].title}
+              </h4>
+              <p className="text-[10px] text-gray-300 mt-0.5 m-0 leading-tight font-medium">
+                {ACHIEVEMENT_SLIDES[currentSlide].desc}
+              </p>
+            </div>
+
+            {/* Small Pagination Dots inside Carousel */}
+            <div className="absolute top-3 right-3 flex items-center gap-1.5">
+              {ACHIEVEMENT_SLIDES.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleDotClick(idx)}
+                  className={`w-1.5 h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                    idx === currentSlide 
+                      ? "bg-primary w-3.5" 
+                      : "bg-white/40 hover:bg-white/70"
                   }`}
-                >
-                  <div className="flex items-center gap-3">
-                    {/* Glowing Icon Wrapper */}
-                    <div className="relative shrink-0 flex items-center justify-center">
-                      {ach.unlocked && (
-                        <div className={`absolute w-8 h-8 rounded-full blur-md opacity-35 bg-gradient-to-br ${ach.color.split(" ")[0]}`} />
-                      )}
-                      <div className={`relative w-10 h-10 rounded-xl bg-gray-500/10 border border-gray-500/15 flex items-center justify-center ${
-                        ach.unlocked ? ach.color.split(" ")[1] : "text-[var(--text-muted)]"
-                      }`}>
-                        <Icon className="w-5 h-5 fill-current" />
-                      </div>
-                    </div>
-
-                    <div className="text-left">
-                      <h4 className={`text-xs font-black m-0 tracking-tight ${ach.unlocked ? "text-[var(--text-color)]" : "text-[var(--text-muted)]"}`}>
-                        {ach.title}
-                      </h4>
-                      <p className="text-[10px] text-[var(--text-muted)] mt-0.5 m-0 leading-none">
-                        {ach.desc}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div>
-                    {ach.unlocked ? (
-                      <span className="text-[9px] font-black uppercase tracking-wider text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">
-                        Đã mở khóa
-                      </span>
-                    ) : (
-                      <div className="text-[var(--text-muted)] p-1.5">
-                        <Lock className="w-3.5 h-3.5" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
           </div>
 
           <button
             onClick={() => navigate(isLoggedIn ? paths.dashboard : paths.login)}
-            className="w-full mt-4 py-3 bg-[var(--bg-color)] border border-[var(--border-color)] hover:border-primary/45 text-[var(--text-color)] font-extrabold text-xs rounded-xl hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shadow-sm cursor-pointer"
+            className="w-full py-3 bg-[var(--bg-color)] border border-[var(--border-color)] hover:border-primary/45 text-[var(--text-color)] font-extrabold text-xs rounded-xl hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shadow-sm cursor-pointer"
           >
             {isLoggedIn ? "Xem bảng điều khiển" : "Đăng nhập để bắt đầu"}
           </button>
