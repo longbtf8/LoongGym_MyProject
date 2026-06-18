@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Award, CheckCircle, ChevronRight, Zap, Flame } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Award, CheckCircle, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useGetDashboardSummaryQuery } from "@/services/dashboard/dashboardApi";
@@ -67,27 +67,53 @@ function ProgressMedals() {
 
   // Achievement carousel state
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isFading, setIsFading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const startXRef = useRef(0);
+  const carouselRef = useRef(null);
 
+  // Auto-next interval when not dragging
   useEffect(() => {
+    if (isDragging) return;
+
     const timer = setInterval(() => {
-      setIsFading(true);
-      setTimeout(() => {
-        setCurrentSlide((prev) => (prev + 1) % ACHIEVEMENT_SLIDES.length);
-        setIsFading(false);
-      }, 500);
-    }, 3500); // Auto-next every 3.5 seconds
+      setCurrentSlide((prev) => (prev + 1) % ACHIEVEMENT_SLIDES.length);
+    }, 3500);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [isDragging]);
 
-  const handleDotClick = (idx) => {
-    if (idx === currentSlide) return;
-    setIsFading(true);
-    setTimeout(() => {
-      setCurrentSlide(idx);
-      setIsFading(false);
-    }, 500);
+  const handleNextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % ACHIEVEMENT_SLIDES.length);
+  };
+
+  const handlePrevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + ACHIEVEMENT_SLIDES.length) % ACHIEVEMENT_SLIDES.length);
+  };
+
+  // Dragging logic
+  const startDrag = (clientX) => {
+    setIsDragging(true);
+    startXRef.current = clientX;
+    setDragOffset(0);
+  };
+
+  const moveDrag = (clientX) => {
+    if (!isDragging) return;
+    const currentOffset = clientX - startXRef.current;
+    setDragOffset(currentOffset);
+  };
+
+  const endDrag = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+
+    if (dragOffset < -60) {
+      handleNextSlide();
+    } else if (dragOffset > 60) {
+      handlePrevSlide();
+    }
+    setDragOffset(0);
   };
 
   return (
@@ -124,8 +150,6 @@ function ProgressMedals() {
 
             {/* Bars Column */}
             {days.map((day, idx) => {
-              // Calculate height proportional to workout minutes (max 60 mins)
-              // If active, height is between 25% and 100%
               const fillPercentage = day.active 
                 ? Math.min(100, Math.max(25, (day.mins / 60) * 100)) 
                 : 0;
@@ -140,7 +164,6 @@ function ProgressMedals() {
                         style={{ height: `${fillPercentage}%` }}
                         className="w-full rounded-full transition-all duration-700 bg-gradient-to-t from-primary/80 to-primary relative"
                       >
-                        {/* Glow effect at top of active bar */}
                         <div className="absolute top-0 left-0 right-0 h-1.5 bg-white/40 rounded-full animate-pulse" />
                       </div>
                     )}
@@ -181,8 +204,8 @@ function ProgressMedals() {
           </div>
         </div>
 
-        {/* CỘT PHẢI: HUY HIỆU / THÀNH TỰU VỚI SLIDESHOW ẢNH (5/12 cols) */}
-        <div className="lg:col-span-5 flex flex-col p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2rem] shadow-sm overflow-hidden">
+        {/* CỘT PHẢI: HUY HIỆU / THÀNH TỰU VỚI SLIDESHOW ẢNH TRƯỢT MƯỢT (5/12 cols) */}
+        <div className="lg:col-span-5 flex flex-col p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2rem] shadow-sm overflow-hidden select-none">
           <div className="mb-4">
             <h3 className="text-lg font-black text-[var(--text-color)] m-0 leading-tight">
               Khoảnh khắc thành tựu
@@ -192,43 +215,72 @@ function ProgressMedals() {
             </p>
           </div>
 
-          {/* Premium Auto-Looping Image Carousel */}
-          <div className="relative flex-1 w-full aspect-video sm:aspect-auto sm:h-44 rounded-2xl overflow-hidden border border-[var(--border-color)] shadow-inner mb-4 group">
+          {/* Premium Auto-Looping Sliding Carousel */}
+          <div 
+            ref={carouselRef}
+            onMouseDown={(e) => e.button === 0 && startDrag(e.clientX)}
+            onMouseMove={(e) => moveDrag(e.clientX)}
+            onMouseUp={endDrag}
+            onMouseLeave={endDrag}
+            onTouchStart={(e) => startDrag(e.touches[0].clientX)}
+            onTouchMove={(e) => moveDrag(e.touches[0].clientX)}
+            onTouchEnd={endDrag}
+            className="relative flex-1 w-full aspect-video sm:aspect-auto sm:h-44 rounded-2xl overflow-hidden border border-[var(--border-color)] shadow-inner mb-4 group cursor-grab active:cursor-grabbing touch-pan-y"
+          >
             
-            {/* Achievement Image with Zoom & Fade transition */}
-            <img 
-              src={ACHIEVEMENT_SLIDES[currentSlide].image} 
-              alt={ACHIEVEMENT_SLIDES[currentSlide].title} 
-              className={`w-full h-full object-cover group-hover:scale-[1.03] transition-all duration-700 ease-out ${
-                isFading ? "opacity-30 scale-95 blur-sm" : "opacity-100 scale-100"
-              }`}
-            />
-            
-            {/* Dark gradient mask */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
+            {/* Horizontal Sliding Track */}
+            <div 
+              style={{
+                display: "flex",
+                width: `${ACHIEVEMENT_SLIDES.length * 100}%`,
+                height: "100%",
+                transform: `translateX(calc(-${(currentSlide * 100) / ACHIEVEMENT_SLIDES.length}% + ${dragOffset}px))`,
+                transition: isDragging ? "none" : "transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)"
+              }}
+              className="h-full"
+            >
+              {ACHIEVEMENT_SLIDES.map((slide) => (
+                <div 
+                  key={slide.id}
+                  style={{ width: `${100 / ACHIEVEMENT_SLIDES.length}%` }}
+                  className="h-full relative shrink-0"
+                >
+                  <img 
+                    src={slide.image} 
+                    alt={slide.title} 
+                    draggable="false"
+                    className="w-full h-full object-cover pointer-events-none select-none group-hover:scale-[1.02] transition-transform duration-700 ease-out"
+                  />
+                  
+                  {/* Dark gradient mask */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10 pointer-events-none" />
 
-            {/* Slide content overlay */}
-            <div className={`absolute bottom-3 left-3 right-3 text-left transition-all duration-500 ${
-              isFading ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
-            }`}>
-              <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/20 border border-primary/35 rounded-md text-primary text-[8px] font-black tracking-widest uppercase mb-1.5">
-                <Award className="w-2.5 h-2.5" />
-                Thành tựu tuần
-              </div>
-              <h4 className="text-sm font-black text-white m-0 tracking-tight">
-                {ACHIEVEMENT_SLIDES[currentSlide].title}
-              </h4>
-              <p className="text-[10px] text-gray-300 mt-0.5 m-0 leading-tight font-medium">
-                {ACHIEVEMENT_SLIDES[currentSlide].desc}
-              </p>
+                  {/* Slide content overlay */}
+                  <div className="absolute bottom-3 left-3 right-3 text-left pointer-events-none select-none">
+                    <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/20 border border-primary/35 rounded-md text-primary text-[8px] font-black tracking-widest uppercase mb-1.5">
+                      <Award className="w-2.5 h-2.5" />
+                      Thành tựu tuần
+                    </div>
+                    <h4 className="text-sm font-black text-white m-0 tracking-tight">
+                      {slide.title}
+                    </h4>
+                    <p className="text-[10px] text-gray-300 mt-0.5 m-0 leading-tight font-medium">
+                      {slide.desc}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Small Pagination Dots inside Carousel */}
-            <div className="absolute top-3 right-3 flex items-center gap-1.5">
+            <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5 pointer-events-auto">
               {ACHIEVEMENT_SLIDES.map((_, idx) => (
                 <button
                   key={idx}
-                  onClick={() => handleDotClick(idx)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentSlide(idx);
+                  }}
                   className={`w-1.5 h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                     idx === currentSlide 
                       ? "bg-primary w-3.5" 
