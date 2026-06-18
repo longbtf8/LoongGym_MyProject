@@ -74,12 +74,14 @@ function ProgressMedals() {
       const d = new Date(monday);
       d.setDate(monday.getDate() + index);
 
-      // Find matching day in active plan
+      // Find matching day in active plan using YYYY-MM-DD local format
       const planDay = activePlan?.days?.find((pd) => {
-        const pdDate = new Date(pd.scheduledDate);
-        return pdDate.getFullYear() === d.getFullYear() &&
-               pdDate.getMonth() === d.getMonth() &&
-               pdDate.getDate() === d.getDate();
+        const pdDateStr = new Date(pd.scheduledDate).toISOString().split("T")[0];
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const r = String(d.getDate()).padStart(2, "0");
+        const dStr = `${y}-${m}-${r}`;
+        return pdDateStr === dStr;
       });
 
       const isCompleted = planDay?.status === "completed" || dailyWorkouts[index] === 1;

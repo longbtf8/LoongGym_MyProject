@@ -203,13 +203,20 @@ const getDashboardSummary = async (userId) => {
         days: true,
       },
     });
-
     if (activePlan) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayPlanDay = activePlan.days.find(
-        (day) => new Date(day.scheduledDate).getTime() === today.getTime()
-      );
+      // Get today's YYYY-MM-DD in Asia/Ho_Chi_Minh timezone (Vietnam)
+      const formatter = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+      const todayStr = formatter.format(new Date());
+
+      const todayPlanDay = activePlan.days.find((day) => {
+        const dayDateStr = new Date(day.scheduledDate).toISOString().split("T")[0];
+        return dayDateStr === todayStr;
+      });
 
       if (todayPlanDay) {
         let exercisesCount = 0;

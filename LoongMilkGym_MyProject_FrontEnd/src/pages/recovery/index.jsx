@@ -1,11 +1,13 @@
 import React from "react";
-import { Heart, Calendar, Info, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Heart, Calendar, Info, CheckCircle2, AlertTriangle, ArrowLeft } from "lucide-react";
 import { useRecoveryData } from "./hooks/useRecoveryData";
 import ActiveInjuryBanner from "./components/ActiveInjuryBanner";
 import RecoveryTab from "./components/RecoveryTab";
 import MetricsTab from "./components/MetricsTab";
 import InjuriesTab from "./components/InjuriesTab";
 import RecoveryOverview from "./components/RecoveryOverview";
+import paths from "@/config/path";
 
 export default function Recovery() {
   const {
@@ -102,6 +104,17 @@ export default function Recovery() {
   return (
     <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] py-6 sm:py-10 px-4 sm:px-6 lg:px-8 pb-28 lg:pb-12 transition-colors duration-300">
       <div className="max-w-6xl mx-auto flex flex-col gap-6">
+
+        {/* BACK TO DASHBOARD LINK */}
+        <div className="self-start">
+          <Link 
+            to={paths.dashboard} 
+            className="inline-flex items-center gap-2 text-xs font-black uppercase text-[var(--text-muted)] hover:text-primary no-underline transition-colors cursor-pointer group"
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            Quay lại bảng điều khiển
+          </Link>
+        </div>
 
         {/* ALERT NOTIFICATION */}
         {alert && (

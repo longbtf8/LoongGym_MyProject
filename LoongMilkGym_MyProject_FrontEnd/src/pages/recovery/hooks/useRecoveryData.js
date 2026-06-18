@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { dashboardApi } from "@/services/dashboard/dashboardApi";
 import {
   useGetTodayOverviewQuery,
   useLogRecoveryMutation,
@@ -10,11 +12,20 @@ import {
 } from "@/services/recovery/recoveryApi";
 
 export function useRecoveryData() {
+  const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState("recovery"); // recovery, metrics, injuries
   const [alert, setAlert] = useState(null);
   const [activeInfo, setActiveInfo] = useState(null); // sleep, soreness, energy, stress, hrv, rhr
 
-  const todayDateStr = new Date().toISOString().split("T")[0];
+  const getLocalDateString = () => {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const todayDateStr = getLocalDateString();
   const { data: overviewData, isLoading, refetch } = useGetTodayOverviewQuery(todayDateStr);
   
   const [logRecovery, { isLoading: isLoggingRecovery }] = useLogRecoveryMutation();
@@ -54,17 +65,28 @@ export function useRecoveryData() {
   const [wakeTime, setWakeTime] = useState("06:30");
   const [showSleepCalc, setShowSleepCalc] = useState(false);
 
-  // Pre-fill Recovery fields when database data arrives
+  // Pre-fill Recovery fields when database data arrives, or reset if no log exists for today
   useEffect(() => {
-    if (overviewData?.data?.recovery) {
-      const rec = overviewData.data.recovery;
-      setSleepHours(rec.sleepHours);
-      setSorenessLevel(rec.sorenessLevel);
-      setEnergyLevel(rec.energyLevel);
-      setStressLevel(rec.stressLevel);
-      setHrvMs(rec.hrvMs || "");
-      setRestingHeartRate(rec.restingHeartRate || "");
-      setRecoveryNotes(rec.notes || "");
+    if (overviewData && overviewData.data) {
+      if (overviewData.data.recovery) {
+        const rec = overviewData.data.recovery;
+        setSleepHours(rec.sleepHours);
+        setSorenessLevel(rec.sorenessLevel);
+        setEnergyLevel(rec.energyLevel);
+        setStressLevel(rec.stressLevel);
+        setHrvMs(rec.hrvMs || "");
+        setRestingHeartRate(rec.restingHeartRate || "");
+        setRecoveryNotes(rec.notes || "");
+      } else {
+        // Reset to default values for a new day if no data is logged yet
+        setSleepHours(8);
+        setSorenessLevel(3);
+        setEnergyLevel(8);
+        setStressLevel(2);
+        setHrvMs("");
+        setRestingHeartRate("");
+        setRecoveryNotes("");
+      }
     }
   }, [overviewData]);
 
@@ -145,6 +167,7 @@ export function useRecoveryData() {
         notes: recoveryNotes || null
       }).unwrap();
       triggerAlert("success", "Đã lưu nhật ký phục hồi thành công!");
+      dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
     } catch (err) {
       triggerAlert("error", err?.data?.message || "Không thể lưu nhật ký phục hồi");
     }
@@ -208,6 +231,7 @@ export function useRecoveryData() {
       setThighCm("");
       setMetricsNotes("");
       refetch();
+      dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
     } catch (err) {
       triggerAlert("error", err?.data?.message || "Không thể lưu chỉ số cơ thể");
     }
@@ -302,6 +326,7 @@ export function useRecoveryData() {
       setBodyPart("");
       setInjuryDesc("");
       refetch();
+      dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
     } catch (err) {
       triggerAlert("error", err?.data?.message || "Không thể lưu chấn thương");
     }
@@ -316,6 +341,7 @@ export function useRecoveryData() {
       }).unwrap();
       triggerAlert("success", "Chúc mừng! Đã phục hồi chấn thương.");
       refetch();
+      dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
     } catch (err) {
       triggerAlert("error", err?.data?.message || "Không thể cập nhật chấn thương");
     }
