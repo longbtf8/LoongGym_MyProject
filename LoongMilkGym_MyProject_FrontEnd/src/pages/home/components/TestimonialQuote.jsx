@@ -4,27 +4,27 @@ const MOTIVATIONAL_QUOTES = [
   {
     quote: "Bạn không cần phải hoàn hảo. Bạn chỉ cần tốt hơn ngày hôm qua.",
     author: "Khởi đầu là quan trọng nhất",
-    bgImage: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781799354/LoongMilkGym_APP/homepage/quote_bg_1.jpg",
+    bgImage: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781799970/LoongMilkGym_APP/homepage/quote_bg_1.jpg",
   },
   {
     quote: "Sự kiên trì của ngày hôm nay là sức mạnh vượt trội của ngày mai.",
     author: "Động lực từ thói quen",
-    bgImage: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781799357/LoongMilkGym_APP/homepage/quote_bg_2.jpg",
+    bgImage: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781799974/LoongMilkGym_APP/homepage/quote_bg_2.jpg",
   },
   {
     quote: "Đừng đếm số ngày trôi qua, hãy làm cho mỗi ngày trôi qua đều có giá trị.",
     author: "Mục tiêu & Kỷ luật",
-    bgImage: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781799360/LoongMilkGym_APP/homepage/quote_bg_3.jpg",
+    bgImage: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781799976/LoongMilkGym_APP/homepage/quote_bg_3.jpg",
   },
   {
     quote: "Giới hạn duy nhất là những rào cản bạn tự đặt ra trong tâm trí mình.",
     author: "Đập tan giới hạn",
-    bgImage: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781799363/LoongMilkGym_APP/homepage/quote_bg_4.jpg",
+    bgImage: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781799980/LoongMilkGym_APP/homepage/quote_bg_4.jpg",
   },
   {
     quote: "Mồ hôi hôm nay đổ xuống chính là nụ cười hạnh phúc ngày mai.",
     author: "Thành quả xứng đáng",
-    bgImage: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781799365/LoongMilkGym_APP/homepage/quote_bg_5.jpg",
+    bgImage: "https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781799984/LoongMilkGym_APP/homepage/quote_bg_5.jpg",
   },
 ];
 

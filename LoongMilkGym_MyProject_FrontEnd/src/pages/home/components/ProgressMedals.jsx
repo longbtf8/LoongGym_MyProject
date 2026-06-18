@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Award, CheckCircle, ChevronRight, Zap, Flame, ShieldAlert } from "lucide-react";
+import { Award, CheckCircle, ChevronRight, Zap, Flame } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useGetDashboardSummaryQuery } from "@/services/dashboard/dashboardApi";
@@ -95,8 +95,9 @@ function ProgressMedals() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* CỘT TRÁI: TIẾN ĐỘ HÀNG TUẦN (7/12 cols) */}
-        <div className="lg:col-span-7 flex flex-col p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2rem] shadow-sm">
-          <div className="flex items-center justify-between mb-4">
+        <div className="lg:col-span-7 flex flex-col p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[2rem] shadow-sm relative overflow-hidden">
+          
+          <div className="flex items-center justify-between mb-4 z-10">
             <div>
               <h3 className="text-lg font-black text-[var(--text-color)] m-0 leading-tight">
                 Tiến độ hàng tuần
@@ -111,34 +112,61 @@ function ProgressMedals() {
             </span>
           </div>
 
-          {/* Biểu đồ tiến độ (Fixed Height & CSS alignment) */}
-          <div className="flex items-end justify-between gap-3.5 h-36 pt-2 border-b border-[var(--border-color)] pb-2.5 mb-4">
-            {days.map((day, idx) => (
-              <div key={idx} className="flex-1 h-full flex flex-col items-center gap-1.5 group relative">
-                {/* Thanh tiến trình */}
-                <div className="w-full bg-[var(--bg-color)] border border-[var(--border-color)] flex-1 rounded-md overflow-hidden flex items-end">
-                  <div 
-                    style={{ height: day.active ? "100%" : "0%" }}
-                    className="w-full rounded-sm transition-all duration-700 bg-primary"
-                  />
-                </div>
-                
-                {/* Label ngày */}
-                <span className={`text-[10px] font-black m-0 leading-none ${day.active ? "text-[var(--text-color)]" : "text-[var(--text-muted)]"}`}>
-                  {day.name}
-                </span>
+          {/* Biểu đồ tiến độ cao cấp */}
+          <div className="relative h-44 w-full flex items-end justify-between px-2 pt-8 border-b border-[var(--border-color)] pb-3 mb-4 z-10">
+            
+            {/* Background Grid Lines */}
+            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-50 pb-8 pt-8 px-1">
+              <div className="border-t border-dashed border-[var(--border-color)] w-full text-[8px] text-[var(--text-muted)] font-bold pt-0.5">60 phút</div>
+              <div className="border-t border-dashed border-[var(--border-color)] w-full text-[8px] text-[var(--text-muted)] font-bold pt-0.5">30 phút</div>
+              <div className="border-t border-dashed border-[var(--border-color)] w-full text-[8px] text-[var(--text-muted)] font-bold pt-0.5">Lịch nghỉ</div>
+            </div>
 
-                {/* Tooltip */}
-                {day.active && (
-                  <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-black text-white text-[9px] font-black px-1.5 py-0.5 rounded opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10 shadow-md">
-                    {day.mins > 0 ? `${day.mins} phút` : "Hoàn thành"}
+            {/* Bars Column */}
+            {days.map((day, idx) => {
+              // Calculate height proportional to workout minutes (max 60 mins)
+              // If active, height is between 25% and 100%
+              const fillPercentage = day.active 
+                ? Math.min(100, Math.max(25, (day.mins / 60) * 100)) 
+                : 0;
+
+              return (
+                <div key={idx} className="flex-1 h-full flex flex-col items-center justify-end gap-2 group relative z-10">
+                  
+                  {/* Thin Pill Bar Container */}
+                  <div className="w-3.5 bg-[var(--bg-color)]/60 dark:bg-[var(--bg-color)]/20 border border-[var(--border-color)] h-[75%] rounded-full overflow-hidden flex items-end relative shadow-inner">
+                    {day.active && (
+                      <div 
+                        style={{ height: `${fillPercentage}%` }}
+                        className="w-full rounded-full transition-all duration-700 bg-gradient-to-t from-primary/80 to-primary relative"
+                      >
+                        {/* Glow effect at top of active bar */}
+                        <div className="absolute top-0 left-0 right-0 h-1.5 bg-white/40 rounded-full animate-pulse" />
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
+                  
+                  {/* Day Label Badge */}
+                  <span className={`text-[10px] font-black tracking-tight select-none transition-all duration-200 px-1.5 py-0.5 rounded-md ${
+                    day.active 
+                      ? "bg-primary text-black scale-105 shadow-sm shadow-primary/20" 
+                      : "text-[var(--text-muted)]"
+                  }`}>
+                    {day.name}
+                  </span>
+
+                  {/* Enhanced Tooltip */}
+                  <div className="absolute bottom-[90%] left-1/2 -translate-x-1/2 bg-black/90 text-white text-[9px] font-black px-2 py-1 rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50 shadow-lg border border-white/10 flex flex-col items-center">
+                    <span>Thứ {day.name}</span>
+                    <span className="text-primary font-bold">{day.active ? `${day.mins} phút` : "Nghỉ ngơi"}</span>
+                  </div>
+
+                </div>
+              );
+            })}
           </div>
 
-          <div className="flex items-center justify-between mt-auto">
+          <div className="flex items-center justify-between mt-auto z-10">
             <div className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)]">
               <CheckCircle className="w-4 h-4 text-green-500" />
               {completedCount}/7 Ngày hoàn thành
