@@ -92,8 +92,9 @@ function RecommendedPrograms() {
   const [startProgramPlan, { isLoading: isStarting }] = useStartProgramPlanMutation();
 
   // Use API programs if available, otherwise mock
-  const programs = apiData?.data && apiData.data.length > 0
-    ? apiData.data.map((p, idx) => ({
+  const apiPrograms = apiData?.data?.data || [];
+  const programs = apiPrograms.length > 0
+    ? apiPrograms.map((p, idx) => ({
         id: p.id,
         title: p.title,
         slug: p.slug,
