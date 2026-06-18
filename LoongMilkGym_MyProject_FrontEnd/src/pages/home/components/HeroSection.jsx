@@ -68,14 +68,14 @@ function HeroSection() {
           </div>
         </div>
 
-        {/* Badge 2: 12 Lộ trình (Góc dưới phải) */}
+        {/* Badge 2: 12 Lịch tập (Góc dưới phải) */}
         <div className="absolute bottom-8 right-4 sm:right-6 flex items-center gap-3 px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl shadow-xl animate-bounce-slow delay-300">
           <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500">
             <Calendar className="w-5 h-5 text-indigo-500" />
           </div>
           <div>
             <div className="text-sm font-black text-[var(--text-color)]">12</div>
-            <div className="text-[10px] font-bold text-[var(--text-muted)] tracking-wider uppercase">Lộ trình</div>
+            <div className="text-[10px] font-bold text-[var(--text-muted)] tracking-wider uppercase">Lịch tập</div>
           </div>
         </div>
 

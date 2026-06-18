@@ -134,7 +134,7 @@ function RecommendedPrograms() {
     if (!confirmProgram) return;
     try {
       await startProgramPlan({ programId: confirmProgram.id }).unwrap();
-      setToastMsg(`Đã kích hoạt lộ trình ${confirmProgram.title} thành công!`);
+      setToastMsg(`Đã kích hoạt lịch tập ${confirmProgram.title} thành công!`);
       setConfirmProgram(null);
       refetchActivePlan();
       
@@ -143,7 +143,7 @@ function RecommendedPrograms() {
         navigate(paths.myPlan);
       }, 1500);
     } catch (err) {
-      setToastMsg("Không thể kích hoạt lộ trình này. Vui lòng thử lại!");
+      setToastMsg("Không thể kích hoạt lịch tập này. Vui lòng thử lại!");
       setConfirmProgram(null);
     }
   };
@@ -178,19 +178,19 @@ function RecommendedPrograms() {
             <div className="flex items-center gap-3 text-primary">
               <Dumbbell className="w-6 h-6 animate-pulse" />
               <h3 className="font-black text-lg text-[var(--text-color)] m-0">
-                {activePlan ? "Thay thế lộ trình" : "Bắt đầu lộ trình mới"}
+                {activePlan ? "Thay thế lịch tập" : "Bắt đầu lịch tập mới"}
               </h3>
             </div>
             
             <p className="text-xs text-[var(--text-muted)] leading-relaxed m-0">
               {activePlan ? (
                 <>
-                  Bạn có chắc chắn muốn hủy lộ trình hiện tại và thay thế bằng lộ trình{" "}
+                  Bạn có chắc chắn muốn hủy lịch tập hiện tại và thay thế bằng lịch tập{" "}
                   <strong className="text-[var(--text-color)]">{confirmProgram.title}</strong> không? Lịch trình cũ của bạn sẽ bị hủy bỏ hoàn toàn.
                 </>
               ) : (
                 <>
-                  Bạn có chắc chắn muốn bắt đầu lộ trình{" "}
+                  Bạn có chắc chắn muốn bắt đầu lịch tập{" "}
                   <strong className="text-[var(--text-color)]">{confirmProgram.title}</strong> không? Giáo án này sẽ được thiết lập vào lịch của bạn.
                 </>
               )}
@@ -223,7 +223,7 @@ function RecommendedPrograms() {
         </div>
       )}
 
-      {/* ═══ 1. HIỂN THỊ LỘ TRÌNH ĐANG THAM GIA (NẾU CÓ) ═══ */}
+      {/* ═══ 1. HIỂN THỊ LỊCH TẬP ĐANG THAM GIA (NẾU CÓ) ═══ */}
       {activePlan && (
         <div className="mb-12 bg-gradient-to-r from-primary/10 via-indigo-500/5 to-transparent border border-primary/20 rounded-[2.5rem] p-6 sm:p-8 relative overflow-hidden shadow-sm">
           {/* Decorative background circle */}
@@ -235,12 +235,12 @@ function RecommendedPrograms() {
                 <Dumbbell className="w-6 h-6" />
               </div>
               <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Lộ trình tập hiện tại của bạn</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Lịch tập hiện tại của bạn</span>
                 <h3 className="text-xl sm:text-2xl font-black text-[var(--text-color)] m-0 mt-1 tracking-tight">
-                  {activePlan.title || "Lộ trình cá nhân"}
+                  {activePlan.title || "Lịch tập cá nhân"}
                 </h3>
                 <p className="text-xs text-[var(--text-muted)] mt-1.5 max-w-md">
-                  Bạn đang tham gia lộ trình này. Hãy kiên trì thực hiện các buổi tập đúng hạn để nhanh chóng đạt được thể trạng mong muốn.
+                  Bạn đang tham gia lịch tập này. Hãy kiên trì thực hiện các buổi tập đúng hạn để nhanh chóng đạt được thể trạng mong muốn.
                 </p>
               </div>
             </div>
@@ -250,7 +250,7 @@ function RecommendedPrograms() {
                 onClick={scrollToAlternatives}
                 className="px-5 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-color)] font-extrabold text-xs rounded-xl hover:border-primary/40 transition-all duration-200 active:scale-95 cursor-pointer"
               >
-                Đổi lộ trình khác
+                Đổi lịch tập khác
               </button>
               <button
                 onClick={() => {
@@ -274,7 +274,7 @@ function RecommendedPrograms() {
       >
         <div>
           <h2 className="text-2xl sm:text-3xl font-black text-[var(--text-color)] tracking-tight m-0">
-            {activePlan ? "Lộ trình thay thế đề xuất" : "Lộ trình gợi ý"}
+            {activePlan ? "Lịch tập thay thế đề xuất" : "Lịch tập gợi ý"}
           </h2>
           <p className="text-sm text-[var(--text-muted)] mt-1.5 max-w-xl">
             Các giáo án được thiết kế chuyên biệt dựa trên mục tiêu tăng cơ, giảm mỡ hoặc nâng cao thể lực bền bỉ.
@@ -285,7 +285,7 @@ function RecommendedPrograms() {
           onClick={() => setShowAll(!showAll)}
           className="inline-flex items-center gap-1.5 text-xs font-black tracking-wider uppercase text-primary hover:opacity-85 cursor-pointer bg-transparent border-0"
         >
-          {showAll ? "Thu gọn" : "Tất cả lộ trình"}
+          {showAll ? "Thu gọn" : "Tất cả lịch tập"}
           {showAll ? <ChevronUp className="w-4.5 h-4.5" /> : <ChevronDown className="w-4.5 h-4.5" />}
         </button>
       </div>
