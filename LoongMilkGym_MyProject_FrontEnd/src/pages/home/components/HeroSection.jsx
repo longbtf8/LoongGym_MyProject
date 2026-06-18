@@ -58,7 +58,7 @@ function HeroSection() {
         </div>
 
         {/* Badge 1: 30+ Bài tập (Góc trên trái) */}
-        <div className="absolute top-6 -left-4 sm:-left-8 flex items-center gap-3 px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl shadow-xl animate-bounce-slow">
+        <div className="absolute top-6 left-4 sm:left-6 flex items-center gap-3 px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl shadow-xl animate-bounce-slow">
           <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
             <Dumbbell className="w-5 h-5 text-primary" />
           </div>
@@ -69,7 +69,7 @@ function HeroSection() {
         </div>
 
         {/* Badge 2: 12 Lộ trình (Góc dưới phải) */}
-        <div className="absolute bottom-8 -right-4 sm:-right-8 flex items-center gap-3 px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl shadow-xl animate-bounce-slow delay-300">
+        <div className="absolute bottom-8 right-4 sm:right-6 flex items-center gap-3 px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl shadow-xl animate-bounce-slow delay-300">
           <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500">
             <Calendar className="w-5 h-5 text-indigo-500" />
           </div>
@@ -80,7 +80,7 @@ function HeroSection() {
         </div>
 
         {/* Badge 3: 100+ Học viên (Góc trên phải) */}
-        <div className="absolute top-20 right-0 sm:-right-4 flex items-center gap-3 px-4 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl shadow-xl">
+        <div className="absolute top-24 right-4 sm:right-6 flex items-center gap-3 px-4 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl shadow-xl">
           <div className="w-8 h-8 bg-green-500/10 rounded-lg flex items-center justify-center text-green-500">
             <Users className="w-4 h-4 text-green-500" />
           </div>

@@ -115,7 +115,7 @@ function PopularExercises() {
             <div 
               key={ex.id}
               onClick={() => navigate(`/exercises/${ex.slug}`)}
-              className="group relative flex flex-col justify-end aspect-[4/3] rounded-3xl overflow-hidden border border-[var(--border-color)] shadow-sm hover:shadow-md cursor-pointer transition-all duration-300"
+              className="group relative flex flex-col justify-end h-56 sm:h-60 lg:h-64 rounded-3xl overflow-hidden border border-[var(--border-color)] shadow-sm hover:shadow-md cursor-pointer transition-all duration-300"
             >
               {/* Background image & gradient overlay */}
               <img 

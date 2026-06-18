@@ -94,7 +94,7 @@ function RecommendedPrograms() {
           {programs.map((program) => (
             <div 
               key={program.id}
-              className={`flex flex-col p-6 rounded-3xl border transition-all duration-300 ${
+              className={`flex flex-col p-6 rounded-3xl border transition-all duration-300 min-h-[280px] ${
                 program.accent 
                   ? "bg-indigo-500/5 dark:bg-indigo-500/10 border-indigo-500/35 shadow-md shadow-indigo-500/5 hover:-translate-y-1.5" 
                   : "bg-[var(--bg-secondary)] border-[var(--border-color)] hover:border-primary/45 hover:-translate-y-1"
