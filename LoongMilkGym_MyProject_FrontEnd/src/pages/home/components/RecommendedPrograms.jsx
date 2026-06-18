@@ -1,7 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Play, ChevronRight, Zap } from "lucide-react";
-import { useGetWorkoutProgramsQuery } from "@/services/roadmap/roadmapApi";
+import { Calendar, Play, ChevronRight, Dumbbell, AlertTriangle, ArrowRight } from "lucide-react";
+import { useGetWorkoutProgramsQuery, useGetActivePlanQuery } from "@/services/roadmap/roadmapApi";
+import { useAuth } from "@/hooks/useAuth";
 import paths from "@/config/path";
 
 const MOCK_PROGRAMS = [
@@ -42,31 +43,97 @@ const MOCK_PROGRAMS = [
 
 function RecommendedPrograms() {
   const navigate = useNavigate();
-  const { data: apiData, isLoading } = useGetWorkoutProgramsQuery();
+  const { isLoggedIn } = useAuth();
+  
+  // Fetch programs list
+  const { data: apiData, isLoading: isLoadingPrograms } = useGetWorkoutProgramsQuery();
+  
+  // Fetch active plan if logged in
+  const { data: activePlanRes, isLoading: isLoadingActivePlan } = useGetActivePlanQuery(undefined, {
+    skip: !isLoggedIn,
+  });
+
+  const activePlan = isLoggedIn && activePlanRes?.data ? activePlanRes.data : null;
 
   // Use API programs if available, otherwise mock
   const programs = apiData?.data && apiData.data.length > 0
-    ? apiData.data.slice(0, 3).map((p, idx) => ({
+    ? apiData.data.map((p, idx) => ({
         id: p.id,
         title: p.title,
         slug: p.slug,
         description: p.description || "Giáo án tập luyện chuyên nghiệp thiết kế theo khoa học.",
         durationWeeks: p.durationWeeks || 8,
         difficulty: p.difficulty || "Trung bình",
-        daysCount: p.days?.[0]?.dayNumber || 4,
+        daysCount: p.daysCount || 4,
         level: p.difficulty === "Advanced" ? "Nâng cao" : "Cơ bản",
         accent: idx === 0, // Accent the first one
       }))
     : MOCK_PROGRAMS;
 
+  // Filter out the active program from the recommended list so we don't recommend the one they are already doing
+  const displayPrograms = activePlan 
+    ? programs.filter(p => p.id !== activePlan.programId).slice(0, 3)
+    : programs.slice(0, 3);
+
+  // Smooth scroll to alternatives section
+  const scrollToAlternatives = () => {
+    document.getElementById("alternative-plans-section")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const isLoading = isLoadingPrograms || (isLoggedIn && isLoadingActivePlan);
+
   return (
     <section className="w-full py-10">
       
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+      {/* ═══ 1. HIỂN THỊ LỘ TRÌNH ĐANG THAM GIA (NẾU CÓ) ═══ */}
+      {activePlan && (
+        <div className="mb-12 bg-gradient-to-r from-primary/10 via-indigo-500/5 to-transparent border border-primary/20 rounded-[2.5rem] p-6 sm:p-8 relative overflow-hidden shadow-sm">
+          {/* Decorative background circle */}
+          <div className="absolute top-1/2 -right-20 -translate-y-1/2 w-80 h-80 bg-primary/5 rounded-full blur-[80px] pointer-events-none" />
+
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-primary text-black flex items-center justify-center shrink-0 shadow-lg shadow-primary/10">
+                <Dumbbell className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Lộ trình tập hiện tại của bạn</span>
+                <h3 className="text-xl sm:text-2xl font-black text-[var(--text-color)] m-0 mt-1 tracking-tight">
+                  {activePlan.title || "Lộ trình cá nhân"}
+                </h3>
+                <p className="text-xs text-[var(--text-muted)] mt-1.5 max-w-md">
+                  Bạn đang tham gia lộ trình này. Hãy kiên trì thực hiện các buổi tập đúng hạn để nhanh chóng đạt được thể trạng mong muốn.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                onClick={scrollToAlternatives}
+                className="px-5 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-color)] font-extrabold text-xs rounded-xl hover:border-primary/40 transition-all duration-200 active:scale-95 cursor-pointer"
+              >
+                Đổi lộ trình khác
+              </button>
+              <button
+                onClick={() => navigate(paths.myPlan)}
+                className="flex items-center gap-1.5 px-6 py-3 bg-primary text-black font-extrabold text-xs rounded-xl shadow-lg shadow-primary/15 hover:bg-primary-hover hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer border-0"
+              >
+                Tiếp tục tập luyện
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ 2. TIÊU ĐỀ SECTION ═══ */}
+      <div 
+        id={activePlan ? "alternative-plans-section" : undefined}
+        className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 scroll-mt-24"
+      >
         <div>
           <h2 className="text-2xl sm:text-3xl font-black text-[var(--text-color)] tracking-tight m-0">
-            Lộ trình gợi ý
+            {activePlan ? "Lộ trình thay thế đề xuất" : "Lộ trình gợi ý"}
           </h2>
           <p className="text-sm text-[var(--text-muted)] mt-1.5 max-w-xl">
             Các giáo án được thiết kế chuyên biệt dựa trên mục tiêu tăng cơ, giảm mỡ hoặc nâng cao thể lực bền bỉ.
@@ -82,7 +149,17 @@ function RecommendedPrograms() {
         </button>
       </div>
 
-      {/* Program list grid */}
+      {/* Warning banner when user already has an active plan */}
+      {activePlan && (
+        <div className="mb-6 flex items-start gap-2.5 p-3.5 bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 rounded-2xl text-xs max-w-xl">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-extrabold">Lưu ý:</span> Khi chọn lộ trình mới bên dưới, hệ thống sẽ **hủy bỏ** lộ trình hiện tại của bạn để thiết lập lộ trình mới. Dữ liệu lịch cũ sẽ được làm sạch.
+          </div>
+        </div>
+      )}
+
+      {/* ═══ 3. DANH SÁCH LỘ TRÌNH ═══ */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[...Array(3)].map((_, idx) => (
@@ -91,7 +168,7 @@ function RecommendedPrograms() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {programs.map((program) => (
+          {displayPrograms.map((program) => (
             <div 
               key={program.id}
               className={`flex flex-col p-6 rounded-3xl border transition-all duration-300 min-h-[280px] ${
@@ -142,7 +219,7 @@ function RecommendedPrograms() {
                   }`}
                 >
                   <Play className="w-3 h-3 fill-current" />
-                  Bắt đầu
+                  {activePlan ? "Thay thế" : "Bắt đầu"}
                 </button>
               </div>
 

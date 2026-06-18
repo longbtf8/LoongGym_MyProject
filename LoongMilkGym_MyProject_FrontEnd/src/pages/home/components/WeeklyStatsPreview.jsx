@@ -1,48 +1,63 @@
 import React from "react";
-import { Clock, Flame, Award, ShieldAlert } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Clock, Flame, Award, ShieldAlert, Lock } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useGetDashboardSummaryQuery } from "@/services/dashboard/dashboardApi";
+import paths from "@/config/path";
 
 function WeeklyStatsPreview() {
-  // Mock data for weekly stats graphs
+  const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
+
+  // Fetch dashboard stats if logged in
+  const { data: responseData } = useGetDashboardSummaryQuery(undefined, {
+    skip: !isLoggedIn,
+  });
+
+  const apiStats = responseData?.data?.stats;
+
+  // Compute stats dynamically or fallback to mock data
   const stats = [
     {
       title: "Tổng số phút tập luyện",
-      value: "180 phút",
+      value: apiStats ? `${apiStats.totalWorkoutMinutesThisWeek} phút` : "180 phút",
       icon: Clock,
       color: "bg-primary text-primary",
-      bars: [30, 45, 60, 20, 0, 50, 40], // Mon-Sun
-      label: "Tuần này",
+      bars: apiStats?.weeklyWorkoutMinutesMap || [30, 45, 60, 20, 0, 50, 40], // Mon-Sun
+      label: isLoggedIn ? "Tuần này" : "Dữ liệu mẫu",
     },
     {
       title: "Lượng Calo đã đốt",
-      value: "12,450 Kcal",
+      value: apiStats ? `${apiStats.caloriesBurnedThisWeek.toLocaleString()} Kcal` : "12,450 Kcal",
       icon: Flame,
       color: "bg-orange-500 text-orange-500",
-      bars: [200, 350, 450, 150, 0, 400, 300], // Mon-Sun
-      label: "Đạt 92% mục tiêu",
+      bars: apiStats?.weeklyCaloriesMap || [200, 350, 450, 150, 0, 400, 300], // Mon-Sun
+      label: isLoggedIn ? `Tiêu hao tuần này` : "Đạt 92% mục tiêu",
     },
     {
       title: "Số buổi đã hoàn thành",
-      value: "4 buổi",
+      value: apiStats ? `${apiStats.completedWorkoutsThisWeek} buổi` : "4 buổi",
       icon: Award,
       color: "bg-indigo-500 text-indigo-500",
-      bars: [1, 1, 1, 0, 0, 1, 0], // Mon-Sun
-      label: "Đều đặn",
+      bars: apiStats?.weeklyWorkoutDaysMap || [1, 1, 1, 0, 0, 1, 0], // Mon-Sun
+      label: isLoggedIn ? "Hoàn thành tuần này" : "Đều đặn",
     },
     {
       title: "Thời gian ngủ trung bình",
-      value: "7.2 giờ/ngày",
+      value: apiStats ? `${apiStats.averageSleepHours} giờ/ngày` : "7.2 giờ/ngày",
       icon: ShieldAlert,
       color: "bg-green-500 text-green-500",
-      bars: [7, 6.5, 8, 7, 7.5, 6.8, 8.2], // Mon-Sun
-      label: "Chất lượng tốt",
+      bars: apiStats?.weeklySleepMap || [7, 6.5, 8, 7, 7.5, 6.8, 8.2], // Mon-Sun
+      label: isLoggedIn ? "Phục hồi trung bình" : "Chất lượng tốt",
     },
   ];
 
   const days = ["Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy", "CN"];
 
   return (
-    <section className="w-full py-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <section className="w-full py-8 relative">
+      {/* Container cards grid */}
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 ${!isLoggedIn ? "blur-[3px] select-none pointer-events-none" : ""}`}>
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           const maxVal = Math.max(...stat.bars) || 1;
@@ -72,7 +87,7 @@ function WeeklyStatsPreview() {
                 </span>
               </div>
               
-              {/* Đồ thị cột Mini (CSS pure) */}
+              {/* Đồ thị cột Mini */}
               <div className="flex items-end justify-between gap-1.5 h-12 mt-auto pt-2">
                 {stat.bars.map((bar, barIdx) => {
                   const heightPercent = (bar / maxVal) * 100;
@@ -81,13 +96,11 @@ function WeeklyStatsPreview() {
                       key={barIdx} 
                       className="flex-1 flex flex-col items-center gap-1 group/bar relative"
                     >
-                      {/* Cột đồ thị */}
                       <div 
                         style={{ height: `${Math.max(heightPercent, 8)}%` }}
                         className={`w-full rounded-t-sm transition-all duration-500 ${stat.color.split(" ")[0]} opacity-80 group-hover/bar:opacity-100`}
                       />
                       
-                      {/* Tooltip khi hover */}
                       <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-black text-white text-[9px] font-black px-1.5 py-0.5 rounded opacity-0 pointer-events-none group-hover/bar:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10 shadow-md">
                         {bar}
                       </div>
@@ -109,6 +122,27 @@ function WeeklyStatsPreview() {
           );
         })}
       </div>
+
+      {/* Lock overlay if not logged in */}
+      {!isLoggedIn && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[var(--bg-color)]/30 backdrop-blur-md border border-[var(--border-color)] rounded-[2rem] p-6 text-center">
+          <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-lg shadow-primary/10 mb-4 animate-bounce">
+            <Lock className="w-5 h-5" />
+          </div>
+          <h4 className="text-lg font-black text-[var(--text-color)] tracking-tight mb-2">
+            Thống kê sức khỏe & Luyện tập
+          </h4>
+          <p className="text-xs text-[var(--text-muted)] max-w-sm mb-5 leading-relaxed">
+            Đăng nhập để đo lường tự động số phút tập, calo tiêu hao, giấc ngủ và tiến trình hàng tuần của riêng bạn.
+          </p>
+          <button 
+            onClick={() => navigate(paths.login)} 
+            className="px-6 py-2.5 bg-primary text-black font-extrabold text-xs rounded-xl shadow-md shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer border-0"
+          >
+            Đăng nhập ngay
+          </button>
+        </div>
+      )}
     </section>
   );
 }

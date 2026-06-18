@@ -77,6 +77,163 @@ const getDashboardSummary = async (userId) => {
     // ignore
   }
 
+  // Compute Weekly Stats & Maps Dynamically
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0 is Sunday, 1 is Monday, etc.
+  const diffToMonday = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+  const monday = new Date(now.setDate(diffToMonday));
+  monday.setHours(0, 0, 0, 0);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+
+  let completedWorkoutsThisWeek = 0;
+  let totalWorkoutMinutesThisWeek = 0;
+  let caloriesBurnedThisWeek = 0;
+  let averageSleepHours = "0.0";
+  let weeklyWorkoutDaysMap = [0, 0, 0, 0, 0, 0, 0];
+  let weeklyWorkoutMinutesMap = [0, 0, 0, 0, 0, 0, 0];
+  let weeklyCaloriesMap = [0, 0, 0, 0, 0, 0, 0];
+  let weeklySleepMap = [0, 0, 0, 0, 0, 0, 0];
+
+  try {
+    // 1. Fetch completed sessions this week
+    const sessionsThisWeek = await prisma.workoutSession.findMany({
+      where: {
+        userId,
+        status: "completed",
+        endedAt: {
+          gte: monday,
+          lte: sunday,
+        },
+      },
+    });
+
+    sessionsThisWeek.forEach((session) => {
+      const date = new Date(session.endedAt);
+      const dayIndex = (date.getDay() + 6) % 7; // Monday = 0, Sunday = 6
+      weeklyWorkoutDaysMap[dayIndex] = 1;
+      const mins = Math.round((session.durationSeconds || 0) / 60);
+      weeklyWorkoutMinutesMap[dayIndex] += mins;
+      // Estimate 8 Kcal per minute of workout
+      weeklyCaloriesMap[dayIndex] += mins * 8;
+    });
+
+    completedWorkoutsThisWeek = weeklyWorkoutDaysMap.reduce((a, b) => a + b, 0);
+    totalWorkoutMinutesThisWeek = Math.round(weeklyWorkoutMinutesMap.reduce((a, b) => a + b, 0));
+    caloriesBurnedThisWeek = Math.round(weeklyCaloriesMap.reduce((a, b) => a + b, 0));
+
+    // 2. Fetch recovery logs this week
+    const recoveryLogsThisWeek = await prisma.recoveryLog.findMany({
+      where: {
+        userId,
+        logDate: {
+          gte: monday,
+          lte: sunday,
+        },
+      },
+    });
+
+    recoveryLogsThisWeek.forEach((log) => {
+      const date = new Date(log.logDate);
+      const dayIndex = (date.getDay() + 6) % 7;
+      weeklySleepMap[dayIndex] = Number(log.sleepHours);
+    });
+
+    const activeSleepLogs = weeklySleepMap.filter((h) => h > 0);
+    if (activeSleepLogs.length > 0) {
+      averageSleepHours = (activeSleepLogs.reduce((a, b) => a + b, 0) / activeSleepLogs.length).toFixed(1);
+    }
+  } catch (err) {
+    console.error("Error computing weekly dashboard stats:", err);
+  }
+
+  // 3. Streak calculation
+  let currentStreak = 0;
+  try {
+    const allCompletedSessions = await prisma.workoutSession.findMany({
+      where: { userId, status: "completed" },
+      select: { endedAt: true },
+      orderBy: { endedAt: "desc" },
+    });
+
+    const uniqueDates = Array.from(
+      new Set(
+        allCompletedSessions
+          .map((s) => s.endedAt)
+          .filter(Boolean)
+          .map((d) => new Date(d).toLocaleDateString("en-CA"))
+      )
+    );
+
+    if (uniqueDates.length > 0) {
+      const todayStr = new Date().toLocaleDateString("en-CA");
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toLocaleDateString("en-CA");
+
+      let searchDateStr = uniqueDates[0] === todayStr ? todayStr : (uniqueDates[0] === yesterdayStr ? yesterdayStr : null);
+
+      if (searchDateStr) {
+        let checkDate = new Date(searchDateStr);
+        let index = uniqueDates.indexOf(searchDateStr);
+        
+        while (index !== -1) {
+          currentStreak++;
+          checkDate.setDate(checkDate.getDate() - 1);
+          const nextCheckStr = checkDate.toLocaleDateString("en-CA");
+          index = uniqueDates.indexOf(nextCheckStr);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Error computing streak:", err);
+  }
+
+  // 4. Today's Workout recommendation
+  let todayWorkout = null;
+  try {
+    const activePlan = await prisma.userTrainingPlan.findFirst({
+      where: {
+        userId,
+        status: "active",
+      },
+      include: {
+        days: true,
+      },
+    });
+
+    if (activePlan) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayPlanDay = activePlan.days.find(
+        (day) => new Date(day.scheduledDate).getTime() === today.getTime()
+      );
+
+      if (todayPlanDay) {
+        let exercisesCount = 0;
+        try {
+          const details = await require("./training/plan-adjustment.helper").getDayDetails(userId, todayPlanDay.id);
+          exercisesCount = details.exercises ? details.exercises.length : 0;
+        } catch (e) {
+          // ignore details if fails
+        }
+
+        todayWorkout = {
+          id: todayPlanDay.id,
+          title: todayPlanDay.title,
+          status: todayPlanDay.status,
+          exercisesCount,
+          duration: todayPlanDay.metadata?.durationMinutes || (exercisesCount * 8 || 30),
+          difficulty: activePlan.difficulty || "Trung bình",
+        };
+      }
+    }
+  } catch (err) {
+    console.error("Error computing today's workout:", err);
+  }
+
   return {
     user: {
       id: user.id,
@@ -86,13 +243,19 @@ const getDashboardSummary = async (userId) => {
       goal: profile.goal || "gain_muscle",
       fitnessLevel: profile.fitnessLevel || "beginner",
     },
-    todayWorkout: null,
+    todayWorkout,
     recovery: recoveryData,
     nutrition: nutritionData,
     stats: {
-      completedWorkoutsThisWeek: 0,
-      totalWorkoutMinutesThisWeek: 0,
-      currentStreak: 0,
+      completedWorkoutsThisWeek,
+      totalWorkoutMinutesThisWeek,
+      caloriesBurnedThisWeek,
+      averageSleepHours,
+      currentStreak,
+      weeklyWorkoutDaysMap,
+      weeklyWorkoutMinutesMap,
+      weeklyCaloriesMap,
+      weeklySleepMap,
     },
     quickActions: [
       {
