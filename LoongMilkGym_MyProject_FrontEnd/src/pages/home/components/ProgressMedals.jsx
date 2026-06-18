@@ -209,7 +209,7 @@ function ProgressMedals() {
           </div>
 
           {/* Biểu đồ tiến độ cao cấp */}
-          <div className="relative h-36 w-full flex items-end justify-between px-2 pt-6 z-10">
+          <div className="relative flex-1 w-full flex items-end justify-between px-2 pt-6 z-10 min-h-[160px]">
             
             {/* Background Grid Lines */}
             <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-50 pb-2 pt-6 px-1">
@@ -241,7 +241,7 @@ function ProgressMedals() {
                     ) : day.isScheduled ? (
                       <div 
                         style={{ height: `${fillPercentage}%` }}
-                        className="w-full rounded-full transition-all duration-700 bg-primary/10 border border-dashed border-primary/40 relative h-full"
+                        className="w-full rounded-full transition-all duration-700 bg-primary/10 border border-dashed border-primary/45 relative h-full"
                       />
                     ) : null}
                   </div>
@@ -261,7 +261,7 @@ function ProgressMedals() {
           </div>
 
           {/* Days Label Row (Aligned perfectly at the bottom) */}
-          <div className="w-full flex justify-between px-2 pt-3 pb-2 border-t border-[var(--border-color)] mt-2 mb-4 z-10">
+          <div className="w-full flex justify-between px-2 pt-3 pb-2 border-t border-[var(--border-color)] mt-2 mb-2 z-10">
             {days.map((day, idx) => (
               <div key={idx} className="flex-1 flex justify-center">
                 <span className={`text-[11px] sm:text-xs font-black tracking-tight select-none transition-all duration-200 px-2 py-0.5 rounded-md ${

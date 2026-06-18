@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Play, ChevronRight, Dumbbell, AlertTriangle, ArrowRight, Loader2, Check } from "lucide-react";
+import { Calendar, Play, ChevronDown, ChevronUp, Dumbbell, ArrowRight, Loader2, Check } from "lucide-react";
 import { 
   useGetWorkoutProgramsQuery, 
   useGetActivePlanQuery,
@@ -11,36 +11,58 @@ import paths from "@/config/path";
 
 const MOCK_PROGRAMS = [
   {
-    id: "push-day",
-    title: "Push Day",
-    slug: "push-day",
-    description: "Tập trung phát triển sức mạnh và độ dày nhóm cơ đẩy (Ngực, Vai, Tay sau).",
-    durationWeeks: 4,
-    difficulty: "Trung bình",
-    daysCount: 3,
-    level: "Intermediate",
+    id: "chuong-trinh-dot-mo-12-tuan",
+    title: "Chương Trình Đốt Mỡ 12 Tuần",
+    slug: "chuong-trinh-dot-mo-12-tuan",
+    description: "Kết hợp tập kháng lực cường độ cao và cardio giúp cắt nét cơ thể tối đa.",
+    durationWeeks: 12,
+    difficulty: "Khó",
+    daysCount: 4,
+    level: "Nâng cao",
     accent: true,
   },
   {
-    id: "pull-day",
-    title: "Pull Day",
-    slug: "pull-day",
-    description: "Tối ưu độ rộng lưng xô, cơ thang và độ cuộn của bắp tay trước.",
-    durationWeeks: 4,
+    id: "giai-phau-ky-thuat-tap-luyen",
+    title: "Giải Phẫu Kỹ Thuật Tập Luyện",
+    slug: "giai-phau-ky-thuat-tap-luyen",
+    description: "Chuẩn hóa tư thế các bài phức hợp Squat, Bench Press, Deadlift giúp tránh chấn thương.",
+    durationWeeks: 6,
     difficulty: "Trung bình",
     daysCount: 3,
-    level: "Intermediate",
+    level: "Trung cấp",
     accent: false,
   },
   {
-    id: "leg-day",
-    title: "Leg Day",
-    slug: "leg-day",
-    description: "Xây dựng bệ đỡ thân dưới vững chắc với các bài đùi trước, đùi sau và bắp chân.",
+    id: "thuc-don-tang-co-30-ngay",
+    title: "Thực Đơn Tăng Cơ 30 Ngày",
+    slug: "thuc-don-tang-co-30-ngay",
+    description: "Chế độ dinh dưỡng khoa học thặng dư calo lành mạnh để phát triển cơ bắp tối ưu.",
     durationWeeks: 4,
-    difficulty: "Khó",
-    daysCount: 2,
-    level: "Advanced",
+    difficulty: "Dễ",
+    daysCount: 7,
+    level: "Cơ bản",
+    accent: false,
+  },
+  {
+    id: "meal-plan-giam-mo",
+    title: "Meal Plan Giảm Mỡ",
+    slug: "meal-plan-giam-mo",
+    description: "Thực đơn dinh dưỡng cắt giảm tinh bột xấu giúp thu nhỏ số đo vòng eo an toàn.",
+    durationWeeks: 4,
+    difficulty: "Dễ",
+    daysCount: 7,
+    level: "Cơ bản",
+    accent: false,
+  },
+  {
+    id: "suc-ben-tim-mach",
+    title: "Sức Bền Tim Mạch",
+    slug: "suc-ben-tim-mach",
+    description: "Các bài tập LISS Cardio giúp tăng dung tích phổi và cải thiện tuần hoàn máu.",
+    durationWeeks: 8,
+    difficulty: "Trung bình",
+    daysCount: 3,
+    level: "Trung bình",
     accent: false,
   },
 ];
@@ -53,6 +75,8 @@ function RecommendedPrograms() {
   const [confirmProgram, setConfirmProgram] = useState(null);
   // State for toast message
   const [toastMsg, setToastMsg] = useState("");
+  // Local state to toggle viewing all available programs inline
+  const [showAll, setShowAll] = useState(false);
 
   // Fetch programs list
   const { data: apiData, isLoading: isLoadingPrograms } = useGetWorkoutProgramsQuery();
@@ -84,8 +108,13 @@ function RecommendedPrograms() {
 
   // Filter out the active program from the recommended list so we don't recommend the one they are already doing
   const displayPrograms = activePlan 
-    ? programs.filter(p => p.id !== activePlan.programId).slice(0, 3)
-    : programs.slice(0, 3);
+    ? programs.filter(p => p.id !== activePlan.programId)
+    : programs;
+
+  // Slice displayPrograms depending on showAll toggle state
+  const visiblePrograms = showAll 
+    ? displayPrograms 
+    : displayPrograms.slice(0, 3);
 
   // Smooth scroll to alternatives section
   const scrollToAlternatives = () => {
@@ -223,7 +252,10 @@ function RecommendedPrograms() {
                 Đổi lộ trình khác
               </button>
               <button
-                onClick={() => navigate(paths.myPlan)}
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  navigate(paths.myPlan);
+                }}
                 className="flex items-center gap-1.5 px-6 py-3 bg-primary text-black font-extrabold text-xs rounded-xl shadow-lg shadow-primary/15 hover:bg-primary-hover hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer border-0"
               >
                 Tiếp tục tập luyện
@@ -249,11 +281,11 @@ function RecommendedPrograms() {
         </div>
         
         <button
-          onClick={() => navigate(paths.myPlan)}
-          className="inline-flex items-center gap-1 text-xs font-black tracking-wider uppercase text-[var(--text-primary)] hover:opacity-85 cursor-pointer bg-transparent border-0"
+          onClick={() => setShowAll(!showAll)}
+          className="inline-flex items-center gap-1.5 text-xs font-black tracking-wider uppercase text-primary hover:opacity-85 cursor-pointer bg-transparent border-0"
         >
-          Tất cả lộ trình
-          <ChevronRight className="w-4 h-4" />
+          {showAll ? "Thu gọn" : "Tất cả lộ trình"}
+          {showAll ? <ChevronUp className="w-4.5 h-4.5" /> : <ChevronDown className="w-4.5 h-4.5" />}
         </button>
       </div>
 
@@ -266,7 +298,7 @@ function RecommendedPrograms() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {displayPrograms.map((program) => (
+          {visiblePrograms.map((program) => (
             <div 
               key={program.id}
               className={`flex flex-col p-6 rounded-3xl border transition-all duration-300 min-h-[280px] ${
