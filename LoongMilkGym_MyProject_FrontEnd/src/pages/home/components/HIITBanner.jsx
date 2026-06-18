@@ -51,7 +51,7 @@ function HIITBanner() {
         <div className="w-full md:w-auto shrink-0 z-10 flex items-center justify-center">
           <div className="relative w-full max-w-[320px] aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-2xl group cursor-pointer">
             <img 
-              src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=600" 
+              src="https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781797857/LoongMilkGym_APP/homepage/hiit_banner.jpg" 
               alt="HIIT Workout Video" 
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
             />

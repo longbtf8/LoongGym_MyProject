@@ -50,7 +50,7 @@ function HeroSection() {
         {/* Wrapper hình ảnh */}
         <div className="relative w-full max-w-[480px] aspect-[4/5] rounded-[3rem] overflow-hidden border border-[var(--border-color)] shadow-2xl group">
           <img 
-            src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=800" 
+            src="https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781797855/LoongMilkGym_APP/homepage/hero_athlete.jpg" 
             alt="Gym Warrior" 
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
           />

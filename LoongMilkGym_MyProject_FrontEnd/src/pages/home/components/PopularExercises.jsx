@@ -72,10 +72,10 @@ function PopularExercises() {
         id: ex.id,
         name: ex.name,
         slug: ex.slug,
-        gifUrl: ex.gifUrl || "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=400",
+        gifUrl: ex.thumbnailUrl || "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=400",
         difficulty: ex.difficulty || "Medium",
-        calories: ex.calories || 150,
-        categoryName: ex.muscleGroups?.[0]?.muscleGroup?.name || "Thể lực",
+        calories: ex.estimatedCalories || 150,
+        categoryName: ex.muscles?.[0]?.muscleGroup?.name || "Thể lực",
       }))
     : MOCK_POPULAR_EXERCISES;
 

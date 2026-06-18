@@ -7,7 +7,7 @@ function TestimonialQuote() {
         
         {/* Background Image with Hover Zoom */}
         <img 
-          src="https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=1200" 
+          src="https://res.cloudinary.com/dvlp6zqdo/image/upload/v1781797859/LoongMilkGym_APP/homepage/testimonial_bg.jpg" 
           alt="Motivational Quote Gym" 
           className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
         />
