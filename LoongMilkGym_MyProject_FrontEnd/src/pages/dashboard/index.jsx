@@ -11,7 +11,6 @@ import RecoveryScore from "./components/RecoveryScore";
 import AICoachInsight from "./components/AICoachInsight";
 import WeeklyProgressChart from "./components/WeeklyProgressChart";
 import QuickActionsGrid from "./components/QuickActionsGrid";
-import WeeklyLeaderboard from "./components/WeeklyLeaderboard";
 
 function Dashboard() {
   const { userInfo, userName, userInitial } = useAuth();
@@ -53,7 +52,7 @@ function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] transition-colors duration-300 py-6 sm:py-10 px-4 sm:px-6 lg:px-8 pb-28 lg:pb-12">
+    <div className="w-full text-[var(--text-color)] transition-colors duration-300">
       <div className="max-w-7xl mx-auto flex flex-col gap-6">
         
         {/* ═══ KHU VỰC A: GREETING BANNER ═══ */}
@@ -93,9 +92,6 @@ function Dashboard() {
 
             {/* KHU VỰC G: QUICK ACTIONS GRID */}
             <QuickActionsGrid />
-
-            {/* KHU VỰC H: BẢNG XẾP HẠNG TUẦN */}
-            <WeeklyLeaderboard userName={userName} userInitial={userInitial} />
           </div>
 
         </div>
