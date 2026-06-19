@@ -5,7 +5,7 @@ const startTrainingPlanSchema = z.object({
     programId: z.string().trim().transform((val) => (val === "" ? null : val)).optional().nullable(),
     title: z.string().trim().transform((val) => (val === "" ? null : val)).optional().nullable(),
     startDate: z.string().trim().transform((val) => (val === "" ? null : val)).optional().nullable(),
-    dayMapping: z.array(z.number().int().min(0).max(6)).length(7).optional().nullable(),
+    dayMapping: z.array(z.number().int().min(0).max(30)).min(1).max(31).optional().nullable(),
   }),
 });
 

@@ -1,5 +1,25 @@
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 
+const getLocalDateString = (dateInput = new Date()) => {
+  if (typeof dateInput === "string" && dateInput.includes("T")) {
+    return dateInput.split("T")[0];
+  }
+
+  const date = new Date(dateInput);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const getWeekdayLabel = (dateInput) => {
+  const dateKey = getLocalDateString(dateInput);
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  const labels = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+  return labels[date.getDay()];
+};
+
 // CalendarSlider: Thanh trượt lịch hiển thị danh sách các ngày tập theo tuần (7 ngày) trong lộ trình 30 ngày
 export default function CalendarSlider({
   weekDays,
@@ -22,12 +42,13 @@ export default function CalendarSlider({
       </button>
       
       <div className="flex gap-1.5">
-        {weekDays.map((wd, index) => {
-          const dateObj = new Date(wd.scheduledDate);
-          const dayNum = dateObj.getDate();
+        {weekDays.map((wd) => {
+          const dateKey = getLocalDateString(wd.scheduledDate);
+          const [, , dayPart] = dateKey.split("-");
+          const dayNum = Number(dayPart);
           const isSelected = wd.id === selectedDayId;
-          const isToday = wd.scheduledDate.startsWith(todayStr);
-          const weekdayLabel = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"][index];
+          const isToday = dateKey === todayStr;
+          const weekdayLabel = getWeekdayLabel(wd.scheduledDate);
           let statusDot = null;
           if (wd.status === "completed") {
             statusDot = <Check className="w-2 h-2" />;

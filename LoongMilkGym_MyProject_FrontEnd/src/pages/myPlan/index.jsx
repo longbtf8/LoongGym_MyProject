@@ -37,11 +37,20 @@ const toSavedExercise = (exercise, index) => ({
 });
 
 const getLocalDateString = (dateInput = new Date()) => {
+  if (typeof dateInput === "string" && dateInput.includes("T")) {
+    return dateInput.split("T")[0];
+  }
+
   const date = new Date(dateInput);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+};
+
+const isSameLocalDate = (dateInput, dateString) => {
+  if (!dateInput || !dateString) return false;
+  return getLocalDateString(dateInput) === dateString;
 };
 
 const getWorkoutDisplayTitle = (title = "Buổi tập") => {
@@ -66,8 +75,9 @@ export default function MyPlan() {
 
   const [sessionNotes, setSessionNotes] = useState("");
   const [showHistory, setShowHistory] = useState(false);
+  const [todayStr, setTodayStr] = useState(() => getLocalDateString());
 
-  const { data: activePlanRes, isLoading: isLoadingPlan, isError: isPlanError } = useGetActivePlanQuery();
+  const { data: activePlanRes, isLoading: isLoadingPlan, isError: isPlanError, refetch: refetchActivePlan } = useGetActivePlanQuery();
   const { data: statsRes } = useGetStatsQuery();
 
   const activePlan = isPlanError ? null : activePlanRes?.data;
@@ -84,9 +94,8 @@ export default function MyPlan() {
   const exercises = dayDetails?.exercises || [];
   const selectedWorkoutTitle = getWorkoutDisplayTitle(dayDetails?.day?.title);
 
-  const todayStr = getLocalDateString();
-  const todayDay = daysList.find(d => d.scheduledDate?.startsWith(todayStr));
-  const isSelectedDayToday = dayDetails?.day?.scheduledDate?.startsWith(todayStr);
+  const todayDay = daysList.find(d => isSameLocalDate(d.scheduledDate, todayStr));
+  const isSelectedDayToday = isSameLocalDate(dayDetails?.day?.scheduledDate, todayStr);
   const isTodayCompleted = todayDay?.status === "completed";
 
   const [updateDayDetails, { isLoading: isUpdating }] = useUpdateDayDetailsMutation();
@@ -110,7 +119,7 @@ export default function MyPlan() {
       }).unwrap();
       setShowRestoreModal(false);
       showToast("Đã khôi phục danh sách bài tập gốc.");
-    } catch (err) {
+    } catch {
       showToast("Không thể khôi phục danh sách bài tập.");
     }
   };
@@ -132,6 +141,19 @@ export default function MyPlan() {
 
   // Tự động mở rộng buổi tập duy nhất nếu danh sách chỉ có 1 buổi tập
   useEffect(() => {
+    const syncToday = () => {
+      const currentTodayStr = getLocalDateString();
+      setTodayStr((previousTodayStr) => (
+        previousTodayStr === currentTodayStr ? previousTodayStr : currentTodayStr
+      ));
+    };
+
+    syncToday();
+    const intervalId = window.setInterval(syncToday, 60 * 1000);
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  useEffect(() => {
     if (completedSessions.length === 1) {
       const timer = setTimeout(() => {
         setExpandedSessionIds({ [completedSessions[0].id]: true });
@@ -142,7 +164,7 @@ export default function MyPlan() {
 
   useEffect(() => {
     if (daysList.length > 0) {
-      const todayDay = daysList.find(d => d.scheduledDate?.startsWith(todayStr));
+      const todayDay = daysList.find(d => isSameLocalDate(d.scheduledDate, todayStr));
       const pendingDay = daysList.find(d => d.status === "pending");
       const targetDay = todayDay || pendingDay || daysList[0];
 
@@ -175,6 +197,20 @@ export default function MyPlan() {
     }
   }, [dayDetails]);
 
+  useEffect(() => {
+    const handleAiPlanUpdated = () => {
+      refetchActivePlan();
+    };
+
+    window.addEventListener("aiCoach:plan-updated", handleAiPlanUpdated);
+    window.addEventListener("storage", handleAiPlanUpdated);
+
+    return () => {
+      window.removeEventListener("aiCoach:plan-updated", handleAiPlanUpdated);
+      window.removeEventListener("storage", handleAiPlanUpdated);
+    };
+  }, [refetchActivePlan]);
+
   if (isLoadingPlan) {
     return <LoadingScreen message="Đang tải lộ trình tập luyện của bạn..." />;
   }
@@ -185,6 +221,7 @@ export default function MyPlan() {
 
   const handleSchedulerSuccess = (message) => {
     setSelectedProgramId(null);
+    refetchActivePlan();
     showToast(message);
   };
 
@@ -197,11 +234,14 @@ export default function MyPlan() {
           onSuccess={handlePlanSelectorSuccess}
         />
 
-        <SchedulerModal
-          programId={selectedProgramId}
-          onClose={() => setSelectedProgramId(null)}
-          onSuccess={handleSchedulerSuccess}
-        />
+        {selectedProgramId && (
+          <SchedulerModal
+            key={selectedProgramId}
+            programId={selectedProgramId}
+            onClose={() => setSelectedProgramId(null)}
+            onSuccess={handleSchedulerSuccess}
+          />
+        )}
 
         {toast.show && (
           <div className="fixed top-24 right-4 z-[160] bg-[var(--bg-secondary)] border border-primary/30 text-[var(--text-color)] rounded-xl px-4 py-3 flex items-center gap-2 shadow-2xl animate-slide-down">

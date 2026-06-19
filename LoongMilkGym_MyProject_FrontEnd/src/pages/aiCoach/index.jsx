@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { 
   Bot, 
   Menu,
@@ -6,7 +6,10 @@ import {
   Flame,
   Activity,
   Heart,
-  Dumbbell
+  Dumbbell,
+  Target,
+  CheckCircle,
+  AlertTriangle
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAICoach } from "./hooks/useAICoach";
@@ -29,6 +32,7 @@ function AICoach() {
     loadingConversations,
     loadingMessages,
     actionProcessingId,
+    toast,
     handleCreateNewConversation,
     handleDeleteConversation,
     handleSendMessage,
@@ -38,6 +42,7 @@ function AICoach() {
 
   // Danh sách các gợi ý câu hỏi nhanh
   const QUICK_ACTIONS = [
+    { label: "Tôi muốn cải thiện nhóm cơ", prompt: "Tôi muốn cải thiện nhóm cơ. Hãy hỏi tôi nhóm cơ muốn cải thiện và các thông tin còn thiếu, sau đó tạo mẫu lịch 1 tuần để tôi bấm Đồng ý áp dụng.", icon: Target, color: "text-emerald-500 bg-emerald-500/10" },
     { label: "Sắp xếp lại lịch", prompt: "Hãy giúp tôi sắp xếp lại lịch tập của tôi", icon: Calendar, color: "text-blue-500 bg-blue-500/10" },
     { label: "Tôi bị đau vai", prompt: "Tôi bị đau vai khi tập, hãy tư vấn cách xử lý và bài tập thay thế cho tôi", icon: Activity, color: "text-red-500 bg-red-500/10" },
     { label: "Tôi muốn tăng cơ", prompt: "Tôi muốn tăng cơ hiệu quả, bạn có thể tư vấn chế độ dinh dưỡng và bài tập phù hợp?", icon: Dumbbell, color: "text-yellow-500 bg-yellow-500/10" },
@@ -72,6 +77,20 @@ function AICoach() {
 
   return (
     <div className="flex bg-[var(--bg-color)] text-[var(--text-color)] h-[calc(100vh-8.5rem)] rounded-3xl border border-[var(--border-color)] overflow-hidden relative shadow-sm">
+      {toast.show && (
+        <div className={`absolute top-4 right-4 z-30 max-w-[min(360px,calc(100%-2rem))] rounded-2xl border px-4 py-3 shadow-2xl animate-slide-down flex items-start gap-2.5 ${
+          toast.type === "error"
+            ? "bg-rose-500/12 border-rose-500/30 text-rose-300"
+            : "bg-emerald-500/12 border-emerald-500/30 text-emerald-300"
+        }`}>
+          {toast.type === "error" ? (
+            <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+          ) : (
+            <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" />
+          )}
+          <span className="text-xs font-black leading-relaxed">{toast.message}</span>
+        </div>
+      )}
       
       {/* ═══ SIDEBAR (QUẢN LÝ PHÒNG CHAT) ═══ */}
       <AICoachSidebar
@@ -128,7 +147,6 @@ function AICoach() {
           isGenerating={isGenerating}
           userName={userName}
           userInitial={userInitial}
-          activeConversationId={activeConversationId}
           QUICK_ACTIONS={QUICK_ACTIONS}
           handleSendMessage={handleSendMessage}
           actionProcessingId={actionProcessingId}

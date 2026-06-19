@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import PusherJS from "pusher-js";
 import httpRequest from "@/services/api";
 import { STORAGE_KEYS } from "@/services/api";
@@ -11,17 +11,30 @@ export function useAICoach(userInfo) {
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [actionProcessingId, setActionProcessingId] = useState(null);
+  const [toast, setToast] = useState({ show: false, message: "", type: "info" });
 
   const pusherRef = useRef(null);
   const channelRef = useRef(null);
   const isNewConversationRef = useRef(false);
   const sendingRef = useRef(false);
+  const toastTimerRef = useRef(null);
+
+  const showToast = useCallback((message, type = "info") => {
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+    }
+
+    setToast({ show: true, message, type });
+    toastTimerRef.current = setTimeout(() => {
+      setToast({ show: false, message: "", type: "info" });
+    }, 3200);
+  }, []);
 
   // Loại bỏ khối ACTION JSON thô khỏi tin nhắn hiển thị
-  const stripActionBlock = (text) => {
+  const stripActionBlock = useCallback((text) => {
     if (!text) return "";
-    return text.replace(/---ACTION---([\s\S]*?)---END_ACTION---/g, "").trim();
-  };
+    return text.replace(/---ACTION---[\s\S]*?(---END_ACTION---|$)/g, "").trim();
+  }, []);
 
   // Tải danh sách cuộc hội thoại từ backend
   const fetchConversations = async (shouldResetActive = true) => {
@@ -49,7 +62,7 @@ export function useAICoach(userInfo) {
   };
 
   // Tải danh sách tin nhắn của cuộc hội thoại
-  const fetchMessages = async (convId) => {
+  const fetchMessages = useCallback(async (convId) => {
     try {
       setLoadingMessages(true);
       const res = await httpRequest.get(`/ai/conversations/${convId}/messages`);
@@ -66,7 +79,7 @@ export function useAICoach(userInfo) {
     } finally {
       setLoadingMessages(false);
     }
-  };
+  }, [stripActionBlock]);
 
   // Xử lý tạo cuộc hội thoại ảo mới ở phía Client
   const handleCreateNewConversation = () => {
@@ -91,7 +104,7 @@ export function useAICoach(userInfo) {
       }
     } catch (err) {
       console.error("Lỗi khi xóa cuộc trò chuyện:", err);
-      alert("Xóa cuộc trò chuyện thất bại. Vui lòng thử lại.");
+      showToast("Thao tác thất bại, vui lòng báo cáo admin.", "error");
     }
   };
 
@@ -139,8 +152,29 @@ export function useAICoach(userInfo) {
       });
 
       if (res.success && res.data) {
+        if (res.data.assistantMessage) {
+          setIsGenerating(false);
+        }
+
         setMessages((prev) => {
           const filtered = prev.filter(m => m.id !== tempUserMsgId);
+          const assistantMessage = res.data.assistantMessage;
+          const recommendation = res.data.recommendation;
+
+          if (assistantMessage) {
+            return [
+              ...filtered,
+              res.data.userMessage,
+              {
+                ...assistantMessage,
+                content: stripActionBlock(assistantMessage.content),
+                metadata: recommendation
+                  ? { ...(assistantMessage.metadata || {}), recommendation }
+                  : assistantMessage.metadata || {},
+              },
+            ];
+          }
+
           return [
             ...filtered,
             res.data.userMessage,
@@ -155,6 +189,7 @@ export function useAICoach(userInfo) {
       }
     } catch (err) {
       console.error("Lỗi khi gửi tin nhắn hoặc tạo cuộc hội thoại:", err);
+      showToast("Thao tác thất bại, vui lòng báo cáo admin.", "error");
       setMessages((prev) => [
         ...prev,
         {
@@ -175,8 +210,10 @@ export function useAICoach(userInfo) {
     if (actionProcessingId) return;
     try {
       setActionProcessingId(recommendationId);
+      const currentRecommendation = messages.find((msg) => msg.metadata?.recommendation?.id === recommendationId)?.metadata?.recommendation;
       const res = await httpRequest.post(`/ai/recommendations/${recommendationId}/execute`);
       if (res.success) {
+        const isTrainingPlanAction = ["generate_training_plan", "update_training_plan"].includes(currentRecommendation?.recommendationType);
         setMessages((prev) =>
           prev.map((msg) => {
             if (msg.metadata?.recommendation?.id === recommendationId) {
@@ -194,10 +231,24 @@ export function useAICoach(userInfo) {
             return msg;
           })
         );
+
+        if (isTrainingPlanAction) {
+          localStorage.setItem("aiCoachPlanUpdatedAt", new Date().toISOString());
+          window.dispatchEvent(new CustomEvent("aiCoach:plan-updated"));
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `plan-applied-${recommendationId}`,
+              role: "assistant",
+              content: "Đã áp dụng lộ trình vào trang Lộ trình & Tracker. Bạn có thể mở lịch tập để kiểm tra từng buổi.",
+              createdAt: new Date(),
+            },
+          ]);
+        }
       }
     } catch (err) {
       console.error("Lỗi khi đồng ý đề xuất:", err);
-      alert(err.response?.data?.message || "Không thể thực hiện đề xuất.");
+      showToast("Thao tác thất bại, vui lòng báo cáo admin.", "error");
     } finally {
       setActionProcessingId(null);
     }
@@ -230,6 +281,7 @@ export function useAICoach(userInfo) {
       }
     } catch (err) {
       console.error("Lỗi khi từ chối đề xuất:", err);
+      showToast("Thao tác thất bại, vui lòng báo cáo admin.", "error");
     } finally {
       setActionProcessingId(null);
     }
@@ -238,9 +290,20 @@ export function useAICoach(userInfo) {
   // Tải danh sách cuộc hội thoại ban đầu khi component mount hoặc userInfo thay đổi
   useEffect(() => {
     if (userInfo?.id) {
-      fetchConversations(true);
+      const timer = setTimeout(() => {
+        fetchConversations(true);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [userInfo?.id]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
 
   // Tải danh sách khi đổi cuộc hội thoại
   useEffect(() => {
@@ -251,9 +314,12 @@ export function useAICoach(userInfo) {
       }
       fetchMessages(activeConversationId);
     } else {
-      setMessages([]);
+      const timer = setTimeout(() => {
+        setMessages([]);
+      }, 0);
+      return () => clearTimeout(timer);
     }
-  }, [activeConversationId]);
+  }, [activeConversationId, fetchMessages]);
 
   // Kết nối Pusher
   useEffect(() => {
@@ -379,7 +445,7 @@ export function useAICoach(userInfo) {
         pusherRef.current.disconnect();
       }
     };
-  }, [userInfo?.id, activeConversationId]);
+  }, [userInfo?.id, activeConversationId, stripActionBlock]);
 
   return {
     conversations,
@@ -390,11 +456,13 @@ export function useAICoach(userInfo) {
     loadingConversations,
     loadingMessages,
     actionProcessingId,
+    toast,
     fetchConversations,
     handleCreateNewConversation,
     handleDeleteConversation,
     handleSendMessage,
     handleExecuteAction,
     handleRejectAction,
+    showToast,
   };
 }

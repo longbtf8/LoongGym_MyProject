@@ -1,5 +1,4 @@
-import React from "react";
-import { Sparkles, Loader2, Check, X } from "lucide-react";
+import { Sparkles, Loader2, Check, X, CalendarDays, Dumbbell } from "lucide-react";
 
 function ActionCard({
   recommendation,
@@ -11,12 +10,16 @@ function ActionCard({
   const { id, recommendationType, title, payload, status } = recommendation;
   const isPending = status === "pending";
   const isApplied = status === "applied";
+  const isTrainingPlanAction = recommendationType === "generate_training_plan" || recommendationType === "update_training_plan";
+  const planDays = Array.isArray(payload?.days) ? payload.days : [];
+  const trainingDays = planDays.filter((day) => day.status !== "rest");
+  const previewDays = planDays.slice(0, 7);
 
   return (
     <div className="mt-4 p-4 rounded-2xl border bg-[var(--bg-secondary)] border-[var(--border-color)] shadow-sm animate-slide-down">
       <div className="flex items-center gap-2 mb-2 text-primary font-bold text-xs sm:text-sm">
         <Sparkles className="w-4.5 h-4.5 text-primary" />
-        <span>GỢI Ý HÀNH ĐỘNG: {title || "Đề xuất thông minh"}</span>
+        <span>ĐỀ XUẤT TỪ AI: {title || "Lịch tập mới"}</span>
       </div>
 
       <div className="text-xs text-[var(--text-color)] font-semibold leading-relaxed mb-4">
@@ -55,6 +58,48 @@ function ActionCard({
             </div>
           </div>
         )}
+        {isTrainingPlanAction && (
+          <div className="flex flex-col gap-3">
+            <span className="text-[var(--text-muted)]">
+              {recommendationType === "generate_training_plan"
+                ? "Thay toàn bộ lịch hiện tại bằng mẫu tuần mới"
+                : "Cập nhật các ngày tập sắp tới"}
+            </span>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-[var(--bg-color)] p-2.5 rounded-xl border border-[var(--border-color)] flex items-center gap-2">
+                <CalendarDays className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span>{payload?.durationWeeks || Math.ceil(planDays.length / 7) || 1} tuần</span>
+              </div>
+              <div className="bg-[var(--bg-color)] p-2.5 rounded-xl border border-[var(--border-color)] flex items-center gap-2">
+                <Dumbbell className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span>{payload?.daysPerWeek || trainingDays.length || 0} buổi/tuần</span>
+              </div>
+            </div>
+
+            <div className="bg-[var(--bg-color)] rounded-xl border border-[var(--border-color)] overflow-hidden">
+              {previewDays.map((day, index) => {
+                const exerciseCount = Array.isArray(day.exercises) ? day.exercises.length : 0;
+                return (
+                  <div key={`${day.date}-${index}`} className="px-3 py-2 border-b last:border-b-0 border-[var(--border-color)] flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <span className="block text-[11px] font-black text-[var(--text-color)] truncate">{day.title || "Buổi tập"}</span>
+                      <span className="block text-[10px] text-[var(--text-muted)]">{day.date || "Chưa chọn ngày"} {day.focusArea ? `• ${day.focusArea}` : ""}</span>
+                    </div>
+                    <span className="shrink-0 text-[10px] font-bold text-primary">
+                      {day.status === "rest" ? "Nghỉ" : `${exerciseCount} bài`}
+                    </span>
+                  </div>
+                );
+              })}
+              {planDays.length > previewDays.length && (
+                <div className="px-3 py-2 text-[10px] text-[var(--text-muted)] font-bold">
+                  Còn {planDays.length - previewDays.length} ngày khác trong mẫu lịch.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-2">
@@ -84,7 +129,7 @@ function ActionCard({
         ) : isApplied ? (
           <div className="w-full py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5">
             <Check className="w-4 h-4" />
-            Đã áp dụng đổi lịch/thông số thành công
+            Đã áp dụng thay đổi thành công
           </div>
         ) : (
           <div className="w-full py-2 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5">

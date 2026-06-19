@@ -31,6 +31,11 @@ const getLocalDateString = (dateInput = new Date()) => {
   return `${year}-${month}-${day}`;
 };
 
+const isSameLocalDate = (dateInput, dateString) => {
+  if (!dateInput || !dateString) return false;
+  return getLocalDateString(dateInput) === dateString;
+};
+
 export default function TodayWorkout() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -65,7 +70,7 @@ export default function TodayWorkout() {
     if (paramDayId) return paramDayId;
     if (!planDays) return null;
 
-    const todayDay = planDays.find((d) => d.scheduledDate.startsWith(todayStr));
+    const todayDay = planDays.find((d) => isSameLocalDate(d.scheduledDate, todayStr));
     const pendingDay = planDays.find((d) => d.status === "pending");
     const targetDay = todayDay || pendingDay || planDays[0];
     return targetDay?.id || null;

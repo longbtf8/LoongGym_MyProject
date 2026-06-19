@@ -185,15 +185,52 @@ const buildRandomExercisesForProgramDay = (programDay, libraryExercises = []) =>
   }));
 };
 
-const getDateOnly = (dateInput) => {
+const getDateParts = (dateInput) => {
+  if (typeof dateInput === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateInput)) {
+    const [year, month, day] = dateInput.split("-").map(Number);
+    return { year, month, day };
+  }
+
   const date = new Date(dateInput);
-  date.setHours(0, 0, 0, 0);
-  return date;
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
+  };
+};
+
+const getUtcDateOnlyFromParts = ({ year, month, day }) => {
+  return new Date(Date.UTC(year, month - 1, day));
+};
+
+const getDateOnly = (dateInput) => {
+  return getUtcDateOnlyFromParts(getDateParts(dateInput));
+};
+
+const getDateKey = (dateInput) => {
+  const date = new Date(dateInput);
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const getWeekStartMonday = (dateInput) => {
+  const { year, month, day: monthDay } = getDateParts(dateInput);
+  const date = new Date(year, month - 1, monthDay);
+  const weekday = date.getDay();
+  const diffToMonday = weekday === 0 ? -6 : 1 - weekday;
+  date.setDate(date.getDate() + diffToMonday);
+  return getUtcDateOnlyFromParts({
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
+  });
 };
 
 const addDays = (dateInput, days) => {
   const date = getDateOnly(dateInput);
-  date.setDate(date.getDate() + days);
+  date.setUTCDate(date.getUTCDate() + days);
   return date;
 };
 
@@ -203,15 +240,49 @@ const diffDays = (startInput, endInput) => {
   return Math.round((end - start) / 86400000);
 };
 
+const getProgramDayByMappingValue = (programDays, mappingValue) => {
+  if (typeof mappingValue === "string") {
+    return programDays.find((day) => day.id === mappingValue) || null;
+  }
+
+  return programDays[mappingValue]
+    || programDays.find((day) => day.cycleDay === mappingValue + 1)
+    || null;
+};
+
+const getEffectiveProgramDayMapping = (programDays = [], dayMappingInput) => {
+  if (!programDays.length) return [];
+
+  const defaultMapping = programDays.map((day, index) => day.id || index);
+  const programDayIds = new Set(programDays.map((day) => day.id).filter(Boolean));
+
+  const isValidIdMapping = Array.isArray(dayMappingInput)
+    && dayMappingInput.length === programDays.length
+    && dayMappingInput.every((item) => typeof item === "string" && programDayIds.has(item))
+    && new Set(dayMappingInput).size === programDays.length;
+
+  if (isValidIdMapping) return [...dayMappingInput];
+
+  const isValidIndexMapping = Array.isArray(dayMappingInput)
+    && dayMappingInput.length === programDays.length
+    && dayMappingInput.every((item) => Number.isInteger(item) && item >= 0 && item < programDays.length)
+    && new Set(dayMappingInput).size === programDays.length;
+
+  if (isValidIndexMapping) {
+    return dayMappingInput.map((item) => programDays[item]?.id || item);
+  }
+
+  return defaultMapping;
+};
+
 const getProgramDayForOffset = (programDays, offset, dayMapping) => {
   if (!programDays.length) return null;
 
   const cycleIndex = ((offset % programDays.length) + programDays.length) % programDays.length;
-  const shouldUseMapping = Array.isArray(dayMapping) && dayMapping.length === programDays.length;
-  const mappedIndex = shouldUseMapping ? dayMapping[cycleIndex] : cycleIndex;
+  const effectiveMapping = getEffectiveProgramDayMapping(programDays, dayMapping);
+  const mappingValue = effectiveMapping[cycleIndex] ?? cycleIndex;
 
-  return programDays.find((day) => day.cycleDay === mappedIndex + 1)
-    || programDays[mappedIndex]
+  return getProgramDayByMappingValue(programDays, mappingValue)
     || programDays[cycleIndex];
 };
 
@@ -301,6 +372,50 @@ const buildCustomPlanDays = ({ startDate, count, startOffset = 0 }) => {
   );
 };
 
+const buildAiCoachPlanDays = ({ startDate, count, startOffset = 0, weekTemplate = [] }) => {
+  const template = Array.isArray(weekTemplate) && weekTemplate.length
+    ? weekTemplate.slice(0, 7)
+    : [];
+
+  if (!template.length) return [];
+
+  return buildPlanDays(
+    count,
+    startDate,
+    (index) => {
+      const offset = startOffset + index;
+      const dayTemplate = template[offset % template.length];
+      return dayTemplate?.title || `Ngày ${offset + 1} - AI Coach`;
+    },
+    (index) => {
+      const offset = startOffset + index;
+      const dayTemplate = template[offset % template.length];
+      return dayTemplate?.status || "pending";
+    },
+    (index) => {
+      const offset = startOffset + index;
+      const templateIndex = offset % template.length;
+      const dayTemplate = template[templateIndex];
+      const customExercises = Array.isArray(dayTemplate?.customExercises)
+        ? dayTemplate.customExercises.map((exercise, exerciseIndex) => ({
+            ...exercise,
+            id: `${exercise.exerciseId}-${offset + 1}-${exerciseIndex + 1}`,
+            exerciseOrder: exerciseIndex + 1,
+          }))
+        : [];
+
+      return {
+        customExercises,
+        customized: true,
+        generatedFrom: "ai-coach-week-template",
+        focusArea: dayTemplate?.focusArea || null,
+        cycleDay: templateIndex + 1,
+        cycleOffset: offset,
+      };
+    }
+  );
+};
+
 const appendUpcomingDaysIfNeeded = async (plan) => {
   const today = getDateOnly(new Date());
   const upcomingDays = plan.days.filter((day) => getDateOnly(day.scheduledDate) >= today);
@@ -332,6 +447,13 @@ const appendUpcomingDaysIfNeeded = async (plan) => {
       startOffset,
       dayMapping: plan.metadata?.dayMapping,
       libraryExercises,
+    });
+  } else if (plan.aiGenerated && Array.isArray(plan.metadata?.weekTemplate) && plan.metadata.weekTemplate.length) {
+    daysToCreate = buildAiCoachPlanDays({
+      startDate: nextStartDate,
+      count: PLAN_GENERATION_WINDOW_DAYS,
+      startOffset,
+      weekTemplate: plan.metadata.weekTemplate,
     });
   } else {
     daysToCreate = buildCustomPlanDays({
@@ -370,11 +492,10 @@ const startProgramPlan = async (userId, programId, startDateInput, dayMappingInp
     throw new AppError("Không tìm thấy giáo án để bắt đầu lộ trình.", httpCodes.notFound);
   }
 
-  const dayMapping = Array.isArray(dayMappingInput) && dayMappingInput.length === program.days.length
-    ? dayMappingInput
-    : null;
+  const dayMapping = getEffectiveProgramDayMapping(program.days, dayMappingInput);
   const libraryExercises = await getExerciseLibrary();
-  const startDate = getDateOnly(startDateInput ? new Date(startDateInput) : new Date());
+  const requestedStartDate = getDateOnly(startDateInput || new Date());
+  const startDate = getWeekStartMonday(requestedStartDate);
   const days = buildProgramPlanDays({
     program,
     startDate,
@@ -401,6 +522,8 @@ const startProgramPlan = async (userId, programId, startDateInput, dayMappingInp
           difficulty: program.difficulty,
           dayMapping,
           cycleLength: program.days.length,
+          requestedStartDate: getDateKey(requestedStartDate),
+          weekStartsOn: "monday",
           generatedWindowDays: PLAN_GENERATION_WINDOW_DAYS,
         },
         days: {
@@ -458,6 +581,8 @@ module.exports = {
   startProgramPlan,
   startCustomPlan,
   getDateOnly,
+  getWeekStartMonday,
   diffDays,
+  getEffectiveProgramDayMapping,
   getProgramDayForOffset,
 };

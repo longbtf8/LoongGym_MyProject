@@ -1,10 +1,215 @@
 const { prisma } = require("@/lib/prisma");
 const pusher = require("@/lib/pusher");
-const { getSystemPrompt, buildUserContext } = require("@/utils/aiPrompt");
+const {
+  getSystemPrompt,
+  buildUserContext,
+  buildTrainingPlanContext,
+  buildExerciseCatalogContext,
+} = require("@/utils/aiPrompt");
 const AppError = require("@/utils/AppError");
 const { httpCodes } = require("@/config/constants");
 const { streamResponse } = require("@/utils/ai/ai-stream.helper");
 const { execute, reject } = require("@/utils/ai/ai-recommendation.helper");
+const { normalizeWeeklyPlanPayload } = require("@/utils/ai/ai-plan-payload.helper");
+
+const normalizeText = (value = "") => {
+  return value
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+};
+
+const isConsentMessage = (content = "") => {
+  const normalized = normalizeText(content);
+  return [
+    "dong y",
+    "ok",
+    "oke",
+    "san sang",
+    "ap dung",
+    "tao cho toi",
+    "tao lich",
+    "chot",
+  ].some((keyword) => normalized === keyword || normalized.includes(keyword));
+};
+
+const parseExercisePrescription = (text = "") => {
+  const setsMatch = text.match(/(\d+)\s*sets?/i);
+  const repsMatch = text.match(/(\d+)\s*[-–]\s*(\d+)\s*reps?/i)
+    || text.match(/x\s*(\d+)\s*[-–]\s*(\d+)/i);
+  const singleRepMatch = text.match(/(\d+)\s*reps?/i);
+  const restMatch = text.match(/(\d+)\s*(?:giây|giay|sec|seconds?)\s*nghỉ?/i);
+
+  return {
+    sets: setsMatch ? Number(setsMatch[1]) : 3,
+    repsMin: repsMatch ? Number(repsMatch[1]) : singleRepMatch ? Number(singleRepMatch[1]) : 8,
+    repsMax: repsMatch ? Number(repsMatch[2]) : singleRepMatch ? Number(singleRepMatch[1]) : 12,
+    weightKg: 0,
+    restSeconds: restMatch ? Number(restMatch[1]) : 90,
+    tempo: "2-0-1-0",
+    note: "Bài tập được AI Coach trích từ lịch đã đề xuất",
+  };
+};
+
+const buildExerciseLookup = (dbExercises = []) => {
+  const bySlug = new Map();
+  const byName = new Map();
+
+  dbExercises.forEach((exercise) => {
+    bySlug.set(exercise.slug, exercise);
+    byName.set(normalizeText(exercise.name), exercise);
+  });
+
+  return { bySlug, byName };
+};
+
+const findExerciseFromLine = (line = "", lookup) => {
+  const markdownMatch = line.match(/\[([^\]]+)\]\((?:https?:\/\/[^/)\s]+)?\/exercises\/([^)#\s]+)(#[^)]+)?\)/i);
+  if (markdownMatch) {
+    return lookup.bySlug.get(markdownMatch[2]);
+  }
+
+  const nameMatch = line.match(/^[-*]?\s*([^:]+):/);
+  if (!nameMatch) return null;
+
+  const rawName = nameMatch[1].replace(/^\d+\.\s*/, "").trim();
+  const normalizedName = normalizeText(rawName);
+
+  if (lookup.byName.has(normalizedName)) {
+    return lookup.byName.get(normalizedName);
+  }
+
+  return [...lookup.byName.entries()].find(([name]) => {
+    return name === normalizedName || name.includes(normalizedName) || normalizedName.includes(name);
+  })?.[1] || null;
+};
+
+const buildPlanPayloadFromAssistantText = (assistantText = "", dbExercises = []) => {
+  if (!assistantText || !/ngày\s*1/i.test(assistantText)) return null;
+
+  const lookup = buildExerciseLookup(dbExercises);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const days = [];
+  let currentDay = null;
+
+  assistantText.split("\n").forEach((rawLine) => {
+    const line = rawLine
+      .replace(/\*\*/g, "")
+      .replace(/^#+\s*/, "")
+      .trim();
+    if (!line) return;
+
+    const dayMatch = line.match(/^Ngày\s*(\d+)\s*[:.-]\s*(.+)$/i);
+    if (dayMatch) {
+      const dayNumber = Number(dayMatch[1]);
+      const date = new Date(today);
+      date.setDate(today.getDate() + dayNumber - 1);
+
+      currentDay = {
+        date: date.toISOString().slice(0, 10),
+        title: dayMatch[2].trim(),
+        focusArea: dayMatch[2].trim(),
+        status: /nghỉ|nghi|rest|mobility|phục hồi|phuc hoi/i.test(dayMatch[2]) ? "rest" : "pending",
+        notes: "",
+        exercises: [],
+      };
+      days[dayNumber - 1] = currentDay;
+      return;
+    }
+
+    if (!currentDay || currentDay.status === "rest") return;
+
+    const exercise = findExerciseFromLine(line, lookup);
+    if (!exercise || currentDay.exercises.some((item) => item.exerciseId === exercise.id)) return;
+
+    currentDay.exercises.push({
+      exerciseId: exercise.id,
+      ...parseExercisePrescription(line),
+    });
+  });
+
+  const weekDays = Array.from({ length: 7 }, (_, index) => {
+    if (days[index]) return days[index];
+
+    const date = new Date(today);
+    date.setDate(today.getDate() + index);
+    return {
+      date: date.toISOString().slice(0, 10),
+      title: "Nghỉ phục hồi",
+      focusArea: "Phục hồi",
+      status: "rest",
+      notes: "Ngày nghỉ để phục hồi.",
+      exercises: [],
+    };
+  });
+
+  const trainingDays = weekDays.filter((day) => day.status !== "rest" && day.exercises.length > 0);
+  if (!trainingDays.length) return null;
+
+  return normalizeWeeklyPlanPayload({
+    title: "Lịch tập AI Coach",
+    startDate: weekDays[0].date,
+    durationWeeks: 8,
+    daysPerWeek: trainingDays.length,
+    goal: "Cải thiện nhóm cơ theo yêu cầu",
+    focusAreas: [...new Set(trainingDays.map((day) => day.focusArea).filter(Boolean))].slice(0, 6),
+    notes: "Mẫu tuần được tạo từ lịch AI đã đề xuất trong cuộc trò chuyện.",
+    days: weekDays,
+  });
+};
+
+const createRecommendationFromPreviousPlan = async ({ userId, conversationId, assistantMessageId, history, dbExercises }) => {
+  const previousAssistant = [...history].reverse().find((message) => {
+    return message.role === "assistant" && /ngày\s*1/i.test(message.content || "");
+  });
+
+  const payload = buildPlanPayloadFromAssistantText(previousAssistant?.content, dbExercises);
+  if (!payload) return null;
+
+  const recommendation = await prisma.aiRecommendation.create({
+    data: {
+      userId,
+      conversationId,
+      recommendationType: "generate_training_plan",
+      title: payload.title,
+      payload,
+      status: "pending",
+    },
+  });
+
+  const content = "Mình đã chuẩn bị lịch tập mới từ mẫu tuần ở trên. Nếu ổn, bấm Đồng ý để thay toàn bộ lịch hiện tại.";
+  const savedAssistantMsg = await prisma.aiMessage.create({
+    data: {
+      id: assistantMessageId,
+      conversationId,
+      role: "assistant",
+      content,
+      metadata: { recommendationId: recommendation.id },
+    },
+  });
+
+  await prisma.aiConversation.update({
+    where: { id: conversationId },
+    data: { updatedAt: new Date() },
+  });
+
+  await pusher.trigger(`private-ai.${userId}`, "ai.done", {
+    conversationId,
+    messageId: savedAssistantMsg.id,
+    content,
+    recommendation,
+  });
+
+  return {
+    recommendation,
+    assistantMessage: savedAssistantMsg,
+  };
+};
 
 // Tạo phòng hội thoại mới cho user trong database
 const createConversation = async (userId, contextType, title) => {
@@ -50,9 +255,40 @@ const getConversationMessages = async (userId, conversationId) => {
     throw new AppError("Không tìm thấy cuộc hội thoại.", httpCodes.notFound);
   }
 
-  return prisma.aiMessage.findMany({
+  const messages = await prisma.aiMessage.findMany({
     where: { conversationId },
     orderBy: { createdAt: "asc" },
+  });
+
+  const recommendationIds = messages
+    .map((message) => message.metadata?.recommendationId)
+    .filter(Boolean);
+
+  if (!recommendationIds.length) {
+    return messages;
+  }
+
+  const recommendations = await prisma.aiRecommendation.findMany({
+    where: {
+      id: { in: recommendationIds },
+      userId,
+    },
+  });
+  const recommendationById = new Map(recommendations.map((item) => [item.id, item]));
+
+  return messages.map((message) => {
+    const recommendationId = message.metadata?.recommendationId;
+    const recommendation = recommendationById.get(recommendationId);
+
+    if (!recommendation) return message;
+
+    return {
+      ...message,
+      metadata: {
+        ...(message.metadata || {}),
+        recommendation,
+      },
+    };
   });
 };
 
@@ -106,7 +342,12 @@ const createMessageAndStream = async (userId, conversationId, content) => {
   });
 
   // 2. Tải thông tin ngữ cảnh người dùng song song để tối ưu tốc độ
-  const [profile, recentRecovery, activeInjuries, dbExercises] = await Promise.all([
+  const todayDate = new Date();
+  todayDate.setHours(0, 0, 0, 0);
+  const planningWindowEnd = new Date(todayDate);
+  planningWindowEnd.setDate(planningWindowEnd.getDate() + 42);
+
+  const [profile, recentRecovery, activeInjuries, dbExercises, activePlan, upcomingPlanDays] = await Promise.all([
     prisma.userProfile.findUnique({ where: { userId } }),
     prisma.recoveryLog.findFirst({
       where: { userId },
@@ -116,10 +357,59 @@ const createMessageAndStream = async (userId, conversationId, content) => {
       where: { userId, status: "active" },
     }),
     prisma.exercise.findMany({
+      where: { isPublished: true },
       select: {
+        id: true,
         name: true,
         slug: true,
+        difficulty: true,
+        exerciseType: true,
+        primaryEquipment: {
+          select: {
+            name: true,
+            slug: true,
+          },
+        },
+        muscles: {
+          select: {
+            role: true,
+            muscleGroup: {
+              select: {
+                name: true,
+                slug: true,
+              },
+            },
+          },
+        },
+        tags: {
+          select: {
+            tag: true,
+          },
+        },
       },
+      orderBy: { name: "asc" },
+      take: 160,
+    }),
+    prisma.userTrainingPlan.findFirst({
+      where: {
+        userId,
+        status: "active",
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.userTrainingPlanDay.findMany({
+      where: {
+        plan: {
+          userId,
+          status: "active",
+        },
+        scheduledDate: {
+          gte: todayDate,
+          lte: planningWindowEnd,
+        },
+      },
+      orderBy: { scheduledDate: "asc" },
+      take: 42,
     }),
   ]);
 
@@ -167,15 +457,21 @@ const createMessageAndStream = async (userId, conversationId, content) => {
     recentRecovery,
     activeInjuries,
   });
+  const trainingPlanContext = buildTrainingPlanContext({
+    activePlan,
+    upcomingPlanDays,
+  });
+  const exerciseCatalogContext = buildExerciseCatalogContext(dbExercises);
 
-  const finalSystemPrompt = `${systemPrompt}\n\n${userContext}\n\n${ragContext}\n\n${exercisesContext}`;
+  const finalSystemPrompt = `${systemPrompt}\n\n${userContext}\n\n${trainingPlanContext}\n\n${ragContext}\n\n${exercisesContext}\n\n${exerciseCatalogContext}`;
 
   // 5. Lấy tối đa 20 tin nhắn lịch sử để giữ ngữ cảnh hội thoại liên tục
-  const history = await prisma.aiMessage.findMany({
+  const historyDesc = await prisma.aiMessage.findMany({
     where: { conversationId },
-    orderBy: { createdAt: "asc" },
+    orderBy: { createdAt: "desc" },
     take: 20,
   });
+  const history = historyDesc.reverse();
 
   // Tự động cập nhật tiêu đề cuộc trò chuyện nếu đây là tin nhắn đầu tiên hoặc tiêu đề mặc định
   const isFirstMessage = history.length === 0;
@@ -201,19 +497,45 @@ const createMessageAndStream = async (userId, conversationId, content) => {
     createdAt: new Date(),
   };
 
+  const fallbackRecommendation = isConsentMessage(content)
+    ? await createRecommendationFromPreviousPlan({
+        userId,
+        conversationId,
+        assistantMessageId: assistantMessagePlaceholder.id,
+        history,
+        dbExercises,
+      })
+    : null;
+
+  if (fallbackRecommendation) {
+    return {
+      userMessage,
+      assistantMessageId: assistantMessagePlaceholder.id,
+      assistantMessage: fallbackRecommendation.assistantMessage,
+      recommendation: fallbackRecommendation.recommendation,
+      streamed: false,
+      status: "processing",
+    };
+  }
+
   // Kích hoạt xử lý stream chạy nền thông qua helper đã phân tách
   streamResponse(
     userId,
     conversationId,
     formattedMessages,
     finalSystemPrompt,
-    assistantMessagePlaceholder.id
+    assistantMessagePlaceholder.id,
+    dbExercises.map((exercise) => ({
+      name: exercise.name,
+      slug: exercise.slug,
+    }))
   );
 
   // Trả về thông tin tin nhắn user và ID phản hồi AI ngay lập tức
   return {
     userMessage,
     assistantMessageId: assistantMessagePlaceholder.id,
+    streamed: true,
     status: "processing",
   };
 };

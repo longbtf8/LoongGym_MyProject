@@ -1404,7 +1404,8 @@ const programsConfig = [
         ]
       },
       { cycleDay: 5, title: "Nghỉ ngơi hoàn toàn", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null },
-      { cycleDay: 6, title: "Nghỉ ngơi hoàn toàn", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null }
+      { cycleDay: 6, title: "Nghỉ ngơi hoàn toàn", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null },
+      { cycleDay: 7, title: "Nghỉ ngơi hoàn toàn", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null }
     ]
   },
   {

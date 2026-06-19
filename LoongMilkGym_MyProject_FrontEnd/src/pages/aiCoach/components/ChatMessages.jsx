@@ -1,7 +1,54 @@
-import React from "react";
 import { Loader2, Bot, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import ActionCard from "./ActionCard";
+
+const enhanceMarkdownContent = (content = "") => {
+  const importantLinePattern = /^(Ngày\s+\d+|Tuần\s+\d+|Mục tiêu|Tần suất|Lịch tập|Lịch Tập|Mẫu tuần|Lưu ý|Thời gian nghỉ|Chế độ dinh dưỡng)/iu;
+
+  return content
+    .split("\n")
+    .map((line) => {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#") || trimmed.startsWith("**")) return line;
+      if (!importantLinePattern.test(trimmed)) return line;
+
+      return line.replace(trimmed, `**${trimmed}**`);
+    })
+    .join("  \n");
+};
+
+const markdownComponents = {
+  a: ({ href, children }) => (
+    <a
+      href={href}
+      className="text-sky-400 dark:text-sky-300 font-black underline underline-offset-4 decoration-sky-400/50 hover:text-sky-300 hover:decoration-sky-300 transition-colors"
+    >
+      {children}
+    </a>
+  ),
+  strong: ({ children }) => {
+    const text = Array.isArray(children) ? children.join("") : String(children || "");
+    const isImportantLine = /^(Ngày\s+\d+|Tuần\s+\d+|Mục tiêu|Tần suất|Lịch tập|Lịch Tập|Mẫu tuần|Lưu ý|Thời gian nghỉ|Chế độ dinh dưỡng)/iu.test(text.trim());
+
+    return (
+      <strong className={isImportantLine ? "text-amber-300 font-black" : "text-[var(--text-color)] font-black"}>
+        {children}
+      </strong>
+    );
+  },
+  h1: ({ children }) => (
+    <h1 className="text-base sm:text-lg font-black text-amber-300 mt-2 mb-2">{children}</h1>
+  ),
+  h2: ({ children }) => (
+    <h2 className="text-sm sm:text-base font-black text-amber-300 mt-2 mb-2">{children}</h2>
+  ),
+  h3: ({ children }) => (
+    <h3 className="text-sm font-black text-amber-300 mt-2 mb-1.5">{children}</h3>
+  ),
+  li: ({ children }) => (
+    <li className="my-1 pl-1">{children}</li>
+  ),
+};
 
 function ChatMessages({
   messages,
@@ -9,7 +56,6 @@ function ChatMessages({
   isGenerating,
   userName,
   userInitial,
-  activeConversationId,
   QUICK_ACTIONS,
   handleSendMessage,
   actionProcessingId,
@@ -96,8 +142,8 @@ function ChatMessages({
                 }
               `}>
                 <div className="prose dark:prose-invert max-w-none text-xs sm:text-sm font-medium font-sans">
-                  <ReactMarkdown>
-                    {msg.content}
+                  <ReactMarkdown components={markdownComponents}>
+                    {enhanceMarkdownContent(msg.content)}
                   </ReactMarkdown>
                 </div>
 

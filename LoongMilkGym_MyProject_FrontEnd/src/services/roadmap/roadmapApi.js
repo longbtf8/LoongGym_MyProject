@@ -1,5 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "../baseQuery";
+import { dashboardApi } from "../dashboard/dashboardApi";
 
 export const roadmapApi = createApi({
   reducerPath: "roadmapApi",
@@ -44,6 +45,12 @@ export const roadmapApi = createApi({
         data,
       }),
       invalidatesTags: ["Roadmap", "RoadmapStats", "DayDetails"],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
+        } catch {}
+      }
     }),
     startCustomPlan: builder.mutation({
       query: (data) => ({
@@ -52,6 +59,12 @@ export const roadmapApi = createApi({
         data,
       }),
       invalidatesTags: ["Roadmap", "RoadmapStats", "DayDetails"],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
+        } catch {}
+      }
     }),
     cancelActivePlan: builder.mutation({
       query: () => ({
@@ -59,6 +72,12 @@ export const roadmapApi = createApi({
         method: "POST",
       }),
       invalidatesTags: ["Roadmap", "RoadmapStats", "DayDetails"],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
+        } catch {}
+      }
     }),
     getDayDetails: builder.query({
       query: (dayId) => ({
@@ -74,6 +93,12 @@ export const roadmapApi = createApi({
         data,
       }),
       invalidatesTags: (result, error, { dayId }) => ["Roadmap", { type: "DayDetails", id: dayId }],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
+        } catch {}
+      }
     }),
     completeDay: builder.mutation({
       query: ({ dayId, notes }) => ({
@@ -82,6 +107,12 @@ export const roadmapApi = createApi({
         data: { notes },
       }),
       invalidatesTags: (result, error, { dayId }) => ["Roadmap", "RoadmapStats", { type: "DayDetails", id: dayId }],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
+        } catch {}
+      }
     }),
     startTrainingPlan: builder.mutation({
       query: (data) => ({
@@ -121,6 +152,12 @@ export const roadmapApi = createApi({
         data: { dayId1, dayId2 },
       }),
       invalidatesTags: ["Roadmap", "DayDetails"],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
+        } catch {}
+      }
     }),
   }),
 });
