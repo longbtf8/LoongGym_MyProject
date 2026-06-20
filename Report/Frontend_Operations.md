@@ -168,3 +168,30 @@ Trang Phục hồi `/recovery` được xây dựng như một bảng điều kh
     -   **Giải Thích Thuật Ngữ (Glossary Tooltips)**: Tích hợp icon `ⓘ` bên cạnh mỗi chỉ số sức khỏe, khi bấm sẽ mở bảng giải thích cặn kẽ y khoa (Cortisol, CNS Fatigue, DOMS, HRV, RHR) trực tiếp trên trang.
     -   **Căn Chỉnh Hoàn Hảo (Layout Fix)**: Khóa khung chứa SVG của điểm số phục hồi ở cả Dashboard và Recovery page với kích cỡ cố định `w-36 h-36` / `w-28 h-28` kết hợp `mx-auto` và định vị tuyệt đối `absolute` để đảm bảo văn bản hiển thị luôn nằm chính xác ở tâm đường viền tròn.
 
+---
+
+## 🔐 11. Cơ Chế Giữ Phiên Đăng Nhập Sau Khi Access Token Hết Hạn
+
+Frontend sử dụng `src/services/api.js` làm điểm trung tâm cho mọi HTTP request thông qua Axios. File này chịu trách nhiệm gắn `Authorization: Bearer <access_token>`, gắn `x-session-id`, tự động gọi refresh token khi API trả về `401`, rồi thử lại request ban đầu bằng access token mới.
+
+### Nguyên nhân lỗi tự văng sau khoảng 1 tiếng:
+
+*   Backend cấu hình access token hết hạn sau `1h`, nên sau đúng khoảng thời gian này mọi request cần xác thực sẽ nhận `401` nếu chưa kịp làm mới token.
+*   Refresh token của hệ thống được xoay vòng: khi refresh thành công, backend xóa refresh token cũ và cấp refresh token mới.
+*   Nếu cùng một tài khoản mở nhiều tab hoặc nhiều request đồng thời gặp `401`, có thể xảy ra đua tranh:
+    -   Request đầu tiên refresh thành công và ghi token mới vào `localStorage`.
+    -   Request khác vẫn dùng refresh token cũ nên refresh thất bại.
+    -   Trước khi sửa, frontend sẽ xóa cả access token và refresh token khi gặp refresh thất bại, khiến người dùng bị đưa về trạng thái đăng xuất.
+
+### Cách xử lý đã bổ sung:
+
+*   Thêm hàm `waitForTokenChange(staleRefreshToken)` để chờ trong thời gian ngắn xem token trong `localStorage` có vừa được tab/request khác cập nhật hay không.
+*   Thêm hàm `retryWithLatestAccessToken(original)` để gắn access token mới nhất vào request ban đầu và gọi lại API.
+*   Khi refresh thất bại, frontend không xóa token ngay. Hệ thống kiểm tra khả năng đã có token mới từ tab/request khác; nếu có thì tiếp tục phiên đăng nhập bình thường.
+*   Chỉ khi không có token mới hợp lệ, frontend mới xóa token và buộc người dùng đăng nhập lại.
+
+### Kết quả mong đợi:
+
+*   Giảm hiện tượng một số tài khoản bị văng sau đúng 1 tiếng khi tài khoản đó mở nhiều tab hoặc có nhiều API chạy đồng thời.
+*   Giữ nguyên cơ chế bảo mật refresh token xoay vòng ở backend.
+*   Không ảnh hưởng đến các endpoint xác thực như đăng nhập, đăng ký, quên mật khẩu, xác thực email và refresh token.

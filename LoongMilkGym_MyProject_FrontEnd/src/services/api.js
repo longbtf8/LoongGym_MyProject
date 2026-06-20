@@ -48,6 +48,71 @@ httpRequest.interceptors.request.use((config) => {
 let isRefreshing = false;
 let queueJobs = [];
 
+const waitForTokenChange = (staleRefreshToken, timeoutMs = 5000) => {
+  return new Promise((resolve) => {
+    const startedAt = Date.now();
+
+    const hasFreshToken = () => {
+      const currentRefreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+      const currentAccessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      return Boolean(currentAccessToken && currentRefreshToken && currentRefreshToken !== staleRefreshToken);
+    };
+
+    if (hasFreshToken()) {
+      resolve(true);
+      return;
+    }
+
+    const cleanup = () => {
+      window.removeEventListener("storage", handleStorage);
+      clearInterval(intervalId);
+      clearTimeout(timeoutId);
+    };
+
+    const finish = (value) => {
+      cleanup();
+      resolve(value);
+    };
+
+    const check = () => {
+      if (hasFreshToken()) {
+        finish(true);
+      } else if (Date.now() - startedAt >= timeoutMs) {
+        finish(false);
+      }
+    };
+
+    const handleStorage = (event) => {
+      if (
+        event.key === STORAGE_KEYS.ACCESS_TOKEN ||
+        event.key === STORAGE_KEYS.REFRESH_TOKEN
+      ) {
+        check();
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    const intervalId = setInterval(check, 150);
+    const timeoutId = setTimeout(() => finish(false), timeoutMs);
+  });
+};
+
+const retryWithLatestAccessToken = async (original) => {
+  const newAccessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+  if (!newAccessToken) {
+    throw new Error("Không tìm thấy access token mới");
+  }
+
+  if (original.headers?.set) {
+    original.headers.set("Authorization", `Bearer ${newAccessToken}`);
+  } else {
+    original.headers = original.headers || {};
+    original.headers.Authorization = `Bearer ${newAccessToken}`;
+  }
+
+  return httpRequest(original);
+};
+
 const sendRefreshToken = async (refreshToken) => {
   isRefreshing = true;
   const response = await axios.post(
@@ -93,17 +158,17 @@ httpRequest.interceptors.response.use(
         }
 
         // Cập nhật token mới vào header của request đang bị lỗi trước khi thử lại
-        const newAccessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-        if (original.headers.set) {
-          original.headers.set("Authorization", `Bearer ${newAccessToken}`);
-        } else {
-          original.headers.Authorization = `Bearer ${newAccessToken}`;
-        }
-
-        return await httpRequest(original);
+        return await retryWithLatestAccessToken(original);
       } catch (refreshError) {
         queueJobs.forEach((job) => job.reject(refreshError));
         queueJobs = [];
+
+        const recoveredFromAnotherTab = await waitForTokenChange(refreshToken);
+        if (recoveredFromAnotherTab) {
+          const retryResult = await retryWithLatestAccessToken(original);
+          return retryResult;
+        }
+
         // Refresh thất bại → xóa token cũ, buộc đăng nhập lại
         localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);

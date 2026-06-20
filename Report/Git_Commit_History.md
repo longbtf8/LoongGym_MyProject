@@ -118,6 +118,13 @@ Dưới đây là phân tích chi tiết ý nghĩa và vai trò của các commi
     - **Sửa lỗi CSS**: Căn chỉnh tuyệt đối vòng tròn điểm số phục hồi ở Dashboard và trang Recovery để căn giữa hoàn hảo.
 *   **Ý nghĩa**: Bổ sung phân hệ theo dõi sức khỏe và phục hồi toàn diện, tạo trải nghiệm tương tác trực quan cao cấp, ngăn chặn tối đa dữ liệu ảo và nâng tầm thẩm mỹ chuyên nghiệp cho toàn bộ hệ thống.
 
+### 21. `fix: stabilize auth refresh flow and document one-hour logout issue`
+*   **Hành động**:
+    - **Frontend**: Bổ sung cơ chế phục hồi trong `src/services/api.js` khi refresh token thất bại do nhiều tab hoặc nhiều request đồng thời. Frontend sẽ kiểm tra token mới trong `localStorage` trước khi xóa phiên đăng nhập.
+    - **Report**: Cập nhật `Frontend_Operations.md` và `Backend_Operations.md` để mô tả chính xác vòng đời access token `1h`, refresh token xoay vòng và cách frontend xử lý đua tranh refresh.
+    - **Báo cáo mới**: Thêm `Auth_Session_Stability_Report.md` ghi rõ triệu chứng, nguyên nhân, bằng chứng từ mã nguồn, thay đổi đã thực hiện, cách kiểm tra thủ công và lưu ý vận hành.
+*   **Ý nghĩa**: Khắc phục hiện tượng một số tài khoản bị văng sau khoảng 1 tiếng trong các tình huống nhiều tab/request, đồng thời chuẩn hóa tài liệu tiếng Việt để dễ bảo trì về sau.
+
 ---
 
 ## 🛠️ 2. Nguyên Tắc Cập Nhật Commit Chuẩn Mực
