@@ -5,6 +5,8 @@ import { roadmapApi } from "@/services/roadmap/roadmapApi";
 import { workoutSessionApi } from "@/services/workoutSession/workoutSessionApi";
 import { nutritionApi } from "@/services/nutrition/nutritionApi";
 import { recoveryApi } from "@/services/recovery/recoveryApi";
+import { storeApi } from "@/services/store/storeApi";
+import { communityApi } from "@/services/community/communityApi";
 import { configureStore } from "@reduxjs/toolkit";
 
 export const store = configureStore({
@@ -16,6 +18,8 @@ export const store = configureStore({
     [workoutSessionApi.reducerPath]: workoutSessionApi.reducer,
     [nutritionApi.reducerPath]: nutritionApi.reducer,
     [recoveryApi.reducerPath]: recoveryApi.reducer,
+    [storeApi.reducerPath]: storeApi.reducer,
+    [communityApi.reducerPath]: communityApi.reducer,
   },
   middleware: (getDefaultMiddleware) => [
     ...getDefaultMiddleware(),
@@ -26,5 +30,8 @@ export const store = configureStore({
     workoutSessionApi.middleware,
     nutritionApi.middleware,
     recoveryApi.middleware,
+    storeApi.middleware,
+    communityApi.middleware,
   ],
 });
+

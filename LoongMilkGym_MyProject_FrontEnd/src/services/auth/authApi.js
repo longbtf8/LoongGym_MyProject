@@ -7,7 +7,7 @@ export const authApi = createApi({
   baseQuery: axiosBaseQuery({
     baseUrl: import.meta.env.VITE_API_BASE_URL,
   }),
-  tagTypes: ["User", "Devices"],
+  tagTypes: ["User", "Devices", "UserProfile"],
 
   endpoints: (builder) => ({
     getUserInfo: builder.query({
@@ -111,6 +111,37 @@ export const authApi = createApi({
       }),
       invalidatesTags: ["User"],
     }),
+    uploadCover: builder.mutation({
+      query: (formData) => ({
+        url: "/users/me/upload-cover",
+        method: "POST",
+        data: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }),
+      invalidatesTags: ["User"],
+    }),
+    getUserProfileById: builder.query({
+      query: (id) => ({
+        url: `/users/${id}`,
+      }),
+      providesTags: (result, error, id) => [{ type: "UserProfile", id }],
+    }),
+    followUser: builder.mutation({
+      query: (id) => ({
+        url: `/community/users/${id}/follow`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, id) => [{ type: "UserProfile", id }, "User"],
+    }),
+    unfollowUser: builder.mutation({
+      query: (id) => ({
+        url: `/community/users/${id}/unfollow`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, id) => [{ type: "UserProfile", id }, "User"],
+    }),
   }),
 });
 
@@ -128,5 +159,9 @@ export const {
   useRevokeDeviceMutation,
   useUpdateProfileMutation,
   useUploadAvatarMutation,
+  useUploadCoverMutation,
+  useGetUserProfileByIdQuery,
+  useFollowUserMutation,
+  useUnfollowUserMutation,
 } = authApi;
 

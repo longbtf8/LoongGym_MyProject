@@ -20,6 +20,10 @@ const TodayWorkout = lazy(() => import("@/pages/todayWorkout/index.jsx"));
 const Nutrition = lazy(() => import("@/pages/nutrition/index.jsx"));
 const Recovery = lazy(() => import("@/pages/recovery/index.jsx"));
 const AICoach = lazy(() => import("@/pages/aiCoach/index.jsx"));
+const Store = lazy(() => import("@/pages/store/index.jsx"));
+const StoreDetail = lazy(() => import("@/pages/store/detail/index.jsx"));
+const Cart = lazy(() => import("@/pages/cart/index.jsx"));
+const Community = lazy(() => import("@/pages/community/index.jsx"));
 
 // Layouts
 import DefaultLayout from "@/layouts/DefaultLayout";
@@ -46,12 +50,17 @@ const publicRoutes = [
 // Private Routes (Bắt buộc phải đăng nhập, tự động bảo vệ bởi AuthGuard)
 const privateRoutes = [
   { path: paths.profile, component: Profile, layout: DefaultLayout, guard: AuthGuard },
+  { path: paths.otherProfile, component: Profile, layout: DefaultLayout, guard: AuthGuard },
   { path: paths.dashboard, component: Dashboard, layout: DefaultLayout, guard: AuthGuard },
   { path: paths.myPlan, component: MyPlan, layout: DefaultLayout, guard: AuthGuard },
   { path: paths.todayWorkout, component: TodayWorkout, layout: DefaultLayout, guard: AuthGuard },
   { path: paths.nutrition, component: Nutrition, layout: DefaultLayout, guard: AuthGuard },
   { path: paths.recovery, component: Recovery, layout: DefaultLayout, guard: AuthGuard },
   { path: paths.aiCoach, component: AICoach, layout: DefaultLayout, guard: AuthGuard },
+  { path: paths.store, component: Store, layout: DefaultLayout, guard: AuthGuard },
+  { path: paths.storeDetail, component: StoreDetail, layout: DefaultLayout, guard: AuthGuard },
+  { path: paths.cart, component: Cart, layout: DefaultLayout, guard: AuthGuard },
+  { path: paths.community, component: Community, layout: DefaultLayout, guard: AuthGuard },
 ];
 
 export { publicRoutes, privateRoutes };
