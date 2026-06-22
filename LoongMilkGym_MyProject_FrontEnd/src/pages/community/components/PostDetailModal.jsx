@@ -6,6 +6,7 @@ import {
   useAddCommentMutation,
 } from "@/services/community/communityApi";
 import { DEFAULT_AVATAR_URL, REACTION_EMOJIS } from "../constants/community.constants";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { capitalizeName, formatTime } from "../utils/communityFormat";
 import PostContent from "./PostContent";
 import PostMediaGrid from "./PostMediaGrid";
@@ -22,6 +23,7 @@ export default function PostDetailModal({
   initialScrollToCommentId,
   initialAutoReplyComment,
 }) {
+  const { requireAuth } = useRequireAuth();
   const { data: response, isLoading } = useGetPostByIdQuery(postId, {
     skip: !postId,
     refetchOnMountOrArgChange: true,
@@ -41,6 +43,7 @@ export default function PostDetailModal({
 
   const handleLikeClick = (e) => {
     e?.stopPropagation();
+    if (!requireAuth()) return;
     const now = Date.now();
     if (now - lastClickTimeRef.current < 400) return;
     lastClickTimeRef.current = now;
@@ -52,6 +55,7 @@ export default function PostDetailModal({
   };
 
   const handleCommentButtonClick = () => {
+    if (!requireAuth()) return;
     const inputEl = document.getElementById(`comment-input-${post?.id}`);
     if (inputEl) {
       inputEl.focus();
@@ -241,7 +245,9 @@ export default function PostDetailModal({
                       {showReactions && (
                         <ReactionsPicker
                           onSelect={(type) => {
-                            onRespectClick(post, type);
+                            if (requireAuth()) {
+                              onRespectClick(post, type);
+                            }
                             setShowReactions(false);
                           }}
                           onClose={() => setShowReactions(false)}
