@@ -133,6 +133,7 @@ export default function useCommunityFeed() {
       await deletePost(postToDelete).unwrap();
     } catch (err) {
       console.error("Lỗi xóa bài đăng:", err);
+      throw err;
     } finally {
       setPostToDelete(null);
     }

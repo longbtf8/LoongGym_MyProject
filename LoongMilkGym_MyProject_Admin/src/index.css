@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #ccff00; /* Neon yellow-lime */
+  --color-primary-hover: #b5e600;
+  --color-primary-active: #9ec800;
+}
+
+:root, [data-theme="light"] {
+  --bg-color: #f8fafc;
+  --bg-secondary: #ffffff;
+  --text-color: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --input-bg: #f1f5f9;
+  --input-focus-border: #b5e600;
+  --text-primary: #4d7c0f;
+}
+
+[data-theme="dark"] {
+  --bg-color: #0b0f19;
+  --bg-secondary: #111827;
+  --text-color: #f9fafb;
+  --text-muted: #9ca3af;
+  --border-color: #1f2937;
+  --input-bg: #1e293b;
+  --input-focus-border: #ccff00;
+  --text-primary: #ccff00;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+*, *::before, *::after {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, fill 0.3s ease, stroke 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Custom premium classes */
+.glass-panel {
+  background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--border-color) 40%, transparent);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes reactionsIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-reactions-in {
+  animation: reactionsIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}

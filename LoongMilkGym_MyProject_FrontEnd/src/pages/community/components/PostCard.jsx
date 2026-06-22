@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  Eye,
   EyeOff,
   Flag,
   Globe,
@@ -384,7 +385,7 @@ export default function PostCard({
                     onClick={() => closeMenuAndRun(handleRestoreProfile)}
                     className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs sm:text-sm font-bold text-[var(--text-color)] transition-all hover:bg-[var(--border-color)]/30"
                   >
-                    <Globe className="w-4.5 h-4.5 text-primary" />
+                    <Eye className="w-4.5 h-4.5 text-primary" />
                     <span>Khôi phục lên trang cá nhân</span>
                   </button>
                 )}

@@ -13,7 +13,12 @@ const optionalAuth = async (req, res, next) => {
       return next();
     }
 
-    const payload = await verifyAccessToken(accessToken).catch(() => null);
+    let payload;
+    try {
+      payload = verifyAccessToken(accessToken);
+    } catch (err) {
+      return next();
+    }
     if (!payload || payload.exp < Date.now() / 1000) {
       return next();
     }

@@ -189,7 +189,15 @@ export default function Community() {
       {postToDelete && (
         <DeletePostModal
           onCancel={() => setPostToDelete(null)}
-          onConfirm={confirmDeletePost}
+          onConfirm={async () => {
+            try {
+              showToast("Đang xóa bài viết...", "loading");
+              await confirmDeletePost();
+              showToast("Xóa bài viết thành công.");
+            } catch (err) {
+              showToast("Xóa bài viết thất bại, vui lòng thử lại.", "error");
+            }
+          }}
         />
       )}
 

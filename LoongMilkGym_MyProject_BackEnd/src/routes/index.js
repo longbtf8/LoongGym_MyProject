@@ -11,4 +11,6 @@ fs.readdirSync(basePath)
   });
 
 // Auto-loaded routes
+router.use("/admin", require("./admin/admin.routes"));
+
 module.exports = router;

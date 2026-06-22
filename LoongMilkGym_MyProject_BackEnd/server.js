@@ -13,9 +13,14 @@ const { apiLimiter } = require("@/middlewares/rateLimiter");
 const cors = require("cors");
 
 // Cấu hình CORS cho phép frontend kết nối
+const allowedOrigins = [
+  process.env.FRONTEND_URL || "http://localhost:5173",
+  process.env.ADMIN_URL || "http://localhost:5174",
+];
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "x-refresh-token", "x-session-id"],
