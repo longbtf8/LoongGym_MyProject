@@ -13,9 +13,11 @@ import RightSidebar from "./components/RightSidebar";
 import { NAV_ITEMS, TRAINERS } from "./constants/community.constants";
 import useCommunityFeed from "./hooks/useCommunityFeed";
 import { useAuth } from "@/hooks/useAuth";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 export default function Community() {
   const { userInfo } = useAuth();
+  const { requireAuth } = useRequireAuth();
   const navigate = useNavigate();
   const {
     activeNav,
@@ -47,6 +49,24 @@ export default function Community() {
   const feedScrollRef = useRef(null);
   const toastTimerRef = useRef(null);
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+
+  const wrappedRespectClick = (post, reactionType) => {
+    if (requireAuth()) {
+      handleRespectClick(post, reactionType);
+    }
+  };
+
+  const wrappedSendComment = (postId) => {
+    if (requireAuth()) {
+      handleSendComment(postId);
+    }
+  };
+
+  const wrappedFollowToggle = (userId, isCurrentlyFollowing) => {
+    if (requireAuth()) {
+      handleFollowToggle(userId, isCurrentlyFollowing);
+    }
+  };
 
   const showToast = (message, type = "success") => {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -95,7 +115,7 @@ export default function Community() {
           <MatchingUsers
             localFollows={localFollows}
             matchingUsers={matchingUsers}
-            onFollowToggle={handleFollowToggle}
+            onFollowToggle={wrappedFollowToggle}
             onProfileClick={navigateToProfile}
             currentUserId={userInfo?.id}
           />
@@ -103,8 +123,16 @@ export default function Community() {
           {!searchQuery && (
             <PostCreator
               userInfo={userInfo}
-              onCreatePost={() => setShowCreateModal(true)}
-              onProfileClick={() => navigateToProfile(userInfo?.id)}
+              onCreatePost={() => {
+                if (requireAuth()) {
+                  setShowCreateModal(true);
+                }
+              }}
+              onProfileClick={() => {
+                if (requireAuth()) {
+                  navigateToProfile(userInfo?.id);
+                }
+              }}
             />
           )}
 
@@ -116,8 +144,8 @@ export default function Community() {
             onDeletePost={handleDeletePost}
             onFollowChanged={handleFollowChanged}
             onProfileClick={navigateToProfile}
-            onRespectClick={handleRespectClick}
-            onSendComment={handleSendComment}
+            onRespectClick={wrappedRespectClick}
+            onSendComment={wrappedSendComment}
             onShowToast={showToast}
             onToggleComments={handleToggleComments}
             openComments={openComments}

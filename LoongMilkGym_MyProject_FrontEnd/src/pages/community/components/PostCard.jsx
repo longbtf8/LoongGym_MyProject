@@ -30,6 +30,7 @@ import {
   useUnfollowUserMutation,
 } from "@/services/auth/authApi";
 import { DEFAULT_AVATAR_URL, REACTION_EMOJIS } from "../constants/community.constants";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import {
   capitalizeName,
   formatTime,
@@ -97,6 +98,7 @@ export default function PostCard({
   userInfo,
 }) {
   const menuRef = useRef(null);
+  const { requireAuth } = useRequireAuth();
   const metadata = getMetadata(post);
   const feeling = metadata?.feeling;
   const [menuOpen, setMenuOpen] = useState(false);
@@ -177,6 +179,7 @@ export default function PostCard({
 
   const handleLikeClick = (e) => {
     e?.stopPropagation();
+    if (!requireAuth()) return;
     const now = Date.now();
     if (now - lastClickTimeRef.current < 400) return;
     lastClickTimeRef.current = now;
@@ -243,6 +246,7 @@ export default function PostCard({
   };
 
   const handleFollowToggle = async () => {
+    if (!requireAuth()) return;
     try {
       if (isFollowingAuthor) {
         await unfollowUser(post.userId).unwrap();
@@ -282,6 +286,7 @@ export default function PostCard({
   };
 
   const handleSaveToggle = async () => {
+    if (!requireAuth()) return;
     try {
       if (post.hasSaved) {
         await unsavePost(post.id).unwrap();
@@ -297,6 +302,7 @@ export default function PostCard({
   };
 
   const handleHideForMe = async () => {
+    if (!requireAuth()) return;
     try {
       await hidePostForMe(post.id).unwrap();
       onShowToast?.("Bạn sẽ ít thấy các bài viết như này hơn.");
@@ -426,7 +432,11 @@ export default function PostCard({
                 )}
                 <button
                   type="button"
-                  onClick={() => closeMenuAndRun(() => setShowReportModal(true))}
+                  onClick={() => closeMenuAndRun(() => {
+                    if (requireAuth()) {
+                      setShowReportModal(true);
+                    }
+                  })}
                   className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs sm:text-sm font-bold text-[var(--text-color)] transition-all hover:bg-[var(--border-color)]/30"
                 >
                   <Flag className="w-4.5 h-4.5 text-rose-500" />
@@ -525,7 +535,9 @@ export default function PostCard({
                   {showReactions && (
                     <ReactionsPicker
                       onSelect={(type) => {
-                        onRespectClick(post, type);
+                        if (requireAuth()) {
+                          onRespectClick(post, type);
+                        }
                         setShowReactions(false);
                       }}
                       onClose={() => setShowReactions(false)}

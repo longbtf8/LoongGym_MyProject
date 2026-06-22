@@ -15,6 +15,7 @@ import {
 } from "@/services/community/communityApi";
 import { useConfirm } from "@/context/ConfirmContext";
 import socketClient from "@/utils/socketClient";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 const getCommentAuthorName = (comment) =>
   capitalizeName(comment?.user?.profile?.fullName || "GymLife Member");
@@ -51,6 +52,7 @@ function ReplyItem({
   postOwnerId,
   userInfo,
 }) {
+  const { requireAuth } = useRequireAuth();
   const [toggleCommentReaction] = useToggleCommentReactionMutation();
   const [deleteCommentReaction] = useDeleteCommentReactionMutation();
   const [editComment, { isLoading: isEditingLoading }] = useEditCommentMutation();
@@ -95,6 +97,7 @@ function ReplyItem({
   const isPostOwner = postOwnerId === userInfo?.id;
 
   const handleReplyRespectClick = async (reactionType) => {
+    if (!requireAuth()) return;
     try {
       if (reply.hasReacted && reply.userReaction === reactionType) {
         await deleteCommentReaction({ commentId: reply.id, postId }).unwrap();
@@ -386,7 +389,9 @@ function ReplyItem({
                 onMouseEnter={handlePickerMouseEnter}
                 onMouseLeave={handlePickerMouseLeave}
                 onSelect={(type) => {
-                  handleReplyRespectClick(type);
+                  if (requireAuth()) {
+                    handleReplyRespectClick(type);
+                  }
                   setShowReactions(false);
                 }}
                 onClose={() => setShowReactions(false)}
@@ -404,10 +409,12 @@ function ReplyItem({
             <button
               type="button"
               onClick={() => {
-                if (!isModal && onCommentClick) {
-                  onCommentClick(parentComment.id, reply);
-                } else {
-                  onReplyClick(reply);
+                if (requireAuth()) {
+                  if (!isModal && onCommentClick) {
+                    onCommentClick(parentComment.id, reply);
+                  } else {
+                    onReplyClick(reply);
+                  }
                 }
               }}
               className="hover:underline cursor-pointer"
@@ -449,6 +456,7 @@ function ReplyItem({
 
 // Component hiển thị và xử lý bình luận cha (Parent Comment)
 function CommentItem({ comment, postId, userInfo, onProfileClick, onCommentClick, isModal, autoFocusReply, mentionNames = [], postOwnerId }) {
+  const { requireAuth } = useRequireAuth();
   const [toggleCommentReaction] = useToggleCommentReactionMutation();
   const [deleteCommentReaction] = useDeleteCommentReactionMutation();
   const [editComment, { isLoading: isEditingLoading }] = useEditCommentMutation();
@@ -522,6 +530,7 @@ function CommentItem({ comment, postId, userInfo, onProfileClick, onCommentClick
   }, [replyText]);
 
   const handleSendReply = async () => {
+    if (!requireAuth()) return;
     if (!replyText.trim()) return;
     try {
       await addComment({
@@ -537,6 +546,7 @@ function CommentItem({ comment, postId, userInfo, onProfileClick, onCommentClick
   };
 
   const handleRespectClick = async (reactionType) => {
+    if (!requireAuth()) return;
     try {
       if (comment.hasReacted && comment.userReaction === reactionType) {
         await deleteCommentReaction({ commentId: comment.id, postId }).unwrap();
@@ -830,7 +840,9 @@ function CommentItem({ comment, postId, userInfo, onProfileClick, onCommentClick
                 onMouseEnter={handlePickerMouseEnter}
                 onMouseLeave={handlePickerMouseLeave}
                 onSelect={(type) => {
-                  handleRespectClick(type);
+                  if (requireAuth()) {
+                    handleRespectClick(type);
+                  }
                   setShowReactions(false);
                 }}
                 onClose={() => setShowReactions(false)}
@@ -850,11 +862,13 @@ function CommentItem({ comment, postId, userInfo, onProfileClick, onCommentClick
             <button
               type="button"
               onClick={() => {
-                if (!isModal && onCommentClick) {
-                  onCommentClick(comment.id, comment);
-                } else {
-                  setReplyText((current) => current || getReplyDraft(comment));
-                  setIsReplying(true);
+                if (requireAuth()) {
+                  if (!isModal && onCommentClick) {
+                    onCommentClick(comment.id, comment);
+                  } else {
+                    setReplyText((current) => current || getReplyDraft(comment));
+                    setIsReplying(true);
+                  }
                 }
               }}
               className="hover:underline cursor-pointer"
@@ -960,6 +974,11 @@ function CommentItem({ comment, postId, userInfo, onProfileClick, onCommentClick
                   rows={1}
                   placeholder={`Nhắc tên ${getCommentAuthorName(comment)} để trả lời...`}
                   value={replyText}
+                  onFocus={(e) => {
+                    if (!requireAuth()) {
+                      e.target.blur();
+                    }
+                  }}
                   onChange={(e) => {
                     setReplyText(e.target.value);
                     e.target.style.height = "auto";
@@ -1019,6 +1038,7 @@ export default function CommentsSection({
   initialAutoReplyComment,
   postOwnerId,
 }) {
+  const { requireAuth } = useRequireAuth();
   const mainInputRef = useRef(null);
   const mainComposing = useComposing();
 
@@ -1214,6 +1234,11 @@ export default function CommentsSection({
             rows={1}
             placeholder={`Bình luận dưới tên ${userInfo?.profile?.fullName || "GymLife Member"}`}
             value={commentInput || ""}
+            onFocus={(e) => {
+              if (!requireAuth()) {
+                e.target.blur();
+              }
+            }}
             onChange={(e) => {
               onCommentChange(e.target.value);
               e.target.style.height = "auto";
@@ -1226,13 +1251,19 @@ export default function CommentsSection({
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey && !mainComposing.isComposingRef.current) {
                 e.preventDefault();
-                onSendComment();
+                if (requireAuth()) {
+                  onSendComment();
+                }
               }
             }}
             className="w-full pl-4 pr-10 py-2.5 text-[13px] sm:text-sm bg-[var(--border-color)]/20 border border-[var(--border-color)]/30 text-[var(--text-color)] rounded-2xl focus:outline-none focus:border-primary transition-all font-semibold resize-none overflow-y-hidden max-h-[120px] leading-relaxed"
           />
           <button
-            onClick={onSendComment}
+            onClick={() => {
+              if (requireAuth()) {
+                onSendComment();
+              }
+            }}
             className="absolute right-2 p-1.5 hover:bg-primary/10 rounded-xl text-primary transition-all cursor-pointer"
           >
             <Send className="w-4 h-4" />
