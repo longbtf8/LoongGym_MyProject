@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const authRequire = require("@/middlewares/authRequire");
+const optionalAuth = require("@/middlewares/optionalAuth");
 const uploadCloud = require("@/utils/upload");
 const communityController = require("@/controllers/community.controller");
 
 // 1. Quản lý bài viết (Posts)
-router.get("/posts", authRequire, communityController.getPosts);
+router.get("/posts", optionalAuth, communityController.getPosts);
 router.get("/posts/archives/me", authRequire, communityController.getArchivedPosts);
 router.post(
   "/posts",
@@ -13,7 +14,7 @@ router.post(
   uploadCloud.array("images", 10), // Cho phép upload tối đa 10 ảnh lên Cloudinary
   communityController.createPost
 );
-router.get("/posts/:id", authRequire, communityController.getPostById);
+router.get("/posts/:id", optionalAuth, communityController.getPostById);
 router.patch(
   "/posts/:id",
   authRequire,
@@ -29,7 +30,7 @@ router.post("/posts/:id/save", authRequire, communityController.savePost);
 router.delete("/posts/:id/save", authRequire, communityController.unsavePost);
 
 // 2.1 Tương tác theo từng ảnh trong bài viết
-router.get("/media/:id", authRequire, communityController.getMediaById);
+router.get("/media/:id", optionalAuth, communityController.getMediaById);
 router.post("/media/:id/comments", authRequire, communityController.addMediaComment);
 router.post("/media/:id/reactions", authRequire, communityController.toggleMediaReaction);
 router.delete("/media/:id/reactions", authRequire, communityController.deleteMediaReaction);

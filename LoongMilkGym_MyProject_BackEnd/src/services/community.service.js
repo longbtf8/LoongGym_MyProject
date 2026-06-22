@@ -4,168 +4,174 @@ const { httpCodes } = require("@/config/constants");
 const { deleteOldImage } = require("@/utils/cloudinary");
 const pusher = require("@/lib/pusher");
 
-const postInclude = (userId) => ({
-  user: {
-    select: {
-      id: true,
-      profile: {
-        select: {
-          fullName: true,
-          avatarUrl: true,
-        },
-      },
-    },
-  },
-  media: {
-    orderBy: { sortOrder: "asc" },
-    include: {
-      _count: {
-        select: {
-          comments: true,
-          reactions: true,
-        },
-      },
-      reactions: {
-        select: {
-          userId: true,
-          reactionType: true,
-        },
-      },
-    },
-  },
-  _count: {
-    select: {
-      comments: true,
-      reactions: true,
-    },
-  },
-  reactions: {
-    select: {
-      userId: true,
-      reactionType: true,
-    },
-  },
-  profileArchives: {
-    where: { userId },
-    select: { postId: true },
-  },
-  saves: {
-    where: { userId },
-    select: { postId: true },
-  },
-  comments: {
-    where: {
-      parentCommentId: null,
-      hiddenBy: {
-        none: {
-          userId
-        }
-      }
-    },
-    orderBy: { createdAt: "desc" },
-    take: 3,
-    include: {
-      user: {
-        select: {
-          id: true,
-          profile: {
-            select: {
-              fullName: true,
-              avatarUrl: true,
-            },
+const postInclude = (userId) => {
+  const activeUserId = userId || "00000000-0000-0000-0000-000000000000";
+  return {
+    user: {
+      select: {
+        id: true,
+        profile: {
+          select: {
+            fullName: true,
+            avatarUrl: true,
           },
         },
       },
-      reactions: {
-        select: {
-          userId: true,
-          reactionType: true,
+    },
+    media: {
+      orderBy: { sortOrder: "asc" },
+      include: {
+        _count: {
+          select: {
+            comments: true,
+            reactions: true,
+          },
+        },
+        reactions: {
+          select: {
+            userId: true,
+            reactionType: true,
+          },
         },
       },
-      replies: {
-        where: {
-          hiddenBy: {
-            none: {
-              userId
-            }
+    },
+    _count: {
+      select: {
+        comments: true,
+        reactions: true,
+      },
+    },
+    reactions: {
+      select: {
+        userId: true,
+        reactionType: true,
+      },
+    },
+    profileArchives: {
+      where: { userId: activeUserId },
+      select: { postId: true },
+    },
+    saves: {
+      where: { userId: activeUserId },
+      select: { postId: true },
+    },
+    comments: {
+      where: {
+        parentCommentId: null,
+        hiddenBy: {
+          none: {
+            userId: activeUserId
           }
-        },
-        orderBy: { createdAt: "asc" },
-        include: {
-          user: {
-            select: {
-              id: true,
-              profile: {
-                select: {
-                  fullName: true,
-                  avatarUrl: true,
-                },
+        }
+      },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      include: {
+        user: {
+          select: {
+            id: true,
+            profile: {
+              select: {
+                fullName: true,
+                avatarUrl: true,
               },
             },
           },
-          reactions: {
-            select: {
-              userId: true,
-              reactionType: true,
+        },
+        reactions: {
+          select: {
+            userId: true,
+            reactionType: true,
+          },
+        },
+        replies: {
+          where: {
+            hiddenBy: {
+              none: {
+                userId: activeUserId
+              }
+            }
+          },
+          orderBy: { createdAt: "asc" },
+          include: {
+            user: {
+              select: {
+                id: true,
+                profile: {
+                  select: {
+                    fullName: true,
+                    avatarUrl: true,
+                  },
+                },
+              },
+            },
+            reactions: {
+              select: {
+                userId: true,
+                reactionType: true,
+              },
             },
           },
         },
       },
     },
-  },
-});
+  };
+};
 
-const mediaDetailInclude = (userId) => ({
-  post: {
-    include: {
-      user: {
-        select: {
-          id: true,
-          profile: {
-            select: {
-              fullName: true,
-              avatarUrl: true,
+const mediaDetailInclude = (userId) => {
+  const activeUserId = userId || "00000000-0000-0000-0000-000000000000";
+  return {
+    post: {
+      include: {
+        user: {
+          select: {
+            id: true,
+            profile: {
+              select: {
+                fullName: true,
+                avatarUrl: true,
+              },
             },
           },
         },
       },
     },
-  },
-  _count: {
-    select: {
-      comments: true,
-      reactions: true,
+    _count: {
+      select: {
+        comments: true,
+        reactions: true,
+      },
     },
-  },
-  reactions: {
-    select: {
-      userId: true,
-      reactionType: true,
+    reactions: {
+      select: {
+        userId: true,
+        reactionType: true,
+      },
     },
-  },
-  comments: {
-    orderBy: { createdAt: "asc" },
-    include: {
-      user: {
-        select: {
-          id: true,
-          profile: {
-            select: {
-              fullName: true,
-              avatarUrl: true,
+    comments: {
+      orderBy: { createdAt: "asc" },
+      include: {
+        user: {
+          select: {
+            id: true,
+            profile: {
+              select: {
+                fullName: true,
+                avatarUrl: true,
+              },
             },
           },
         },
-      },
-      reactions: {
-        select: {
-          userId: true,
-          reactionType: true,
+        reactions: {
+          select: {
+            userId: true,
+            reactionType: true,
+          },
         },
       },
     },
-  },
-});
+  };
+};
 
 const serializeMediaComment = (comment, currentUserId) => {
   const userReactionObj = comment.reactions?.find((r) => r.userId === currentUserId);
@@ -332,6 +338,7 @@ const createPost = async ({ userId, content, postType, visibility, relatedWorkou
  * Lấy danh sách bài đăng công khai (Public Timeline) kèm thống kê và trạng thái thích bài viết
  */
 const getPosts = async ({ userId, page = 1, limit = 10, authorId, feedType }) => {
+  const activeUserId = userId || "00000000-0000-0000-0000-000000000000";
   const skip = (page - 1) * limit;
 
   const whereClause = {};
@@ -343,22 +350,22 @@ const getPosts = async ({ userId, page = 1, limit = 10, authorId, feedType }) =>
       whereClause.visibility = "public";
     } else {
       whereClause.profileArchives = {
-        none: { userId },
+        none: { userId: activeUserId },
       };
     }
   } else {
     whereClause.visibility = "public";
     whereClause.hiddenBy = {
-      none: { userId },
+      none: { userId: activeUserId },
     };
 
-    if (feedType === "following") {
+    if (feedType === "following" && userId) {
       whereClause.user = {
         followers: {
           some: { followerId: userId },
         },
       };
-    } else if (feedType === "saved") {
+    } else if (feedType === "saved" && userId) {
       whereClause.saves = {
         some: { userId },
       };
@@ -404,6 +411,7 @@ const getArchivedPosts = async ({ userId, page = 1, limit = 10 }) => {
  * Lấy chi tiết bài viết kèm danh sách bình luận (hỗ trợ replies 1 cấp)
  */
 const getPostById = async ({ userId, postId }) => {
+  const activeUserId = userId || "00000000-0000-0000-0000-000000000000";
   const post = await prisma.communityPost.findUnique({
     where: { id: postId },
     include: {
@@ -434,11 +442,11 @@ const getPostById = async ({ userId, postId }) => {
         },
       },
       profileArchives: {
-        where: { userId },
+        where: { userId: activeUserId },
         select: { postId: true },
       },
       saves: {
-        where: { userId },
+        where: { userId: activeUserId },
         select: { postId: true },
       },
       comments: {
@@ -446,7 +454,7 @@ const getPostById = async ({ userId, postId }) => {
           parentCommentId: null,
           hiddenBy: {
             none: {
-              userId
+              userId: activeUserId
             }
           }
         },

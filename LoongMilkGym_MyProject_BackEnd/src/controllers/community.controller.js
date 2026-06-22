@@ -38,7 +38,7 @@ const createPost = async (req, res, next) => {
 
 const getPosts = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id || null;
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const authorId = req.query.authorId || null;
@@ -66,7 +66,7 @@ const getArchivedPosts = async (req, res, next) => {
 
 const getPostById = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id || null;
     const { id } = req.params;
 
     const post = await communityService.getPostById({ userId, postId: id });
@@ -292,7 +292,7 @@ const searchUsers = async (req, res, next) => {
 
 const getMediaById = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id || null;
     const { id } = req.params;
     const media = await communityService.getMediaById({ userId, mediaId: id });
     return res.success(media, httpCodes.success, "Lấy chi tiết ảnh thành công.");
