@@ -86,3 +86,19 @@ Frontend sử dụng `src/services/api.js` làm điểm trung tâm cho mọi HTT
   - Khi refresh thất bại, frontend không xóa token ngay. Hệ thống kiểm tra khả năng đã có token mới từ tab/request khác; nếu có thì tiếp tục phiên đăng nhập bình thường.
   - Chỉ khi không có token mới hợp lệ, frontend mới xóa token và buộc người dùng đăng nhập lại.
 - **Kết quả mong đợi**: Giảm hiện tượng một số tài khoản bị văng sau đúng 1 tiếng khi tài khoản đó mở nhiều tab hoặc có nhiều API chạy đồng thời.
+
+---
+
+## 🔐 10. Cơ Chế Chặn Tương Tác Cho Khách Vãng Lai (Guest Guards) - *Mới Thêm*
+Để hỗ trợ việc công khai các trang Cửa hàng, Giỏ hàng và Cộng đồng nhưng vẫn đảm bảo tính toàn vẹn dữ liệu và yêu cầu đăng nhập khi thực hiện hành động sửa đổi:
+- **Custom Hook `useRequireAuth`**:
+  - Quản lý trạng thái đăng nhập qua `isLoggedIn` của context xác thực.
+  - Cung cấp hàm `requireAuth()` kiểm tra: nếu chưa đăng nhập, lập tức hiển thị hộp thoại cảnh báo tùy biến (`useConfirm`) với thông báo: *"Vui lòng đăng nhập để thực hiện hành động này. Đi đến trang đăng nhập?"*. Nếu người dùng đồng ý, chuyển hướng trực tiếp sang `/login` kèm tham số `returnUrl` để quay lại đúng trang hiện tại sau khi đăng nhập thành công.
+- **Chặn các hành động cụ thể tại giao diện**:
+  - **Trang Cửa Hàng (`/store`)**: Chặn các nút "Thêm vào giỏ" và "Mua ngay" trên cả `ProductCard` và `ProductInfo` chi tiết sản phẩm.
+  - **Trang Giỏ Hàng (`/cart`)**: Bỏ qua việc tải dữ liệu API giỏ hàng từ máy chủ bằng cấu hình `{ skip: !isLoggedIn }` của RTK Query, đồng thời hiển thị màn hình thay thế (placeholder) đẹp mắt báo "Bạn chưa đăng nhập" cùng hai liên kết "Đăng nhập ngay" và "Khám phá cửa hàng".
+  - **Trang Cộng Đồng (`/community`)**:
+    - Chặn nút mở modal tạo bài viết mới.
+    - Chặn các thao tác like, bày tỏ cảm xúc, follow tác giả bài viết, lưu bài đăng, ẩn bài đăng, và gửi báo cáo bài đăng.
+    - Chặn hành động nhập liệu (onFocus) vào ô bình luận chính của bài viết và ô phản hồi (reply comment) để tránh người dùng mất công gõ nội dung trước khi bị bắt đăng nhập.
+    - Chặn việc gửi bình luận hoặc phản hồi lên máy chủ.

@@ -55,6 +55,41 @@ Tài liệu này ghi nhận đầy đủ lịch sử các commits tính năng, s
     - Cập nhật prop truyền xuống `FilterSidebar` và hiển thị động checkbox thương hiệu.
 *   **Ý nghĩa**: Đồng bộ hóa thương hiệu và lọc sản phẩm chính xác, tránh lỗi dữ liệu giả.
 
+### 8. `feat(auth-middleware): implement optionalAuth middleware for public read endpoints`
+*   **Hành động**:
+    - **Backend**: Tạo middleware `optionalAuth.js` để giải mã session token nếu có mà không chặn lỗi 401 khi không có. Áp dụng cho các API đọc cộng đồng công khai.
+*   **Ý nghĩa**: Cho phép người dùng chưa đăng nhập có thể xem bảng tin và bài viết công khai.
+
+### 9. `feat(routes): move store, cart, and community pages to public routes`
+*   **Hành động**:
+    - **Frontend**: Chuyển store, cart, và community từ `privateRoutes` sang `publicRoutes` để cho phép truy cập tự do.
+*   **Ý nghĩa**: Cung cấp giao diện công khai để khách hàng khám phá trước khi đăng ký.
+
+### 10. `feat(auth-hook): add useRequireAuth custom hook to intercept guest actions`
+*   **Hành động**:
+    - **Frontend**: Xây dựng custom hook `useRequireAuth` quản lý việc kiểm tra đăng nhập và hiển thị popup cảnh báo `useConfirm` chuyển hướng tới `/login`.
+*   **Ý nghĩa**: Tái sử dụng logic chặn khách vãng lai tương tác một cách đồng bộ.
+
+### 11. `feat(store-guard): restrict add to cart and buy now actions for guest users`
+*   **Hành động**:
+    - **Frontend**: Sử dụng `useRequireAuth` chặn nút "Thêm vào giỏ" và "Mua ngay" tại trang cửa hàng và chi tiết sản phẩm.
+*   **Ý nghĩa**: Ngăn khách vãng lai thêm giỏ hàng nhưng vẫn cho xem thông tin.
+
+### 12. `feat(cart-guard): support guest view with redirect prompts for the Cart page`
+*   **Hành động**:
+    - **Frontend**: Bỏ tải dữ liệu API giỏ hàng nếu chưa đăng nhập, hiển thị màn hình thông báo "Bạn chưa đăng nhập" cùng nút liên kết đăng nhập/tiếp tục mua sắm.
+*   **Ý nghĩa**: Đảm bảo trang giỏ hàng hoạt động mượt mà cho khách vãng lai mà không phát sinh lỗi API.
+
+### 13. `feat(community-guard): restrict community feed reactions, comments, and replies for guest users`
+*   **Hành động**:
+    - **Frontend**: Chặn tương tác like, bình luận, viết phản hồi, follow trên feed cộng đồng và trong phần bình luận của bài viết.
+*   **Ý nghĩa**: Bảo vệ dữ liệu cộng đồng, yêu cầu đăng nhập trước khi tương tác xã hội.
+
+### 14. `feat(community-detail-guard): restrict post detail modal actions for guest users`
+*   **Hành động**:
+    - **Frontend**: Áp dụng chặn tương tác trên modal chi tiết bài viết `PostDetailModal`.
+*   **Ý nghĩa**: Đồng bộ hóa cơ chế bảo mật trên tất cả luồng xem chi tiết bài đăng.
+
 ---
 
 ## 🛠️ 2. Nguyên Tắc Cập Nhật Commit Chuẩn Mực
