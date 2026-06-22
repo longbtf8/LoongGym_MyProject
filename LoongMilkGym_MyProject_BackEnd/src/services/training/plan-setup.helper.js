@@ -347,6 +347,7 @@ const buildProgramPlanDays = ({ program, startDate, count, startOffset = 0, dayM
 
       return {
         customExercises,
+        originalExercises: customExercises.map(ex => ({ ...ex })),
         generatedFrom: "workout-program-randomizer",
         focusArea: programDay?.focusArea || null,
         muscleMapUrl: programDay?.muscleMapUrl || null,

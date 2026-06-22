@@ -118,6 +118,14 @@ export default function SchedulerModal({
     return () => window.clearTimeout(timer);
   }, [resetSchedulerDays]);
 
+  // Lock background scroll
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
   if (!programId) return null;
 
   const resetDragState = () => {

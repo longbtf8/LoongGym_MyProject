@@ -1,9 +1,19 @@
+import { useEffect } from "react";
 import { Trash2 } from "lucide-react";
 import { useCancelActivePlanMutation } from "@/services/roadmap/roadmapApi";
 
 // CancelModal: Component modal để xác nhận huỷ lộ trình luyện tập hiện tại
 export default function CancelModal({ isOpen, onClose, onSuccess }) {
   const [cancelActivePlan, { isLoading: isCancelling }] = useCancelActivePlanMutation();
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

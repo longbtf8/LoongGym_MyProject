@@ -1,7 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { RotateCcw } from "lucide-react";
 
 export default function RestoreModal({ isOpen, onClose, onConfirm, isPending }) {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (

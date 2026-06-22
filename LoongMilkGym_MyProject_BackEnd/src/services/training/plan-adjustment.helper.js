@@ -143,10 +143,14 @@ const updateDayDetails = async (userId, dayId, updateData) => {
   if (updateData.notes !== undefined) data.notes = updateData.notes;
   if (updateData.skipReason !== undefined) data.skipReason = updateData.skipReason;
   if (updateData.metadata !== undefined) {
+    const existingOriginal = day.metadata?.originalExercises;
     data.metadata = {
       ...(day.metadata || {}),
       ...updateData.metadata
     };
+    if (existingOriginal && !updateData.metadata.originalExercises) {
+      data.metadata.originalExercises = existingOriginal;
+    }
   }
 
   return prisma.userTrainingPlanDay.update({

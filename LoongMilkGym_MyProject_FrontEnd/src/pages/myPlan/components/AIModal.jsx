@@ -1,7 +1,17 @@
 
+import { useEffect } from "react";
 import { Sparkles, X, Info, Plus } from "lucide-react";
 
 export default function AIModal({ isOpen, onClose, onDemoClick }) {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Dumbbell, Activity, Check, Play, History, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
 import {
   useGetActivePlanQuery,
@@ -59,6 +59,8 @@ const getWorkoutDisplayTitle = (title = "Buổi tập") => {
 
 export default function MyPlan() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryDayId = searchParams.get("dayId");
   const [selectedDayId, setSelectedDayId] = useState(null);
   const [showSwapModal, setShowSwapModal] = useState(false);
   const [swapTargetIndex, setSwapTargetIndex] = useState(null);
@@ -106,13 +108,18 @@ export default function MyPlan() {
 
   const handleRestoreOriginalExercises = async () => {
     if (isPending) return;
+    const original = dayDetails?.day?.metadata?.originalExercises;
+    if (!original || !Array.isArray(original) || original.length === 0) {
+      showToast("Không tìm thấy dữ liệu bài tập gốc để khôi phục.");
+      return;
+    }
 
     try {
       await updateDayDetails({
         dayId: selectedDayId,
         data: {
           metadata: {
-            customExercises: null,
+            customExercises: original,
             customized: false
           }
         }
@@ -164,12 +171,23 @@ export default function MyPlan() {
 
   useEffect(() => {
     if (daysList.length > 0) {
-      const todayDay = daysList.find(d => isSameLocalDate(d.scheduledDate, todayStr));
-      const pendingDay = daysList.find(d => d.status === "pending");
-      const targetDay = todayDay || pendingDay || daysList[0];
-
+      const queryDayExists = queryDayId && daysList.some(d => d.id === queryDayId);
       const exists = daysList.some(d => d.id === selectedDayId);
-      if (!selectedDayId || !exists) {
+
+      if (queryDayExists && selectedDayId !== queryDayId) {
+        const timer = setTimeout(() => {
+          setSelectedDayId(queryDayId);
+          setSearchParams(prev => {
+            const copy = new URLSearchParams(prev);
+            copy.delete("dayId");
+            return copy;
+          }, { replace: true });
+        }, 0);
+        return () => clearTimeout(timer);
+      } else if (!selectedDayId || !exists) {
+        const todayDay = daysList.find(d => isSameLocalDate(d.scheduledDate, todayStr));
+        const pendingDay = daysList.find(d => d.status === "pending");
+        const targetDay = todayDay || pendingDay || daysList[0];
         const timer = setTimeout(() => {
           setSelectedDayId(targetDay.id);
         }, 0);
@@ -183,7 +201,7 @@ export default function MyPlan() {
         return () => clearTimeout(timer);
       }
     }
-  }, [daysList, selectedDayId, setSelectedDayId, todayStr]);
+  }, [daysList, selectedDayId, todayStr, queryDayId, setSearchParams]);
 
   useEffect(() => {
     if (dayDetails?.day) {
@@ -244,9 +262,9 @@ export default function MyPlan() {
         )}
 
         {toast.show && (
-          <div className="fixed top-24 right-4 z-[160] bg-[var(--bg-secondary)] border border-primary/30 text-[var(--text-color)] rounded-xl px-4 py-3 flex items-center gap-2 shadow-2xl animate-slide-down">
+          <div className="fixed left-1/2 top-[72px] -translate-x-1/2 z-[999999] bg-[var(--bg-secondary)]/90 backdrop-blur-sm border border-primary/30 text-[var(--text-color)] rounded-2xl px-4 py-2.5 flex items-center gap-2 shadow-lg animate-slide-down">
             <Check className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold">{toast.message}</span>
+            <span className="text-xs font-bold leading-none">{toast.message}</span>
           </div>
         )}
       </>
@@ -406,7 +424,10 @@ export default function MyPlan() {
           dayId: todayDay.id,
           data: {
             title: selectedWorkoutTitle,
-            metadata: { customExercises: exercisesToCopy },
+            metadata: { 
+              customExercises: exercisesToCopy,
+              customized: true
+            },
           }
         }).unwrap();
 
@@ -437,7 +458,7 @@ export default function MyPlan() {
   };
 
   return (
-    <div className="w-full bg-[var(--bg-color)] text-[var(--text-color)] py-6 px-4 flex justify-center transition-colors duration-300">
+    <div className="w-full bg-[var(--bg-color)] text-[var(--text-color)] pt-0 pb-6 px-4 lg:py-6 flex justify-center transition-colors duration-300">
       <div className="max-w-[1000px] w-full flex flex-col gap-4">
 
         {/* Title */}
@@ -479,6 +500,8 @@ export default function MyPlan() {
               </div>
               
               {activePlan?.programId && 
+               Array.isArray(dayDetails?.day?.metadata?.originalExercises) &&
+               dayDetails.day.metadata.originalExercises.length > 0 &&
                dayDetails?.day?.status !== "completed" && 
                dayDetails?.day?.metadata?.customized === true && (
                 <button
@@ -740,9 +763,9 @@ export default function MyPlan() {
       </div>
 
       {toast.show && (
-        <div className="fixed top-24 right-4 z-[160] bg-[var(--bg-secondary)] border border-primary/30 text-[var(--text-color)] rounded-xl px-4 py-3 flex items-center gap-2 shadow-2xl animate-slide-down">
+        <div className="fixed left-1/2 top-[72px] -translate-x-1/2 z-[999999] bg-[var(--bg-secondary)]/90 backdrop-blur-sm border border-primary/30 text-[var(--text-color)] rounded-2xl px-4 py-2.5 flex items-center gap-2 shadow-lg animate-slide-down">
           <Check className="w-4 h-4 text-primary" />
-          <span className="text-sm font-semibold">{toast.message}</span>
+          <span className="text-xs font-bold leading-none">{toast.message}</span>
         </div>
       )}
 
