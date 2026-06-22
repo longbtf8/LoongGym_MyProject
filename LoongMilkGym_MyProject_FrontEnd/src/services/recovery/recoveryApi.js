@@ -1,5 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "../baseQuery";
+import { dashboardApi } from "../dashboard/dashboardApi";
 
 export const recoveryApi = createApi({
   reducerPath: "recoveryApi",
@@ -23,6 +24,12 @@ export const recoveryApi = createApi({
         data,
       }),
       invalidatesTags: ["Recovery", "Dashboard"],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
+        } catch {}
+      }
     }),
     logInjury: builder.mutation({
       query: (data) => ({

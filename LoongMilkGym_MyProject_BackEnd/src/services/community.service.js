@@ -481,7 +481,7 @@ const getPostById = async ({ userId, postId }) => {
             where: {
               hiddenBy: {
                 none: {
-                  userId
+                  userId: activeUserId
                 }
               }
             },

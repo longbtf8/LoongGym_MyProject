@@ -1,5 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "../baseQuery";
+import { dashboardApi } from "../dashboard/dashboardApi";
+import { roadmapApi } from "../roadmap/roadmapApi";
 
 export const workoutSessionApi = createApi({
   reducerPath: "workoutSessionApi",
@@ -55,6 +57,13 @@ export const workoutSessionApi = createApi({
         data,
       }),
       invalidatesTags: ["WorkoutSession"],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
+          dispatch(roadmapApi.util.invalidateTags(["Roadmap"]));
+        } catch {}
+      }
     }),
     getSessionByPlanDay: builder.query({
       query: (planDayId) => ({

@@ -144,6 +144,12 @@ export const roadmapApi = createApi({
         data,
       }),
       invalidatesTags: (result, error, { id }) => ["Roadmap", { type: "DayDetails", id }],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
+        } catch {}
+      }
     }),
     swapDaysDates: builder.mutation({
       query: ({ dayId1, dayId2 }) => ({

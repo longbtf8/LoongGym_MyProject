@@ -1,5 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "../baseQuery";
+import { dashboardApi } from "../dashboard/dashboardApi";
 
 export const nutritionApi = createApi({
   reducerPath: "nutritionApi",
@@ -23,6 +24,12 @@ export const nutritionApi = createApi({
         data,
       }),
       invalidatesTags: ["Nutrition", "Dashboard"],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
+        } catch {}
+      }
     }),
     createMealLog: builder.mutation({
       query: (data) => ({
@@ -31,6 +38,12 @@ export const nutritionApi = createApi({
         data,
       }),
       invalidatesTags: ["Nutrition"],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
+        } catch {}
+      }
     }),
     addMealLogItem: builder.mutation({
       query: ({ mealLogId, data }) => ({
@@ -39,6 +52,12 @@ export const nutritionApi = createApi({
         data,
       }),
       invalidatesTags: ["Nutrition", "Dashboard"],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
+        } catch {}
+      }
     }),
     deleteMealLogItem: builder.mutation({
       query: (itemId) => ({
@@ -46,6 +65,12 @@ export const nutritionApi = createApi({
         method: "DELETE",
       }),
       invalidatesTags: ["Nutrition", "Dashboard"],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
+        } catch {}
+      }
     }),
     searchFoods: builder.query({
       query: (search) => ({

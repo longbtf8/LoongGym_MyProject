@@ -577,7 +577,7 @@ export default function PostCard({
                 {/* Comment Button */}
                 <button
                   type="button"
-                  onClick={() => handleOpenDetail()}
+                  onClick={() => requireAuth(() => handleOpenDetail())}
                   className="flex items-center gap-2 cursor-pointer transition-all duration-200 py-1.5 px-2 rounded-lg hover:bg-[var(--border-color)]/25 text-[var(--text-muted)] hover:text-[var(--text-color)]"
                   aria-label="Bình luận bài viết"
                 >
@@ -622,7 +622,7 @@ export default function PostCard({
           onSendComment={onSendComment}
           userInfo={userInfo}
           onCommentClick={(commentId, comment) => handleCommentClick(commentId, comment)}
-          onViewMoreComments={() => handleOpenDetail()}
+          onViewMoreComments={() => requireAuth(() => handleOpenDetail())}
           isModal={false}
           postOwnerId={post.userId || post.user?.id}
         />

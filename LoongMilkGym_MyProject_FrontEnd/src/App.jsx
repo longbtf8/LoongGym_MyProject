@@ -14,14 +14,17 @@ function ScrollToTop() {
   return null;
 }
 
+import { AuthConfirmProvider } from "@/context/AuthConfirmContext";
+
 function App() {
   const allRoutes = [...publicRoutes, ...privateRoutes];
 
   return (
     <Router>
-      <ScrollToTop />
-      <Suspense fallback={<LoadingScreen />}>
-        <Routes>
+      <AuthConfirmProvider>
+        <ScrollToTop />
+        <Suspense fallback={<LoadingScreen />}>
+          <Routes>
         {allRoutes.map((route, index) => {
           const Page = route.component;
 
@@ -41,17 +44,18 @@ function App() {
               key={index}
               path={route.path}
               element={
-                <Guard>
-                  <Layout>
+                <Layout>
+                  <Guard>
                     <Page />
-                  </Layout>
-                </Guard>
+                  </Guard>
+                </Layout>
               }
             />
           );
         })}
       </Routes>
       </Suspense>
+      </AuthConfirmProvider>
     </Router>
   );
 }
