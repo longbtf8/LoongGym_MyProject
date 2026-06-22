@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { 
   User, 
   ChevronRight,
@@ -7,53 +8,59 @@ import {
   Bell,
   ShoppingBag,
   ArrowLeft,
-  LogOut
+  LogOut,
+  Settings
 } from "lucide-react";
 
 import PersonalInfoSection from "./PersonalInfoSection/index";
 import SecuritySection from "./SecuritySection";
 import PlaceholderSection from "./PlaceholderSection";
 import { useProfileForm } from "./hooks/useProfileForm";
+import { useGetUserProfileByIdQuery } from "@/services/auth/authApi";
+import ProfileDashboard from "./components/ProfileDashboard";
+import { useAuth } from "@/hooks/useAuth";
+
+const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=150&auto=format&fit=crop&q=60";
 
 function Profile() {
-  const {
-    userInfo,
-    formData,
-    isEditing,
-    setIsEditing,
-    handleChange,
-    handleAvatarChange,
-    handleSave,
-    handleCancel,
-    formatDateDisplay,
-    handleLogout,
-    isSaving,
-    avatarPreviewUrl,
-    errorMessage
-  } = useProfileForm();
+  const { userId } = useParams();
+  const navigate = useNavigate();
+  const { userInfo } = useAuth();
+
+  // If viewing other user's profile or own profile dashboard
+  const isSettingsPage = !userId;
+
+  // Form hooks for own profile
+  const ownProfileForm = useProfileForm();
   
-  // Quản lý tab hiện tại cho cả Desktop và Mobile: "personal_info" | "security" | "privacy" | "notifications" | "orders"
+  // Query other user's profile if userId exists
+  const { data: otherProfileResponse, isLoading: isLoadingOtherProfile } = useGetUserProfileByIdQuery(userId, {
+    skip: isSettingsPage,
+  });
+
+  // State to manage edit sub-view on own profile dashboard
+  const [showEditForm, setShowEditForm] = useState(false);
+
+  // Current tab in Sidebar (Own profile only): "personal_info" | "security" | "privacy" | "notifications" | "orders"
   const [activeTab, setActiveTab] = useState("personal_info");
   
-  // Trạng thái view trên Mobile: "menu" | "detail"
+  // Mobile navigation state
   const [mobileView, setMobileView] = useState("menu");
 
-  // Xử lý chuyển tab trên Mobile (Option A: click chuyển sang view chi tiết và hiển thị nút back)
   const handleMobileTabClick = (tabId) => {
     if (tabId === "logout") {
-      handleLogout();
+      ownProfileForm.handleLogout();
       return;
     }
     setActiveTab(tabId);
     setMobileView("detail");
   };
 
-  // Định nghĩa menu danh mục giống F8
   const MENU_ITEMS = [
     { 
       id: "personal_info", 
-      title: "Trang cá nhân", 
-      desc: "Xem chỉ số cơ thể, cân nặng, chiều cao và calo.", 
+      title: "Chỉnh sửa hồ sơ", 
+      desc: "Cập nhật thông tin cá nhân, chỉ số chiều cao và cân nặng.", 
       icon: User, 
       colorClass: "bg-orange-500/10 text-orange-500 border-orange-500/20" 
     },
@@ -95,15 +102,48 @@ function Profile() {
     }
   ];
 
+  // ==========================================
+  // RENDER PROFILE DASHBOARD PAGE (/profile/:userId)
+  // ==========================================
+  if (!isSettingsPage) {
+    const isOwnProfileDashboard = userId === userInfo?.id;
+    return (
+      <div className="w-full min-h-screen py-6 mb-16 lg:mb-6 px-4 max-w-[1250px] mx-auto animate-fade-in">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 mb-6 px-4.5 py-2.5 rounded-full border border-[var(--border-color)] bg-[var(--bg-secondary)] text-xs font-black text-[var(--text-color)] hover:text-primary transition-all cursor-pointer shadow-sm"
+        >
+          <ArrowLeft className="w-4 h-4 text-primary" />
+          <span>Quay lại</span>
+        </button>
+
+        {isLoadingOtherProfile ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Đang tải hồ sơ...</span>
+          </div>
+        ) : (
+          <ProfileDashboard 
+            profile={otherProfileResponse?.data} 
+            isOwnProfile={isOwnProfileDashboard} 
+          />
+        )}
+      </div>
+    );
+  }
+
+  // ==========================================
+  // RENDER OWN PROFILE (WITH EDIT SIDEBAR)
+  // ==========================================
   return (
     <div className="w-full min-h-screen py-6 mb-16 lg:mb-6 animate-slide-down">
       
-      {/* GIAO DIỆN DESKTOP */}
-      <div className="hidden lg:flex gap-8">
+      {/* DESKTOP VIEW */}
+      <div className="hidden lg:flex gap-8 max-w-[1200px] mx-auto px-4">
         
-        {/* SIDEBAR BÊN TRÁI - DANH MỤC TÀI KHOẢN */}
+        {/* LEFT SIDEBAR MENU */}
         <aside className="w-[280px] shrink-0">
-          <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 shadow-sm transition-all duration-300">
+          <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 shadow-sm">
             <h3 className="text-xl font-extrabold text-[var(--text-color)] mb-6 px-2">
               Tài khoản
             </h3>
@@ -114,10 +154,10 @@ function Profile() {
                 return (
                   <button
                     key={item.id}
-                    onClick={() => setActiveTab(item.id)}
-                    className={`flex items-center justify-between w-full px-4 py-3.5 text-sm font-bold rounded-2xl transition-all duration-200 cursor-pointer ${
+                    onClick={() => { setActiveTab(item.id); setShowEditForm(false); }}
+                    className={`flex items-center justify-between w-full px-4 py-3.5 text-sm font-bold rounded-2xl transition-all cursor-pointer ${
                       isActive
-                        ? "bg-primary text-black shadow-[0_4px_12px_rgba(204,255,0,0.15)]"
+                        ? "bg-primary text-black shadow-md"
                         : "text-[var(--text-muted)] hover:text-[var(--text-color)] hover:bg-[var(--border-color)]/30"
                     }`}
                   >
@@ -133,8 +173,8 @@ function Profile() {
               <div className="h-[1px] bg-[var(--border-color)] my-2" />
               
               <button 
-                onClick={handleLogout}
-                className="flex items-center justify-between w-full px-4 py-3.5 text-sm font-bold rounded-2xl text-rose-500 hover:bg-rose-500/10 transition-all duration-200 cursor-pointer"
+                onClick={ownProfileForm.handleLogout}
+                className="flex items-center justify-between w-full px-4 py-3.5 text-sm font-bold rounded-2xl text-rose-500 hover:bg-rose-500/10 transition-all cursor-pointer"
               >
                 <div className="flex items-center gap-3">
                   <LogOut className="w-4.5 h-4.5" />
@@ -146,23 +186,25 @@ function Profile() {
           </div>
         </aside>
 
-        {/* CONTAINER CHÍNH BÊN PHẢI (DESKTOP) */}
+        {/* RIGHT PANEL CONTENT */}
         <main className="flex-1 flex flex-col gap-6">
           {activeTab === "personal_info" && (
-            <PersonalInfoSection 
-              formData={formData}
-              isEditing={isEditing}
-              setIsEditing={setIsEditing}
-              handleChange={handleChange}
-              handleAvatarChange={handleAvatarChange}
-              handleSave={handleSave}
-              handleCancel={handleCancel}
-              formatDateDisplay={formatDateDisplay}
-              userInfo={userInfo}
-              isSaving={isSaving}
-              avatarPreviewUrl={avatarPreviewUrl}
-              errorMessage={errorMessage}
-            />
+            <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 shadow-sm">
+              <PersonalInfoSection 
+                formData={ownProfileForm.formData}
+                isEditing={ownProfileForm.isEditing}
+                setIsEditing={ownProfileForm.setIsEditing}
+                handleChange={ownProfileForm.handleChange}
+                handleAvatarChange={ownProfileForm.handleAvatarChange}
+                handleSave={ownProfileForm.handleSave}
+                handleCancel={ownProfileForm.handleCancel}
+                formatDateDisplay={ownProfileForm.formatDateDisplay}
+                userInfo={ownProfileForm.userInfo}
+                isSaving={ownProfileForm.isSaving}
+                avatarPreviewUrl={ownProfileForm.avatarPreviewUrl}
+                errorMessage={ownProfileForm.errorMessage}
+              />
+            </div>
           )}
 
           {activeTab === "security" && (
@@ -173,47 +215,46 @@ function Profile() {
             <PlaceholderSection title={MENU_ITEMS.find(i => i.id === activeTab)?.title || ""} />
           )}
         </main>
+
       </div>
 
-      {/* GIAO DIỆN MOBILE */}
-      <div className="lg:hidden">
+      {/* MOBILE VIEW */}
+      <div className="lg:hidden px-4">
         
-        {/* VIEW 1: MENU DANH MỤC XẾP DỌC (GIỐNG HỆT F8 MOCKUP) */}
+        {/* VIEW 1: Vertical Menu Items */}
         {mobileView === "menu" && (
           <div className="flex flex-col gap-5">
             
-            {/* THẺ TÀI KHOẢN TRÊN CÙNG */}
-            <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 flex items-center gap-4.5 shadow-sm transition-all duration-300">
-              <div className="relative group shrink-0">
-                <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-primary to-[#00f5d4] shadow-sm">
-                  {userInfo?.profile?.avatarUrl ? (
-                    <img 
-                      src={userInfo.profile.avatarUrl} 
-                      alt={formData.fullName} 
-                      className="w-full h-full rounded-full object-cover bg-[var(--bg-color)]"
-                    />
-                  ) : (
-                    <div className="w-full h-full rounded-full bg-[var(--bg-color)] flex items-center justify-center text-xl font-black text-primary">
-                      {formData.fullName.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                </div>
+            {/* User Profile Card Summary */}
+            <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 flex items-center gap-4.5 shadow-sm">
+              <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-primary to-[#00f5d4] shadow-sm shrink-0 flex items-center justify-center">
+                {ownProfileForm.userInfo?.profile?.avatarUrl && ownProfileForm.userInfo.profile.avatarUrl !== DEFAULT_AVATAR ? (
+                  <img 
+                    src={ownProfileForm.userInfo.profile.avatarUrl} 
+                    alt="avatar" 
+                    className="w-full h-full rounded-full object-cover bg-black"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-full bg-[var(--bg-color)] flex items-center justify-center text-2xl font-black text-primary capitalize select-none">
+                    {ownProfileForm.formData.fullName ? ownProfileForm.formData.fullName.trim().charAt(0).toUpperCase() : "?"}
+                  </div>
+                )}
               </div>
 
               <div className="flex-1 overflow-hidden text-left">
                 <span className="text-[9px] font-black text-primary uppercase tracking-widest block leading-none mb-1">
-                  TÀI KHOẢN
+                  TÀI KHOẢN CỦA BẠN
                 </span>
                 <h3 className="text-lg font-black text-[var(--text-color)] m-0 leading-tight truncate">
-                  {formData.fullName}
+                  {ownProfileForm.formData.fullName}
                 </h3>
                 <p className="text-xs text-[var(--text-muted)] font-medium m-0 truncate mt-0.5">
-                  {userInfo?.email || "@buithanhlong1"}
+                  {ownProfileForm.userInfo?.email}
                 </p>
               </div>
             </div>
 
-            {/* DANH SÁCH MENU DỌC MOCKUP F8 */}
+            {/* Menu Items List */}
             <div className="flex flex-col gap-3">
               {MENU_ITEMS.map((item) => {
                 const Icon = item.icon;
@@ -221,7 +262,7 @@ function Profile() {
                   <div
                     key={item.id}
                     onClick={() => handleMobileTabClick(item.id)}
-                    className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-4 flex items-center justify-between cursor-pointer hover:bg-[var(--border-color)]/20 active:scale-[0.99] transition-all duration-150 shadow-[0_2px_8px_rgba(0,0,0,0.01)]"
+                    className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-4 flex items-center justify-between cursor-pointer hover:bg-[var(--border-color)]/25 transition-all shadow-sm"
                   >
                     <div className="flex items-center gap-3.5">
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 ${item.colorClass}`}>
@@ -247,39 +288,39 @@ function Profile() {
           </div>
         )}
 
-        {/* VIEW 2: CHI TIẾT KHI CLICK (OPTION A - CÓ NÚT BACK QUAY LẠI) */}
+        {/* VIEW 2: Sub-details panel */}
         {mobileView === "detail" && (
           <div className="flex flex-col gap-4">
             
-            {/* NÚT QUAY LẠI HÀNG ĐẦU */}
             <button
               onClick={() => {
                 setMobileView("menu");
-                setIsEditing(false);
+                setShowEditForm(false);
               }}
-              className="self-start flex items-center gap-2 px-4 py-2.5 rounded-full border border-[var(--border-color)] bg-[var(--bg-secondary)] text-sm font-extrabold text-[var(--text-color)] hover:text-primary transition-all duration-200 cursor-pointer shadow-sm"
+              className="self-start flex items-center gap-2 px-4 py-2.5 rounded-full border border-[var(--border-color)] bg-[var(--bg-secondary)] text-sm font-extrabold text-[var(--text-color)] hover:text-primary transition-all cursor-pointer shadow-sm"
             >
               <ArrowLeft className="w-4 h-4 text-primary" />
-              Quay lại danh mục
+              <span>Quay lại</span>
             </button>
 
-            {/* NỘI DUNG CHI TIẾT TƯƠNG ỨNG TAB */}
             <div className="mt-2">
               {activeTab === "personal_info" && (
-                <PersonalInfoSection 
-                  formData={formData}
-                  isEditing={isEditing}
-                  setIsEditing={setIsEditing}
-                  handleChange={handleChange}
-                  handleAvatarChange={handleAvatarChange}
-                  handleSave={handleSave}
-                  handleCancel={handleCancel}
-                  formatDateDisplay={formatDateDisplay}
-                  userInfo={userInfo}
-                  isSaving={isSaving}
-                  avatarPreviewUrl={avatarPreviewUrl}
-                  errorMessage={errorMessage}
-                />
+                <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-5 shadow-sm">
+                  <PersonalInfoSection 
+                    formData={ownProfileForm.formData}
+                    isEditing={ownProfileForm.isEditing}
+                    setIsEditing={ownProfileForm.setIsEditing}
+                    handleChange={ownProfileForm.handleChange}
+                    handleAvatarChange={ownProfileForm.handleAvatarChange}
+                    handleSave={ownProfileForm.handleSave}
+                    handleCancel={ownProfileForm.handleCancel}
+                    formatDateDisplay={ownProfileForm.formatDateDisplay}
+                    userInfo={ownProfileForm.userInfo}
+                    isSaving={ownProfileForm.isSaving}
+                    avatarPreviewUrl={ownProfileForm.avatarPreviewUrl}
+                    errorMessage={ownProfileForm.errorMessage}
+                  />
+                </div>
               )}
 
               {activeTab === "security" && (

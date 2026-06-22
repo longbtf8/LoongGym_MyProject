@@ -1,8 +1,8 @@
-import React from "react";
 import { Check } from "lucide-react";
 import AvatarCard from "./AvatarCard";
 import StatsGrid from "./StatsGrid";
 import ProfileDetailsList from "./ProfileDetailsList";
+import { useGetPostsQuery } from "@/services/community/communityApi";
 
 function PersonalInfoSection({
   formData,
@@ -18,6 +18,17 @@ function PersonalInfoSection({
   avatarPreviewUrl,
   errorMessage
 }) {
+  const { data: postsResponse } = useGetPostsQuery(
+    { authorId: userInfo?.id, page: 1, limit: 5 },
+    { skip: !userInfo?.id || !isEditing }
+  );
+  const suggestedAvatarImages = (postsResponse?.data || [])
+    .flatMap((post) => post.media || [])
+    .filter((media) => !media.mediaType || media.mediaType === "image")
+    .map((media) => media.mediaUrl)
+    .filter(Boolean)
+    .slice(0, 1);
+
   return (
     <div className="flex flex-col gap-6 animate-slide-down">
       
@@ -79,6 +90,7 @@ function PersonalInfoSection({
         isEditing={isEditing} 
         avatarPreviewUrl={avatarPreviewUrl}
         onAvatarChange={handleAvatarChange}
+        suggestedImages={suggestedAvatarImages}
       />
 
       {/* THÀNH PHẦN 2: LƯỚI CHỈ SỐ CƠ THỂ & ĐƠN VỊ ĐO */}

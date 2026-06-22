@@ -5,6 +5,7 @@ export default function MatchingUsers({
   matchingUsers,
   onFollowToggle,
   onProfileClick,
+  currentUserId,
 }) {
   if (matchingUsers.length === 0) return null;
 
@@ -41,12 +42,18 @@ export default function MatchingUsers({
                 onClick={() => onProfileClick(user.id)}
                 className="flex items-center gap-3 cursor-pointer flex-1 min-w-0"
               >
-                <div className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-primary to-[#00f5d4] shrink-0">
-                  <img
-                    src={user.profile?.avatarUrl || DEFAULT_AVATAR_URL}
-                    alt={fullName}
-                    className="w-full h-full rounded-full object-cover bg-black"
-                  />
+                <div className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-primary to-[#00f5d4] shrink-0 flex items-center justify-center">
+                  {user.profile?.avatarUrl && user.profile.avatarUrl !== DEFAULT_AVATAR_URL ? (
+                    <img
+                      src={user.profile.avatarUrl}
+                      alt={fullName}
+                      className="w-full h-full rounded-full object-cover bg-black"
+                    />
+                  ) : (
+                    <div className="w-full h-full rounded-full bg-[var(--bg-color)] flex items-center justify-center text-sm font-black text-primary capitalize select-none">
+                      {fullName ? fullName.trim().charAt(0).toUpperCase() : "?"}
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="text-sm font-black text-[var(--text-color)] truncate hover:text-primary transition-all">
@@ -65,19 +72,21 @@ export default function MatchingUsers({
                 </div>
               </div>
 
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onFollowToggle(user.id, isFollowing);
-                }}
-                className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer shadow-sm active:scale-95 ${
-                  isFollowing
-                    ? "bg-[var(--border-color)]/30 text-[var(--text-color)] hover:bg-[var(--border-color)]/50"
-                    : "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
-                }`}
-              >
-                {isFollowing ? "Đang theo dõi" : "Theo dõi"}
-              </button>
+              {user.id !== currentUserId && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onFollowToggle(user.id, isFollowing);
+                  }}
+                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer shadow-sm active:scale-95 ${
+                    isFollowing
+                      ? "bg-[var(--border-color)]/30 text-[var(--text-color)] hover:bg-[var(--border-color)]/50"
+                      : "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20"
+                  }`}
+                >
+                  {isFollowing ? "Đang theo dõi" : "Theo dõi"}
+                </button>
+              )}
             </div>
           );
         })}

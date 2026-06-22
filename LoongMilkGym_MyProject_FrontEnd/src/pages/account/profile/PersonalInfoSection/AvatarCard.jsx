@@ -1,14 +1,34 @@
-import React from "react";
+import { useState } from "react";
 import { Camera, Award, Flame, Check } from "lucide-react";
 import { getFitnessLevelLabel } from "./constants";
+import AvatarPhotoModal from "../components/AvatarPhotoModal";
 
-function AvatarCard({ formData, userInfo, isEditing, avatarPreviewUrl, onAvatarChange }) {
+function AvatarCard({
+  formData,
+  userInfo,
+  isEditing,
+  avatarPreviewUrl,
+  onAvatarChange,
+  suggestedImages = [],
+}) {
+  const [avatarModalMode, setAvatarModalMode] = useState(null);
+  const currentAvatarUrl = avatarPreviewUrl || userInfo?.profile?.avatarUrl || "";
+
+  const handleModalSave = async (file) => {
+    onAvatarChange(file);
+  };
+
   return (
     <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 shadow-sm transition-all duration-300">
       
       {/* KHỐI ẢNH ĐẠI DIỆN */}
       <div className="relative group shrink-0">
-        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-[3px] bg-gradient-to-tr from-primary to-[#00f5d4] shadow-md">
+        <button
+          type="button"
+          onClick={() => setAvatarModalMode(isEditing ? "picker" : "viewer")}
+          className="block w-24 h-24 sm:w-28 sm:h-28 rounded-full p-[3px] bg-gradient-to-tr from-primary to-[#00f5d4] shadow-md cursor-pointer"
+          title="Ảnh đại diện"
+        >
           {avatarPreviewUrl ? (
             <img 
               src={avatarPreviewUrl} 
@@ -26,21 +46,16 @@ function AvatarCard({ formData, userInfo, isEditing, avatarPreviewUrl, onAvatarC
               {(formData.fullName || userInfo?.email || "U").charAt(0).toUpperCase()}
             </div>
           )}
-        </div>
+        </button>
         {isEditing && (
-          <label className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-primary text-black border border-[var(--bg-secondary)] flex items-center justify-center cursor-pointer shadow-md hover:scale-105 active:scale-95 transition-all duration-200 animate-bounce">
+          <button
+            type="button"
+            onClick={() => setAvatarModalMode("picker")}
+            className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-primary text-black border border-[var(--bg-secondary)] flex items-center justify-center cursor-pointer shadow-md hover:scale-105 active:scale-95 transition-all duration-200 animate-bounce"
+            title="Chỉnh sửa ảnh đại diện"
+          >
             <Camera className="w-4 h-4 stroke-[2.5px]" />
-            <input 
-              type="file" 
-              accept="image/*" 
-              className="hidden" 
-              onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  onAvatarChange(e.target.files[0]);
-                }
-              }}
-            />
-          </label>
+          </button>
         )}
       </div>
 
@@ -106,6 +121,17 @@ function AvatarCard({ formData, userInfo, isEditing, avatarPreviewUrl, onAvatarC
           </p>
         )}
       </div>
+
+      <AvatarPhotoModal
+        key={avatarModalMode || "closed"}
+        open={Boolean(avatarModalMode)}
+        mode={avatarModalMode || "viewer"}
+        currentAvatarUrl={currentAvatarUrl && !currentAvatarUrl.includes("photo-1534438327276-14e5300c3a48") ? currentAvatarUrl : ""}
+        fullName={formData.fullName}
+        suggestedImages={suggestedImages}
+        onSave={handleModalSave}
+        onClose={() => setAvatarModalMode(null)}
+      />
     </div>
   );
 }

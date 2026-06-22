@@ -5,6 +5,7 @@ import {
   useDeleteReactionMutation,
   useGetPostsQuery,
   useToggleReactionMutation,
+  useSearchUsersQuery,
 } from "@/services/community/communityApi";
 import {
   useFollowUserMutation,
@@ -21,11 +22,19 @@ export default function useCommunityFeed() {
   const [localFollows, setLocalFollows] = useState({});
   const [postToDelete, setPostToDelete] = useState(null);
 
-  const { data: postsResponse, isLoading: isLoadingFeed } = useGetPostsQuery({
+  const { data: postsResponse, isLoading: isLoadingFeed, refetch: refetchPosts } = useGetPostsQuery({
+    feedType: activeNav,
     page: 1,
     limit: 20,
+  }, {
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
   });
   const posts = useMemo(() => postsResponse?.data || [], [postsResponse]);
+
+  const { data: searchUsersResponse } = useSearchUsersQuery(searchQuery, {
+    skip: !searchQuery.trim(),
+  });
 
   const [toggleReaction] = useToggleReactionMutation();
   const [deleteReaction] = useDeleteReactionMutation();
@@ -39,6 +48,10 @@ export default function useCommunityFeed() {
     window.addEventListener("toggle-community-sidebar", handleToggle);
     return () => window.removeEventListener("toggle-community-sidebar", handleToggle);
   }, []);
+
+  useEffect(() => {
+    refetchPosts();
+  }, [activeNav, refetchPosts]);
 
   const filteredPosts = useMemo(() => {
     if (!searchQuery.trim()) return posts;
@@ -54,24 +67,8 @@ export default function useCommunityFeed() {
 
   const matchingUsers = useMemo(() => {
     if (!searchQuery.trim()) return [];
-    const query = searchQuery.toLowerCase().trim();
-    const usersMap = new Map();
-
-    posts.forEach((post) => {
-      if (post.user && post.user.id) {
-        usersMap.set(post.user.id, post.user);
-      }
-      post.comments?.forEach((comment) => {
-        if (comment.user && comment.user.id) {
-          usersMap.set(comment.user.id, comment.user);
-        }
-      });
-    });
-
-    return Array.from(usersMap.values()).filter((user) =>
-      user.profile?.fullName?.toLowerCase().includes(query),
-    );
-  }, [posts, searchQuery]);
+    return searchUsersResponse?.data || [];
+  }, [searchUsersResponse, searchQuery]);
 
   const handleFollowToggle = async (userId, isCurrentlyFollowing) => {
     try {
@@ -88,6 +85,10 @@ export default function useCommunityFeed() {
     }
   };
 
+  const handleFollowChanged = (userId, isFollowing) => {
+    setLocalFollows((prev) => ({ ...prev, [userId]: isFollowing }));
+  };
+
   const handleToggleComments = (postId) => {
     setOpenComments((prev) => ({
       ...prev,
@@ -95,12 +96,12 @@ export default function useCommunityFeed() {
     }));
   };
 
-  const handleRespectClick = async (post) => {
+  const handleRespectClick = async (post, reactionType = "like") => {
     try {
-      if (post.hasReacted) {
-        await deleteReaction({ postId: post.id, reactionType: "like" }).unwrap();
+      if (post.hasReacted && post.userReaction === reactionType) {
+        await deleteReaction({ postId: post.id, reactionType }).unwrap();
       } else {
-        await toggleReaction({ postId: post.id, reactionType: "like" }).unwrap();
+        await toggleReaction({ postId: post.id, reactionType }).unwrap();
       }
     } catch (err) {
       console.error("Lỗi khi tương tác bài viết:", err);
@@ -146,12 +147,14 @@ export default function useCommunityFeed() {
     matchingUsers,
     openComments,
     postToDelete,
+    refetchPosts,
     searchQuery,
     showCreateModal,
     showMobileNav,
     confirmDeletePost,
     handleDeletePost,
     handleFollowToggle,
+    handleFollowChanged,
     handleRespectClick,
     handleSendComment,
     handleToggleComments,

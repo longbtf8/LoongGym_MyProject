@@ -22,4 +22,16 @@ router.post(
   usersController.uploadAvatar
 );
 
+router.post(
+  "/me/upload-cover",
+  authRequire,
+  uploadCloud.single("image-cover"),
+  usersController.uploadCover
+);
+
+router.patch("/me/avatar-photo", authRequire, usersController.updateAvatarPhoto);
+router.patch("/me/cover-photo", authRequire, usersController.updateCoverPhoto);
+
+router.get("/:id", authRequire, usersController.getUserProfileById);
+
 module.exports = router;

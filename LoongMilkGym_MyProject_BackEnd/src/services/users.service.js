@@ -16,6 +16,15 @@ const getProfile = async (userId) => {
           email: true,
           role: true,
           status: true,
+          _count: {
+            select: {
+              followers: true,
+              following: true,
+              workoutSessions: {
+                where: { status: "completed" }
+              }
+            }
+          }
         }
       }
     }
@@ -29,10 +38,38 @@ const getProfile = async (userId) => {
   const displayHeight = convertFromStandard(profile.heightCm, profile.heightUnit, "height");
   const displayWeight = convertFromStandard(profile.weightKg, profile.weightUnit, "weight");
 
+  const followersCount = profile.user._count.followers;
+  const followingCount = profile.user._count.following;
+  const workoutsCount = profile.user._count.workoutSessions;
+
+  const progressPhotos = await prisma.progressPhoto.findMany({
+    where: { userId },
+    orderBy: { takenAt: "desc" }
+  });
+
+  const completedWorkouts = await prisma.workoutSession.findMany({
+    where: { userId, status: "completed" },
+    orderBy: { createdAt: "desc" },
+    include: {
+      exercises: {
+        include: {
+          exercise: true,
+          sets: true
+        }
+      }
+    },
+    take: 10
+  });
+
   return {
     ...profile,
     displayHeight,
     displayWeight,
+    followersCount,
+    followingCount,
+    workoutsCount,
+    progressPhotos,
+    completedWorkouts
   };
 };
 
@@ -123,7 +160,19 @@ const updateProfile = async (userId, data) => {
   };
 };
 
-const uploadAvatar = async (userId, file) => {
+const normalizePhotoProfile = (value, fallback = {}) => {
+  if (!value) return fallback;
+  if (typeof value === "object") return value;
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return fallback;
+  }
+};
+
+const isCloudinaryUrl = (url = "") => url.includes("res.cloudinary.com") || url.includes("cloudinary");
+
+const uploadAvatar = async (userId, file, avatarProfile = {}) => {
   if (!file) {
     throw new AppError("Vui lòng tải lên một file hình ảnh.", httpCodes.badRequest);
   }
@@ -141,19 +190,199 @@ const uploadAvatar = async (userId, file) => {
   });
 
   // 2. Nếu có ảnh đại diện cũ và là ảnh trên Cloudinary, tiến hành xóa
-  if (currentProfile && currentProfile.avatarUrl) {
+  if (currentProfile && currentProfile.avatarUrl && isCloudinaryUrl(currentProfile.avatarUrl)) {
     await deleteOldImage(currentProfile.avatarUrl);
   }
 
   // 3. Cập nhật URL ảnh đại diện mới vào cơ sở dữ liệu
   const updatedProfile = await prisma.userProfile.update({
     where: { userId },
-    data: { avatarUrl },
+    data: { avatarUrl, avatarProfile: normalizePhotoProfile(avatarProfile) },
   });
 
   return {
     avatarUrl: updatedProfile.avatarUrl,
+    avatarProfile: updatedProfile.avatarProfile,
     updatedAt: updatedProfile.updatedAt,
+  };
+};
+
+const uploadCover = async (userId, file, coverPhotoProfile = {}) => {
+  if (!file) {
+    throw new AppError("Vui lòng tải lên một file hình ảnh.", httpCodes.badRequest);
+  }
+
+  const coverPhotoUrl = file.path || file.secure_url;
+
+  if (!coverPhotoUrl) {
+    throw new AppError("Tải ảnh lên Cloudinary thất bại.", httpCodes.badRequest);
+  }
+
+  // 1. Lấy thông tin UserProfile hiện tại để tìm ảnh nền cũ
+  const currentProfile = await prisma.userProfile.findUnique({
+    where: { userId },
+    select: { coverPhotoUrl: true },
+  });
+
+  // 2. Nếu có ảnh nền cũ, tiến hành xóa
+  if (currentProfile && currentProfile.coverPhotoUrl && isCloudinaryUrl(currentProfile.coverPhotoUrl)) {
+    await deleteOldImage(currentProfile.coverPhotoUrl);
+  }
+
+  // 3. Cập nhật URL ảnh nền mới vào cơ sở dữ liệu
+  const updatedProfile = await prisma.userProfile.update({
+    where: { userId },
+    data: { coverPhotoUrl, coverPhotoProfile: normalizePhotoProfile(coverPhotoProfile) },
+  });
+
+  return {
+    coverPhotoUrl: updatedProfile.coverPhotoUrl,
+    coverPhotoProfile: updatedProfile.coverPhotoProfile,
+    updatedAt: updatedProfile.updatedAt,
+  };
+};
+
+const updateAvatarPhoto = async (userId, { avatarUrl, avatarProfile }) => {
+  if (!avatarUrl) {
+    throw new AppError("Vui lòng chọn ảnh đại diện.", httpCodes.badRequest);
+  }
+
+  const currentProfile = await prisma.userProfile.findUnique({
+    where: { userId },
+    select: { avatarUrl: true },
+  });
+
+  if (currentProfile?.avatarUrl && currentProfile.avatarUrl !== avatarUrl && isCloudinaryUrl(currentProfile.avatarUrl)) {
+    await deleteOldImage(currentProfile.avatarUrl);
+  }
+
+  const updatedProfile = await prisma.userProfile.update({
+    where: { userId },
+    data: {
+      avatarUrl,
+      avatarProfile: normalizePhotoProfile(avatarProfile),
+    },
+  });
+
+  return {
+    avatarUrl: updatedProfile.avatarUrl,
+    avatarProfile: updatedProfile.avatarProfile,
+    updatedAt: updatedProfile.updatedAt,
+  };
+};
+
+const updateCoverPhoto = async (userId, { coverPhotoUrl, coverPhotoProfile }) => {
+  const currentProfile = await prisma.userProfile.findUnique({
+    where: { userId },
+    select: { coverPhotoUrl: true },
+  });
+
+  if (!coverPhotoUrl) {
+    if (currentProfile?.coverPhotoUrl && isCloudinaryUrl(currentProfile.coverPhotoUrl)) {
+      await deleteOldImage(currentProfile.coverPhotoUrl);
+    }
+
+    const updatedProfile = await prisma.userProfile.update({
+      where: { userId },
+      data: {
+        coverPhotoUrl: null,
+        coverPhotoProfile: null,
+      },
+    });
+
+    return {
+      coverPhotoUrl: updatedProfile.coverPhotoUrl,
+      coverPhotoProfile: updatedProfile.coverPhotoProfile,
+      updatedAt: updatedProfile.updatedAt,
+    };
+  }
+
+  if (currentProfile?.coverPhotoUrl && currentProfile.coverPhotoUrl !== coverPhotoUrl && isCloudinaryUrl(currentProfile.coverPhotoUrl)) {
+    await deleteOldImage(currentProfile.coverPhotoUrl);
+  }
+
+  const updatedProfile = await prisma.userProfile.update({
+    where: { userId },
+    data: {
+      coverPhotoUrl,
+      coverPhotoProfile: normalizePhotoProfile(coverPhotoProfile),
+    },
+  });
+
+  return {
+    coverPhotoUrl: updatedProfile.coverPhotoUrl,
+    coverPhotoProfile: updatedProfile.coverPhotoProfile,
+    updatedAt: updatedProfile.updatedAt,
+  };
+};
+
+const getUserProfileById = async (userId, currentUserId) => {
+  const profile = await prisma.userProfile.findUnique({
+    where: { userId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          followers: {
+            where: { followerId: currentUserId },
+            select: { followerId: true }
+          },
+          _count: {
+            select: {
+              followers: true,
+              following: true,
+              workoutSessions: {
+                where: { status: "completed" }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  if (!profile) {
+    throw new AppError("Không tìm thấy thông tin hồ sơ người dùng.", httpCodes.notFound);
+  }
+
+  const isFollowing = profile.user.followers.length > 0;
+  const followersCount = profile.user._count.followers;
+  const followingCount = profile.user._count.following;
+  const workoutsCount = profile.user._count.workoutSessions;
+
+  const displayHeight = convertFromStandard(profile.heightCm, profile.heightUnit, "height");
+  const displayWeight = convertFromStandard(profile.weightKg, profile.weightUnit, "weight");
+
+  const progressPhotos = await prisma.progressPhoto.findMany({
+    where: { userId, visibility: "public" },
+    orderBy: { takenAt: "desc" }
+  });
+
+  const completedWorkouts = await prisma.workoutSession.findMany({
+    where: { userId, status: "completed" },
+    orderBy: { createdAt: "desc" },
+    include: {
+      exercises: {
+        include: {
+          exercise: true,
+          sets: true
+        }
+      }
+    },
+    take: 10
+  });
+
+  return {
+    ...profile,
+    displayHeight,
+    displayWeight,
+    followersCount,
+    followingCount,
+    workoutsCount,
+    isFollowing,
+    progressPhotos,
+    completedWorkouts
   };
 };
 
@@ -161,4 +390,8 @@ module.exports = {
   getProfile,
   updateProfile,
   uploadAvatar,
+  uploadCover,
+  updateAvatarPhoto,
+  updateCoverPhoto,
+  getUserProfileById,
 };

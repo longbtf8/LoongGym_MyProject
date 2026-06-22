@@ -1,10 +1,20 @@
-export default function PostMediaGrid({ media }) {
+export default function PostMediaGrid({ media, onMediaClick }) {
   if (!media || media.length === 0) return null;
+
+  const openMedia = (index) => {
+    onMediaClick?.(index);
+  };
+
+  const tileClass = "relative w-full h-full min-h-0 overflow-hidden cursor-pointer";
 
   return (
     <div className="mt-2">
       {media.length === 1 && (
-        <div className="relative w-full rounded-2xl overflow-hidden border border-[var(--border-color)] bg-black/15 flex items-center justify-center max-h-[500px]">
+        <button
+          type="button"
+          onClick={() => openMedia(0)}
+          className="relative w-full rounded-2xl overflow-hidden border border-[var(--border-color)] bg-black/15 flex items-center justify-center max-h-[500px] p-0 text-left"
+        >
           <div
             className="absolute inset-0 bg-cover bg-center blur-md opacity-30 scale-105"
             style={{ backgroundImage: `url(${media[0].mediaUrl})` }}
@@ -14,14 +24,16 @@ export default function PostMediaGrid({ media }) {
             alt="post media"
             className="relative z-10 w-full h-auto max-h-[500px] object-contain block mx-auto"
           />
-        </div>
+        </button>
       )}
 
       {media.length === 2 && (
         <div className="grid grid-cols-2 gap-1 rounded-2xl overflow-hidden border border-[var(--border-color)] aspect-[3/2] w-full">
-          {media.map((med) => (
-            <div
+          {media.map((med, index) => (
+            <button
+              type="button"
               key={med.id}
+              onClick={() => openMedia(index)}
               className="relative w-full h-full min-h-0 overflow-hidden flex items-center justify-center bg-black/15"
             >
               <div
@@ -33,29 +45,29 @@ export default function PostMediaGrid({ media }) {
                 alt="post media"
                 className="relative z-10 max-h-full max-w-full object-contain"
               />
-            </div>
+            </button>
           ))}
         </div>
       )}
 
       {media.length === 3 && (
         <div className="grid grid-cols-2 gap-1 rounded-2xl overflow-hidden border border-[var(--border-color)] aspect-[3/2] w-full">
-          <div className="relative w-full h-full min-h-0 overflow-hidden">
+          <button type="button" onClick={() => openMedia(0)} className={tileClass}>
             <img
               src={media[0].mediaUrl}
               alt="post media"
               className="absolute inset-0 w-full h-full object-cover"
             />
-          </div>
+          </button>
           <div className="grid grid-rows-2 gap-1 h-full min-h-0">
             {[1, 2].map((idx) => (
-              <div key={idx} className="relative w-full h-full min-h-0 overflow-hidden">
+              <button key={idx} type="button" onClick={() => openMedia(idx)} className={tileClass}>
                 <img
                   src={media[idx].mediaUrl}
                   alt="post media"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -65,24 +77,24 @@ export default function PostMediaGrid({ media }) {
         <div className="grid grid-cols-2 gap-1 rounded-2xl overflow-hidden border border-[var(--border-color)] aspect-[3/2] w-full">
           <div className="grid grid-rows-2 gap-1 h-full min-h-0">
             {[0, 1].map((idx) => (
-              <div key={idx} className="relative w-full h-full min-h-0 overflow-hidden">
+              <button key={idx} type="button" onClick={() => openMedia(idx)} className={tileClass}>
                 <img
                   src={media[idx].mediaUrl}
                   alt="post media"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-              </div>
+              </button>
             ))}
           </div>
           <div className="grid grid-rows-2 gap-1 h-full min-h-0">
             {[2, 3].map((idx) => (
-              <div key={idx} className="relative w-full h-full min-h-0 overflow-hidden">
+              <button key={idx} type="button" onClick={() => openMedia(idx)} className={tileClass}>
                 <img
                   src={media[idx].mediaUrl}
                   alt="post media"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -92,26 +104,26 @@ export default function PostMediaGrid({ media }) {
         <div className="grid grid-cols-2 gap-1 rounded-2xl overflow-hidden border border-[var(--border-color)] aspect-[1/1] w-full">
           <div className="grid grid-rows-2 gap-1 h-full min-h-0">
             {[0, 1].map((idx) => (
-              <div key={idx} className="relative w-full h-full min-h-0 overflow-hidden">
+              <button key={idx} type="button" onClick={() => openMedia(idx)} className={tileClass}>
                 <img
                   src={media[idx].mediaUrl}
                   alt="post media"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-              </div>
+              </button>
             ))}
           </div>
           <div className="grid grid-rows-3 gap-1 h-full min-h-0">
             {[2, 3].map((idx) => (
-              <div key={idx} className="relative w-full h-full min-h-0 overflow-hidden">
+              <button key={idx} type="button" onClick={() => openMedia(idx)} className={tileClass}>
                 <img
                   src={media[idx].mediaUrl}
                   alt="post media"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-              </div>
+              </button>
             ))}
-            <div className="relative w-full h-full min-h-0 overflow-hidden">
+            <button type="button" onClick={() => openMedia(4)} className={tileClass}>
               <img
                 src={media[4].mediaUrl}
                 alt="post media"
@@ -122,11 +134,10 @@ export default function PostMediaGrid({ media }) {
                   +{media.length - 5}
                 </div>
               )}
-            </div>
+            </button>
           </div>
         </div>
       )}
     </div>
   );
 }
-

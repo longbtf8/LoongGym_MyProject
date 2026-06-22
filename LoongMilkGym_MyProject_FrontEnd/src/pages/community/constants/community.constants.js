@@ -41,3 +41,13 @@ export const TRAINERS = [
   },
 ];
 
+export const REACTION_EMOJIS = [
+  { type: "like", emoji: "👍", label: "Thích", color: "text-primary font-black" },
+  { type: "love", emoji: "❤️", label: "Yêu thích", color: "text-red-500 font-bold" },
+  { type: "care", emoji: "🥰", label: "Thương thương", color: "text-yellow-500 font-bold" },
+  { type: "haha", emoji: "😆", label: "Haha", color: "text-yellow-500 font-bold" },
+  { type: "wow", emoji: "😮", label: "Wow", color: "text-yellow-500 font-bold" },
+  { type: "sad", emoji: "😢", label: "Buồn", color: "text-yellow-500 font-bold" },
+  { type: "angry", emoji: "😡", label: "Phẫn nộ", color: "text-orange-600 font-bold" },
+];
+

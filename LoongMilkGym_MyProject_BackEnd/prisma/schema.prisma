@@ -46,6 +46,21 @@ model User {
   carts             Cart[]
   orders            Order[]
 
+  communityPosts   CommunityPost[]
+  postComments     PostComment[]
+  postReactions    PostReaction[]
+  mediaComments    PostMediaComment[]
+  mediaReactions   PostMediaReaction[]
+  mediaCommentReactions PostMediaCommentReaction[]
+  commentReactions CommentReaction[]
+  hiddenPosts      PostUserHidden[]
+  hiddenComments   CommentUserHidden[]
+  archivedPosts    PostProfileArchive[]
+  postReports      PostReport[]     @relation("PostReporter")
+  postSaves        PostSave[]
+  followers        UserFollow[]    @relation("FollowingList")
+  following        UserFollow[]    @relation("FollowersList")
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -58,6 +73,9 @@ model UserProfile {
 
   fullName           String?   @map("full_name")
   avatarUrl          String?   @map("avatar_url")
+  avatarProfile      Json?     @map("avatar_profile")
+  coverPhotoUrl      String?   @map("cover_photo_url") @db.Text
+  coverPhotoProfile  Json?     @map("cover_photo_profile")
   phone              String?
   address            String?
   gender             String?
@@ -282,7 +300,10 @@ model ExerciseTag {
 
 
 
-// NHÓM 3 BẢNG LỘ TRÌNH TẬP LUYỆN
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║  NHÓM BẢNG 3: LỘ TRÌNH TẬP LUYỆN (Workout Program & Training Plan)           ║
+// ║  Quản lý chương trình tập, mẫu thiết kế bài tập, lộ trình huấn luyện của user ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
 model WorkoutProgram {
   id            String              @id @default(uuid())
   title         String              @db.VarChar(200)
@@ -386,7 +407,10 @@ model UserTrainingPlanDay {
 }
 
 
-//Nhóm 4 Phiên luyện tập
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║  NHÓM BẢNG 4: PHIÊN LUYỆN TẬP (Workout Sessions & Workout Sets)              ║
+// ║  Ghi nhật ký chi tiết quá trình tập luyện, bài tập, hiệp tập và kết quả      ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
 
 model WorkoutSession {
   id              String                 @id @default(uuid())
@@ -404,6 +428,7 @@ model WorkoutSession {
   user            User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   planDay         UserTrainingPlanDay?   @relation(fields: [planDayId], references: [id], onDelete: SetNull)
   exercises       WorkoutSessionExercise[]
+  communityPosts   CommunityPost[]
 
   @@map("workout_sessions")
 }
@@ -441,7 +466,10 @@ model WorkoutSet {
   @@map("workout_sets")
 }
 
-//Nhóm 5 dinh dưỡng Nutrition & Meal Log Models
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║  NHÓM BẢNG 5: DINH DƯỠNG & BỮA ĂN (Nutrition & Meal Logs)                    ║
+// ║  Theo dõi mục tiêu dinh dưỡng, nhật ký món ăn, định lượng calo tiêu thụ      ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
 model NutritionTarget {
   id             String   @id @default(uuid())
   userId         String   @map("user_id")
@@ -506,7 +534,10 @@ model MealLogItem {
   @@map("meal_log_items")
 }
 
-//Nhóm 6 Phục hồi & Theo dõi sức khỏe
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║  NHÓM BẢNG 6: SỨC KHỎE & PHỤC HỒI (Health, Recovery & AI Coach)              ║
+// ║  Theo dõi thể trạng, giấc ngủ, chấn thương, ảnh tiến trình, hội thoại AI PT  ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
 
 model BodyMetric {
   id             String    @id @default(uuid())
@@ -636,9 +667,10 @@ model AiKnowledgeDocument {
   @@map("ai_knowledge_documents")
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// 🛠️ DIGITAL PRODUCT STORE MODELS
-// ══════════════════════════════════════════════════════════════════════════════
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║  NHÓM BẢNG 7: CỬA HÀNG SẢN PHẨM (Digital Product Store)                      ║
+// ║  Quản lý danh mục, sản phẩm, tệp tin tải về, giỏ hàng, đơn hàng & thanh toán ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
 
 model ProductCategory {
   id        String   @id @default(uuid())
@@ -764,4 +796,219 @@ model Payment {
   @@map("payments")
 }
 
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║  NHÓM BẢNG 8: CỘNG ĐỒNG & MẠNG XÃ HỘI (Community & Social)                   ║
+// ║  Quản lý bài đăng, ảnh đính kèm, bình luận, tương tác thích và theo dõi      ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
 
+model CommunityPost {
+  id                      String           @id @default(uuid())
+  userId                  String           @map("user_id")
+  content                 String?          @db.Text
+  postType                String           @default("text") @map("post_type") @db.VarChar(50)
+  visibility              String           @default("public") @db.VarChar(30)
+  relatedWorkoutSessionId String?          @map("related_workout_session_id")
+  metadata                Json?            @map("metadata")
+  createdAt               DateTime         @default(now()) @map("created_at")
+  updatedAt               DateTime         @updatedAt @map("updated_at")
+
+  user                 User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  relatedWorkoutSession WorkoutSession? @relation(fields: [relatedWorkoutSessionId], references: [id], onDelete: SetNull)
+  media                PostMedia[]
+  comments             PostComment[]
+  reactions            PostReaction[]
+  hiddenBy             PostUserHidden[]
+  profileArchives      PostProfileArchive[]
+  reports              PostReport[]
+  saves                PostSave[]
+
+  @@map("community_posts")
+}
+
+model PostMedia {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  mediaUrl  String   @map("media_url") @db.Text
+  mediaType String?  @map("media_type") @db.VarChar(30)
+  caption   String?  @db.Text
+  sortOrder Int      @default(0) @map("sort_order")
+
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comments  PostMediaComment[]
+  reactions PostMediaReaction[]
+
+  @@map("post_media")
+}
+
+model PostMediaComment {
+  id        String   @id @default(uuid())
+  mediaId   String   @map("media_id")
+  userId    String   @map("user_id")
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  media PostMedia @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reactions PostMediaCommentReaction[]
+
+  @@map("post_media_comments")
+}
+
+model PostMediaCommentReaction {
+  id           String   @id @default(uuid())
+  commentId    String   @map("comment_id")
+  userId       String   @map("user_id")
+  reactionType String   @default("like") @map("reaction_type") @db.VarChar(30)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  comment PostMediaComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId, reactionType], map: "pmcr_comment_user_type_key")
+  @@map("post_media_comment_reactions")
+}
+
+model PostMediaReaction {
+  id           String   @id @default(uuid())
+  mediaId      String   @map("media_id")
+  userId       String   @map("user_id")
+  reactionType String   @default("like") @map("reaction_type") @db.VarChar(30)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  media PostMedia @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaId, userId, reactionType])
+  @@map("post_media_reactions")
+}
+
+model PostComment {
+  id              String        @id @default(uuid())
+  postId          String        @map("post_id")
+  userId          String        @map("user_id")
+  parentCommentId String?       @map("parent_comment_id")
+  content         String        @db.Text
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  post          CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentComment PostComment?  @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+  replies       PostComment[] @relation("CommentReplies")
+  reactions     CommentReaction[]
+  hiddenBy      CommentUserHidden[]
+
+  @@map("post_comments")
+}
+
+model CommentReaction {
+  id           String      @id @default(uuid())
+  commentId    String      @map("comment_id")
+  userId       String      @map("user_id")
+  reactionType String      @default("like") @map("reaction_type") @db.VarChar(30)
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  comment      PostComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId, reactionType])
+  @@map("comment_reactions")
+}
+
+model PostReaction {
+  id           String   @id @default(uuid())
+  postId       String   @map("post_id")
+  userId       String   @map("user_id")
+  reactionType String   @default("like") @map("reaction_type") @db.VarChar(30)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId, reactionType])
+  @@map("post_reactions")
+}
+
+model PostUserHidden {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("post_user_hidden")
+}
+
+model CommentUserHidden {
+  id        String   @id @default(uuid())
+  commentId String   @map("comment_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  comment   PostComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@map("comment_user_hidden")
+}
+
+model PostProfileArchive {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("post_profile_archives")
+}
+
+// ╔══════════════════════════════════════════════════════════════════════════════╗
+// ║  BÁO CÁO BÀI VIẾT CHO ADMIN (Post Reports)                                  ║
+// ║  Lưu các báo cáo từ người dùng để trang admin duyệt và xử lý sau             ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
+
+model PostReport {
+  id         String    @id @default(uuid())
+  postId     String    @map("post_id")
+  reporterId String    @map("reporter_id")
+  reason     String?   @db.Text
+  status     String    @default("pending") @db.VarChar(30)
+  resolvedAt DateTime? @map("resolved_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  post     CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reporter User          @relation("PostReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@map("post_reports")
+}
+
+model UserFollow {
+  followerId  String   @map("follower_id")
+  followingId String   @map("following_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  follower  User @relation("FollowersList", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("FollowingList", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@map("user_follows")
+}
+
+model PostSave {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("post_saves")
+}
