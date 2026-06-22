@@ -13,55 +13,63 @@ LoongMilKGymProject/
 ├── LoongMilkGym_MyProject_FrontEnd/   # Giao diện người dùng (Frontend React.js Vite)
 ├── Report/                            # Thư mục chứa các tài liệu thiết kế hệ thống (Không deploy)
 ├── README.md                          # Tài liệu giới thiệu tổng quan dự án
-└── .gitignore                         # Tệp cấu hình loại trừ mã nguồn Git (Đã ẩn thư mục Report)
+└── .gitignore                         # Tệp cấu hình loại trừ mã nguồn Git
 ```
 
 ---
 
 ## 🎨 2. Kiến Trúc Phân Hệ Frontend (`LoongMilkGym_MyProject_FrontEnd`)
-Frontend được xây dựng trên nền tảng **React (v19)** kết hợp với công cụ đóng gói siêu tốc **Vite (v8)** và thư viện quản lý trạng thái **Redux Toolkit (RTK)** kết hợp **RTK Query** để giao tiếp API đồng bộ.
+Frontend được xây dựng trên nền tảng **React (v19)** kết hợp với công cụ đóng gói siêu tốc **Vite** và thư viện quản lý trạng thái **Redux Toolkit (RTK)** kết hợp **RTK Query** để giao tiếp API đồng bộ.
 
 ### Cấu Trúc Mã Nguồn Frontend:
 ```
 src/
 ├── components/           # Các component dùng chung toàn hệ thống (Header, Logo, LoadingScreen,...)
-├── config/               # Cấu hình môi trường và các hằng số ứng dụng
-├── hooks/                # Các Custom Hooks dùng chung (useAuth,...)
+├── config/               # Cấu hình môi trường, hằng số và danh mục đường dẫn (paths)
+├── context/              # Các Context Provider toàn cục (ConfirmContext,...)
+├── hooks/                # Các Custom Hooks dùng chung (useAuth, useProfileForm,...)
+├── layouts/              # Bố cục trang giao diện (DefaultLayout, AuthLayout,...)
 ├── pages/                # Các trang nghiệp vụ chính
-│   ├── account/          # Quản lý tài khoản
-│   │   └── profile/      # Hồ sơ cá nhân (Đã được mô-đun hóa cực kỳ tối ưu)
+│   ├── account/          # Quản lý tài khoản (Đổi mật khẩu, Chỉnh sửa hồ sơ cá nhân)
+│   ├── aiCoach/          # Trợ lý ảo AI Coach chat tương tác
 │   ├── auth/             # Đăng nhập, đăng ký, xác thực, khôi phục mật khẩu
-│   ├── exercises/        # Thư viện bài tập & Chi tiết bài tập (Mới thêm)
-│   ├── roadmap/          # Lộ trình & Tracker tập luyện (Mô-đun hóa Direction B)
-│   └── home/             # Trang chủ giới thiệu
-├── services/             # Lớp kết nối API bằng RTK Query (authApi, exerciseApi,...)
+│   ├── cart/             # Giỏ hàng sản phẩm số
+│   ├── community/        # Bảng tin cộng đồng, tương tác xã hội (Đăng bài, bình luận, follow)
+│   ├── dashboard/        # Bảng điều khiển tổng quan cá nhân
+│   ├── exercises/        # Thư viện bài tập & chi tiết bài tập
+│   ├── myPlan/           # Lộ trình & Lịch tập luyện 30 ngày (Khôi phục, hoán đổi ngày tập)
+│   ├── nutrition/        # Theo dõi dinh dưỡng, bữa ăn và nước uống
+│   ├── recovery/         # Theo dõi sức khỏe, phục hồi sinh học và chấn thương
+│   ├── store/            # Cửa hàng sản phẩm số (Giáo án, thực đơn, ebook)
+│   └── todayWorkout/     # Phiên tập luyện hôm nay và thực hiện hiệp làm việc
+├── services/             # Lớp kết nối API bằng RTK Query (authApi, communityApi, dashboardApi,...)
 ├── store/                # Quản lý global State (Redux Toolkit store)
 ├── utils/                # Các hàm tiện ích dùng chung (errorParser,...)
-├── App.jsx               # Thành phần gốc của ứng dụng React
-└── main.jsx              # Điểm khởi chạy ứng dụng chính
+├── App.jsx               # Thành phần gốc điều hướng định tuyến của ứng dụng
+└── main.jsx              # Điểm khởi chạy ứng dụng chính (Mounting DOM)
 ```
 
 ---
 
 ## 💻 3. Kiến Trúc Phân Hệ Backend (`LoongMilkGym_MyProject_BackEnd`)
-Backend là một máy chủ API RESTful được viết bằng **Express.js (Node.js)** và sử dụng **Prisma ORM** để tương tác với cơ sở dữ liệu quan hệ MySQL cục bộ. Backend áp dụng mô hình kiến trúc phân lớp sạch sẽ (**Service-Oriented Architecture**):
+Backend là một máy chủ API RESTful được viết bằng **Express.js (Node.js)** và sử dụng **Prisma ORM** để tương tác với cơ sở dữ liệu quan hệ MySQL. Backend áp dụng mô hình kiến trúc phân lớp sạch sẽ (**Service-Oriented Architecture**):
 
 ### Cấu Trúc Mã Nguồn Backend:
 ```
 src/
-├── config/               # Cấu hình kết nối cơ sở dữ liệu, các hằng số hệ thống
-├── controllers/          # Tầng tiếp nhận Request và trả về Response (auth, users, exercises,...)
+├── config/               # Cấu hình kết nối cơ sở dữ liệu, các hằng số hệ thống (constants, passport)
+├── controllers/          # Tầng tiếp nhận Request và trả về Response (auth, users, community, cart,...)
 ├── jobs/                 # Các tác vụ chạy ngầm gửi email và dọn dẹp hệ thống
 ├── lib/                  # Thư viện cài đặt bên thứ 3 (prisma, nodemailer)
-├── middlewares/          # Các tầng trung gian (xử lý lỗi exceptionHandler, xác thực authRequire)
+├── middlewares/          # Các tầng trung gian (xử lý lỗi exceptionHandler, rateLimiter, xác thực authRequire)
 ├── resources/            # Tài nguyên tĩnh và mẫu email (mail templates)
-├── routes/               # Định nghĩa các tuyến đường API RESTful (auth, users, exercises,...)
+├── routes/               # Định nghĩa các tuyến đường API RESTful (auth, users, community, cart,...)
 ├── schedulers/           # Tác vụ định kỳ (cleanupExpiredTokens, cleanupProcessedJobs)
-├── services/             # Tầng chứa logic nghiệp vụ chính (auth, users, exercises,...)
+├── services/             # Tầng chứa logic nghiệp vụ chính (auth, users, community, cart,...)
 ├── utils/                # Hàm tiện ích hệ thống (unitConverter, upload, jwt,...)
-├── validations/          # Tầng kiểm tra ràng buộc đầu vào bằng Zod Schema (user, exercise,...)
+├── validations/          # Tầng kiểm tra ràng buộc đầu vào bằng Zod Schema (user, exercise, cart,...)
 ├── server.js             # Điểm khởi động máy chủ API Express
-└── prisma/               # Cấu hình schema.prisma và các bản chuyển đổi DB
+└── prisma/               # Cấu hình schema.prisma, các bản migrations và dữ liệu mẫu seed CSDL
 ```
 
 ---
@@ -82,8 +90,8 @@ sequenceDiagram
     Note over VAL: Kiểm tra định dạng đầu vào<br/>(SĐT Việt Nam, Chiều cao/Cân nặng tương ứng đơn vị)
     
     ALT Dữ liệu không hợp lệ (Dữ liệu ảo)
-        VAL-->>FE: Trả về lỗi 400 (kèm thông điệp tiếng Việt thân thiện)
-        Note over FE: Hiển thị lỗi lên UI ngay trên Form
+    VAL-->>FE: Trả về lỗi 400 (kèm thông điệp tiếng Việt thân thiện)
+    Note over FE: Hiển thị lỗi lên UI ngay trên Form thông qua Toast
     ELSE Dữ liệu hợp lệ
         VAL->>CTL: Chuyển tiếp Request sạch
         CTL->>SVC: Gọi hàm updateProfile(userId, data)
@@ -93,14 +101,19 @@ sequenceDiagram
         SVC->>SVC: Quy đổi ngược đơn vị để gửi về hiển thị
         SVC-->>CTL: Trả về dữ liệu hồ sơ mới
         CTL-->>FE: HTTP 200 Success (kèm dữ liệu mới đã được chuẩn hóa)
-        Note over FE: Cập nhật State toàn cục<br/>(Hiển thị chỉ số lộng lẫy lên giao diện)
+        Note over FE: Cập nhật State toàn cục<br/>(Hiển thị chỉ số lộng lẫy lên giao diện và hiển thị Toast)
     END
 ```
 
-*   **Tải trang (Lazy-Loading)**: Ứng dụng phân rã mã nguồn thành các file chunk độc lập để tải nhanh. Khi chuyển trang, React Suspense sẽ hiển thị component **LoadingScreen** với hiệu ứng vòng xoay Neon và logo màu sắc thương hiệu nổi bật.
-*   **Tích hợp Lưu Trữ Đám Mây (Cloudinary)**: 
-    *   Hồ sơ người dùng hỗ trợ upload Avatar trực tiếp lên Cloudinary. Khi có Avatar mới, hệ thống tự động gọi API Cloudinary để hủy bỏ (destroy) tệp tin ảnh cũ dựa trên `public_id`, giải phóng bộ nhớ.
-    *   Thư viện bài tập (21 bài tập chính) sử dụng ảnh mẫu chất lượng cao được lưu trữ tập trung trên thư mục `LoongMilkGym_APP/exercises` của Cloudinary và đồng bộ hóa qua DB MySQL.
-    *   Giáo án lộ trình có sẵn sử dụng ảnh bìa gym/fitness chất lượng cao lưu trữ tại `LoongMilkGym_APP/program_covers` trên Cloudinary và được đồng bộ hóa qua DB thông qua cơ chế seed database.
+### Các Đặc Điểm Tương Tác Nổi Bật:
 
-*   **Bảo mật dữ liệu**: Hệ thống không lưu trữ mật khẩu hay khóa thô. Lớp bảo mật `exceptionHandler` chặn đứng toàn bộ mã lỗi kỹ thuật của Prisma/SQL để tránh rò rỉ cấu trúc DB ra ngoài Internet.
+1. **Hộp Thoại Xác Nhận Tùy Biến (Custom Confirm System)**:
+   - Thay thế hoàn toàn các lệnh `confirm()` hoặc `alert()` mặc định của trình duyệt bằng `ConfirmProvider` và custom modal Glassmorphism đồng nhất, tăng tính thẩm mỹ premium.
+   - Hộp thoại này sử dụng React Portals đẩy trực tiếp ra ngoài DOM body để không chịu ảnh hưởng từ cấu trúc layout trang hiện tại.
+
+2. **Tải Trang Mượt Mà (Lazy-Loading & Suspense)**:
+   - Các trang nghiệp vụ được tải chậm để tiết kiệm dung lượng ban đầu. Trong lúc chờ tải chunk, màn hình chờ Neon cao cấp **LoadingScreen** xoay ngược chiều kim đồng hồ mang đậm phong cách fitness sẽ xuất hiện.
+
+3. **Đồng Bộ Bộ Nhớ Đệm Đám Mây (Cloudinary)**:
+   - Avatar người dùng và ảnh bìa trang cá nhân được upload lên Cloudinary. Tự động xóa ảnh vật lý cũ trên Cloudinary khi thay đổi ảnh mới để giải phóng dung lượng rác.
+   - Ảnh các bài tập mẫu và giáo án cũng được đồng bộ hóa từ Cloudinary và quản lý qua cơ sở dữ liệu quan hệ MySQL.

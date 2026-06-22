@@ -1,40 +1,50 @@
-# BÁO CÁO THIẾT KẾ SCHEMA CƠ SỞ DỮ LIỆU & KẾ HOẠCH TRIỂN KHAI CỬA HÀNG SẢN PHẨM SỐ
+# BÁO CÁO THIẾT KẾ SCHEMA CƠ SỞ DỮ LIỆU & PHÂN LOẠI CHỨC NĂNG DỰ ÁN LOONGGYM
 
-Tài liệu này chi tiết cấu trúc các thực thể dữ liệu mới được bổ sung vào file `schema.prisma` phục vụ cho màn hình Cửa Hàng Sản Phẩm Số (Meal Plan, E-book, Program, Giỏ hàng, Đặt hàng, Thanh toán), đồng thời hoạch định lộ trình triển khai chi tiết.
+Tài liệu này chi tiết cấu trúc các thực thể dữ liệu mới được bổ sung vào file `schema.prisma` phục vụ cho màn hình Cửa Hàng Sản Phẩm Số, phân hệ Cộng Đồng và hệ thống lưu trữ chấn thương/phục hồi sinh học.
 
 ---
 
 ## 1. PHÂN LOẠI SCHEMA THEO TỪNG KHỐI CHỨC NĂNG
 
-Hệ thống cơ sở dữ liệu của ứng dụng hiện tại được chia thành **7 khối chức năng** chính:
+Hệ thống cơ sở dữ liệu của ứng dụng hiện tại được chia thành **8 khối chức năng** chính:
 
 ### KHỐI 1: QUẢN LÝ NGƯỜI DÙNG & HỆ THỐNG (User & Account Management)
 *Quản lý tài khoản, thông tin hồ sơ, cấu hình người dùng và quản lý phiên đăng nhập.*
-* **Các bảng:** `User`, `UserProfile`, `UserSetting`, `PasswordResetToken`, `RevokedTokens`, `RefreshTokens`, `Queues`.
+- **Các bảng:** `User`, `UserProfile`, `UserSetting`, `PasswordResetToken`, `RevokedTokens`, `RefreshTokens`, `Queues`.
 
 ### KHỐI 2: THƯ VIỆN BÀI TẬP (Exercise Library)
 *Lưu trữ cơ sở dữ liệu bài tập chuẩn, nhóm cơ tham gia, thiết bị sử dụng và hướng dẫn kỹ thuật.*
-* **Các bảng:** `MuscleGroup`, `Equipment`, `Exercise`, `ExerciseMuscle`, `ExerciseStep`, `ExerciseCommonMistake`, `ExerciseTag`.
+- **Các bảng:** `MuscleGroup`, `Equipment`, `Exercise`, `ExerciseMuscle`, `ExerciseStep`, `ExerciseCommonMistake`, `ExerciseTag`.
 
 ### KHỐI 3: GIÁO ÁN MẪU & LỊCH TRÌNH CÁ NHÂN (Workout Programs & Schedules)
 *Xây dựng cấu trúc các chương trình tập luyện mẫu (PPL, Upper/Lower) và ánh xạ thành lịch tập cụ thể theo ngày của từng thành viên.*
-* **Các bảng:** `WorkoutProgram`, `WorkoutProgramDay`, `WorkoutTemplate`, `WorkoutTemplateExercise`, `UserTrainingPlan`, `UserTrainingPlanDay`.
+- **Các bảng:** `WorkoutProgram`, `WorkoutProgramDay`, `WorkoutTemplate`, `WorkoutTemplateExercise`, `UserTrainingPlan`, `UserTrainingPlanDay`.
 
 ### KHỐI 4: KẾT QUẢ TẬP LUYỆN & PHỤC HỒI (Workout Log & Analytics)
 *Theo dõi tiến trình thực hiện nâng tạ thực tế, ghi nhận chỉ số cơ thể, trạng thái mệt mỏi/phục hồi và ảnh chụp thay đổi.*
-* **Các bảng:** `WorkoutSession`, `WorkoutSessionExercise`, `WorkoutSet`, `BodyMetric`, `RecoveryLog`, `InjuryLog`, `ProgressPhoto`.
+- **Các bảng:** `WorkoutSession`, `WorkoutSessionExercise`, `WorkoutSet`, `BodyMetric`, `RecoveryLog`, `InjuryLog`, `ProgressPhoto`.
 
 ### KHỐI 5: DINH DƯỠNG & BỮA ĂN (Nutrition Management)
 *Đặt mục tiêu Calo/Macros hàng ngày và ghi nhật ký các thực phẩm đã tiêu thụ trong bữa ăn.*
-* **Các bảng:** `NutritionTarget`, `FoodItem`, `MealLog`, `MealLogItem`.
+- **Các bảng:** `NutritionTarget`, `FoodItem`, `MealLog`, `MealLogItem`.
 
 ### KHỐI 6: TRỢ LÝ HUẤN LUYỆN AI (AI Coach System)
 *Lưu trữ lịch sử chat, các khuyến nghị điều chỉnh lịch tập thông minh do AI đề xuất.*
-* **Các bảng:** `AiConversation`, `AiMessage`, `AiRecommendation`, `AiKnowledgeDocument`.
+- **Các bảng:** `AiConversation`, `AiMessage`, `AiRecommendation`, `AiKnowledgeDocument`.
 
-### KHỐI 7: CỬA HÀNG SẢN PHẨM SỐ (Digital Product Store) - *Khối Mới Thêm*
+### KHỐI 7: CỬA HÀNG SẢN PHẨM SỐ (Digital Product Store)
 *Cấu trúc hỗ trợ hiển thị sản phẩm số, quản lý giỏ hàng, tạo đơn hàng và lưu vết giao dịch thanh toán.*
+- **Các bảng:** `ProductCategory`, `Product`, `ProductAsset`, `Cart`, `CartItem`, `Order`, `OrderItem`, `Payment`.
 
+### KHỐI 8: TƯƠNG TÁC CỘNG ĐỒNG & MẠNG XÃ HỘI (Community & Social Network) - *Khối Mới Thêm*
+*Lưu trữ bài đăng cộng đồng, bình luận bài viết, bình luận hình ảnh chi tiết, lượt bày tỏ cảm xúc và hệ thống theo dõi giữa các người dùng.*
+- **Các bảng:** `CommunityPost`, `PostMedia`, `PostMediaComment`, `PostMediaCommentReaction`, `PostMediaReaction`, `PostComment`, `CommentReaction`, `PostReaction`, `PostUserHidden`, `CommentUserHidden`, `PostProfileArchive`, `PostReport`, `UserFollow`, `PostSave`.
+
+---
+
+## 2. SCHEMA CỦA CÁC KHỐI BỔ SUNG MỚI
+
+### 2.1. Khối 7: Cửa hàng Sản phẩm số & Giỏ hàng
 ```prisma
 model ProductCategory {
   id        String   @id @default(uuid())
@@ -161,25 +171,155 @@ model Payment {
 }
 ```
 
----
+### 2.2. Khối 8: Tương Tác Cộng Đồng & Mạng Xã Hội
+```prisma
+model CommunityPost {
+  id                     String    @id @default(uuid())
+  userId                 String    @map("user_id")
+  content                String?   @db.Text
+  postType               String    @default("general") @map("post_type") @db.VarChar(50) // general, workout_share, check_in
+  visibility             String    @default("public") @db.VarChar(30) // public, followers, private
+  relatedWorkoutSessionId String?  @map("related_workout_session_id")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
 
-## 2. KẾ HOẠCH TRIỂN KHAI PHÁT TRIỂN HỆ THỐNG CỬA HÀNG (Implementation Plan)
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media                PostMedia[]
+  comments             PostComment[]
+  reactions            PostReaction[]
+  hiddenBy             PostUserHidden[]
+  profileArchives      PostProfileArchive[]
+  reports              PostReport[]
+  saves                PostSave[]
 
-### Giai đoạn 1: Đồng bộ Database & Viết Seed Data (Backend)
-1. **Chạy Migration**: Tạo bảng mới trên cơ sở dữ liệu:
-   ```bash
-   npx prisma migrate dev --name init_digital_store
-   ```
-2. **Viết Seed Script**: Seed sản phẩm mẫu (ví dụ: Ebook "Giáo trình giảm mỡ bụng PDF", Thực đơn "Tăng cân lành mạnh 3000 kcal", Giáo án "PPL 12 tuần chuyên sâu").
+  @@map("community_posts")
+}
 
-### Giai đoạn 2: Phát triển API Endpoints (Backend)
-1. **Sản phẩm**: API xem danh sách và chi tiết các sản phẩm số.
-2. **Giỏ hàng**: Quản lý thêm/sửa/xoá các items trong giỏ hàng của user hiện tại.
-3. **Thanh toán & Webhook**: Tích hợp các cổng thanh toán (VNPay/Momo/Stripe). Nhận callback/webhook từ cổng thanh toán để tự động cập nhật trạng thái đơn hàng thành `paid`.
-4. **Cấp quyền truy cập**: Sau khi thanh toán thành công, mở khóa file đính kèm (`ProductAsset`) cho người dùng.
+model PostMedia {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  mediaUrl  String   @map("media_url") @db.Text
+  mediaType String?  @map("media_type") @db.VarChar(30)
+  caption   String?  @db.Text
+  sortOrder Int      @default(0) @map("sort_order")
 
-### Giai đoạn 3: Phát triển Giao diện (Frontend)
-1. **Trang Cửa Hàng (`/store`)**: Grid sản phẩm kèm chức năng bộ lọc và thêm vào giỏ.
-2. **Trang Chi Tiết Sản Phẩm (`/store/product/:slug`)**: Xem thông tin mô tả chi tiết, số trang, số buổi tập mẫu, ảnh minh họa.
-3. **Giỏ Hàng & Checkout**: Giao diện giỏ hàng tổng kết số tiền, trang lựa chọn phương thức thanh toán VNPay/Momo/Stripe.
-4. **Trang Quản Lý Tải Về**: Trang danh sách các sản phẩm đã mua cùng nút "Tải PDF" hoặc "Xem Video" đính kèm.
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comments  PostMediaComment[]
+  reactions PostMediaReaction[]
+
+  @@map("post_media")
+}
+
+model PostMediaComment {
+  id        String   @id @default(uuid())
+  mediaId   String   @map("media_id")
+  userId    String   @map("user_id")
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  media     PostMedia                  @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  user      User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reactions PostMediaCommentReaction[]
+
+  @@map("post_media_comments")
+}
+
+model PostMediaCommentReaction {
+  id           String   @id @default(uuid())
+  commentId    String   @map("comment_id")
+  userId       String   @map("user_id")
+  reactionType String   @default("like") @map("reaction_type") @db.VarChar(30)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  comment PostMediaComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId, reactionType], map: "pmcr_comment_user_type_key")
+  @@map("post_media_comment_reactions")
+}
+
+model PostMediaReaction {
+  id           String   @id @default(uuid())
+  mediaId      String   @map("media_id")
+  userId       String   @map("user_id")
+  reactionType String   @default("like") @map("reaction_type") @db.VarChar(30)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  media PostMedia @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaId, userId, reactionType])
+  @@map("post_media_reactions")
+}
+
+model PostComment {
+  id              String              @id @default(uuid())
+  postId          String              @map("post_id")
+  userId          String              @map("user_id")
+  parentCommentId String?             @map("parent_comment_id")
+  content         String              @db.Text
+  createdAt       DateTime            @default(now()) @map("created_at")
+
+  post          CommunityPost         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentComment PostComment?          @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+  replies       PostComment[]         @relation("CommentReplies")
+  reactions     CommentReaction[]
+  hiddenBy      CommentUserHidden[]
+
+  @@map("post_comments")
+}
+
+model CommentReaction {
+  id           String      @id @default(uuid())
+  commentId    String      @map("comment_id")
+  userId       String      @map("user_id")
+  reactionType String      @default("like") @map("reaction_type") @db.VarChar(30)
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  comment      PostComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId, reactionType])
+  @@map("comment_reactions")
+}
+
+model PostReaction {
+  id           String        @id @default(uuid())
+  postId       String        @map("post_id")
+  userId       String        @map("user_id")
+  reactionType String        @default("like") @map("reaction_type") @db.VarChar(30)
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId, reactionType])
+  @@map("post_reactions")
+}
+
+model UserFollow {
+  followerId  String   @map("follower_id")
+  followingId String   @map("following_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  follower  User @relation("FollowersList", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("FollowingList", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@map("user_follows")
+}
+
+model PostSave {
+  id        String   @id @default(uuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@map("post_saves")
+}
+```
