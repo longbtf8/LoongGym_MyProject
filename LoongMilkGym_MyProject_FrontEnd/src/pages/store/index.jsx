@@ -39,6 +39,17 @@ function Store() {
   } = useGetProductsQuery({ limit: 100 });
   const allProducts = productsData?.data?.data || [];
 
+  const availableBrands = useMemo(() => {
+    const brandsSet = new Set();
+    allProducts.forEach((p) => {
+      const brand = p.metadata?.brand;
+      if (brand) {
+        brandsSet.add(brand);
+      }
+    });
+    return Array.from(brandsSet).sort();
+  }, [allProducts]);
+
   // Lọc sản phẩm ở Client-side theo các tiêu chí bộ lọc
   const filteredProducts = useMemo(() => {
     let result = [...allProducts];
@@ -181,6 +192,7 @@ function Store() {
               setPriceRange={setPriceRange}
               selectedBrands={selectedBrands}
               setSelectedBrands={setSelectedBrands}
+              availableBrands={availableBrands}
             />
           </div>
 
@@ -210,6 +222,7 @@ function Store() {
                   setPriceRange={setPriceRange}
                   selectedBrands={selectedBrands}
                   setSelectedBrands={setSelectedBrands}
+                  availableBrands={availableBrands}
                 />
               </div>
             </div>

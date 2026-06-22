@@ -8,11 +8,10 @@ function FilterSidebar({
   setPriceRange,
   selectedBrands,
   setSelectedBrands,
+  availableBrands = [],
 }) {
   const { data: categoriesData } = useGetProductCategoriesQuery();
   const categories = categoriesData?.data || [];
-
-  const BRANDS = ["ABS", "Vin", "Pryniomnk", "Hamdling", "Match", "Sport", "Sela", "Yunear"];
 
   const handleBrandChange = (brand) => {
     if (selectedBrands.includes(brand)) {
@@ -101,7 +100,7 @@ function FilterSidebar({
           Thương hiệu
         </h4>
         <div className="flex flex-col gap-2.5 max-h-48 overflow-y-auto pr-1">
-          {BRANDS.map((brand) => (
+          {availableBrands.map((brand) => (
             <label
               key={brand}
               className="flex items-center gap-3 text-xs sm:text-sm font-bold text-[var(--text-muted)] hover:text-[var(--text-color)] cursor-pointer select-none"

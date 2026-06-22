@@ -66,6 +66,7 @@ Trang cộng đồng `/community` được viết theo triết lý chia nhỏ co
 
 ## 🛒 7. Phân Hệ Cửa Hàng & Giỏ Hàng (Digital Store & Cart Pages) - *Mới Thêm*
 - **Trang Cửa Hàng (`src/pages/store/`)**: Hiển thị lưới các sản phẩm số (Meal Plan, E-book, Training Program) với giao diện Glassmorphism hiện đại, bộ lọc theo danh mục sản phẩm, bộ lọc khoảng giá và nút thêm nhanh vào giỏ hàng kèm hiệu ứng micro-interaction.
+  - *Bộ lọc thương hiệu*: Danh sách thương hiệu trong bộ lọc được tính toán động (`availableBrands`) từ thuộc tính `metadata.brand` của các sản phẩm thực tế tải về từ cơ sở dữ liệu thay vì sử dụng danh sách tĩnh, giúp tự động đồng bộ hóa thương hiệu mới.
 - **Trang Chi Tiết Sản Phẩm (`detail/index.jsx`)**: Trình bày thông tin mô tả chi tiết, lợi ích sản phẩm, các tệp tin đính kèm và đánh giá từ hội viên.
 - **Trang Giỏ Hàng (`src/pages/cart/`)**: Tóm tắt các sản phẩm đã chọn, hỗ trợ tăng giảm số lượng, xóa sản phẩm và tự động tính toán tổng chi phí thời gian thực trước khi gửi yêu cầu checkout thanh toán.
 
