@@ -1,14 +1,17 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Star, ShoppingCart } from "lucide-react";
 import { useAddToCartMutation } from "@/services/store/storeApi";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 function ProductCard({ product }) {
   const navigate = useNavigate();
   const [addToCart, { isLoading }] = useAddToCartMutation();
+  const { requireAuth } = useRequireAuth();
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!requireAuth()) return;
     try {
       await addToCart({ productId: product.id, quantity: 1 }).unwrap();
     } catch (err) {
@@ -19,6 +22,7 @@ function ProductCard({ product }) {
   const handleBuyNow = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!requireAuth()) return;
     try {
       await addToCart({ productId: product.id, quantity: 1 }).unwrap();
       navigate("/cart");

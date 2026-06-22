@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Star, Heart, ShoppingCart, ShieldCheck, CheckCircle } from "lucide-react";
 import { useAddToCartMutation } from "@/services/store/storeApi";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 function ProductInfo({ product }) {
   const navigate = useNavigate();
   const [addToCart, { isLoading }] = useAddToCartMutation();
+  const { requireAuth } = useRequireAuth();
   
   const metadata = product?.metadata || {};
   const rating = metadata.rating || 5.0;
@@ -37,6 +39,7 @@ function ProductInfo({ product }) {
   };
 
   const handleAddToCart = async () => {
+    if (!requireAuth()) return;
     try {
       await addToCart({
         productId: product.id,
@@ -49,6 +52,7 @@ function ProductInfo({ product }) {
   };
 
   const handleBuyNow = async () => {
+    if (!requireAuth()) return;
     try {
       await addToCart({
         productId: product.id,
