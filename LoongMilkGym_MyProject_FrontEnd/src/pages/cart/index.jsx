@@ -6,9 +6,11 @@ import {
   useUpdateCartItemMutation,
   useRemoveItemFromCartMutation,
 } from "@/services/store/storeApi";
+import { useAuth } from "@/hooks/useAuth";
 
 function Cart() {
-  const { data: cartData, isLoading } = useGetCartQuery();
+  const { isLoggedIn } = useAuth();
+  const { data: cartData, isLoading } = useGetCartQuery(undefined, { skip: !isLoggedIn });
   const [updateCartItem] = useUpdateCartItemMutation();
   const [removeItem] = useRemoveItemFromCartMutation();
 
@@ -111,6 +113,44 @@ function Cart() {
   };
 
   const finalTotal = Math.max(0, summary.totalPrice - discount);
+
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] pb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+          <h1 className="text-2xl sm:text-3xl font-black text-[var(--text-color)] tracking-tight mb-8">
+            Giỏ hàng của bạn
+          </h1>
+          <div className="text-center py-20 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl max-w-xl mx-auto">
+            <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
+              <ShoppingBag className="w-8 h-8" />
+            </div>
+            <h2 className="text-lg sm:text-xl font-black text-[var(--text-color)] mb-2">
+              Bạn chưa đăng nhập
+            </h2>
+            <p className="text-xs sm:text-sm text-[var(--text-muted)] mb-6">
+              Vui lòng đăng nhập để lưu sản phẩm vào giỏ hàng và tiến hành thanh toán.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-black font-extrabold text-sm rounded-full no-underline hover:bg-primary-hover active:scale-95 transition-all shadow-md shadow-primary/10"
+              >
+                Đăng nhập ngay
+              </Link>
+              <Link
+                to="/store"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--bg-color)] text-[var(--text-color)] border border-[var(--border-color)] font-extrabold text-sm rounded-full no-underline hover:bg-[var(--bg-secondary)] active:scale-95 transition-all"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Khám phá cửa hàng
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
