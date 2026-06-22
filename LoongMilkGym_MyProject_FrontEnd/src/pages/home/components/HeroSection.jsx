@@ -7,7 +7,7 @@ function HeroSection() {
   const navigate = useNavigate();
 
   return (
-    <section className="relative w-full flex flex-col-reverse lg:flex-row items-center gap-10 py-10 lg:py-16">
+    <section className="relative w-full flex flex-col-reverse lg:flex-row items-center gap-10 pt-2 pb-10 lg:pt-4 lg:pb-16">
       
       {/* CỘT TRÁI: TIÊU ĐỀ & LỜI KÊU GỌI HÀNH ĐỘNG */}
       <div className="flex-1 flex flex-col items-start text-left max-w-2xl">

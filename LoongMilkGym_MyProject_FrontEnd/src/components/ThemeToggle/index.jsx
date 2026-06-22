@@ -5,11 +5,15 @@ import { useTheme } from "@/context/ThemeContext";
 function ThemeToggle({ className = "" }) {
   const { theme, toggleTheme } = useTheme();
 
+  // Kiểm tra xem className truyền vào đã có position chưa (fixed, absolute, relative)
+  const hasPosition = /\b(fixed|absolute|relative)\b/.test(className);
+  const positionClass = hasPosition ? "" : "relative";
+
   return (
-    <div className="relative group">
+    <div className={`${positionClass} group ${className}`}>
       <button
         onClick={toggleTheme}
-        className={`w-10 h-10 flex items-center justify-center rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-muted)] cursor-pointer hover:text-[var(--text-color)] hover:bg-[var(--border-color)] transition-all duration-200 hover:-translate-y-0.5 relative before:absolute before:content-[''] before:w-full before:h-4 before:-bottom-3 before:left-0 ${className}`}
+        className="w-10 h-10 flex items-center justify-center rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-muted)] cursor-pointer hover:text-[var(--text-color)] hover:bg-[var(--border-color)] transition-all duration-200 hover:-translate-y-0.5 relative before:absolute before:content-[''] before:w-full before:h-4 before:-bottom-3 before:left-0"
         aria-label="Chuyển đổi giao diện sáng/tối"
       >
         {theme === "light" ? (

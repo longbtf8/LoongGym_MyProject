@@ -88,11 +88,7 @@ export function useAICoach(userInfo) {
   };
 
   // Xóa cuộc hội thoại
-  const handleDeleteConversation = async (convId, e) => {
-    if (e) e.stopPropagation();
-    const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa cuộc trò chuyện này không?");
-    if (!confirmDelete) return;
-
+  const handleDeleteConversation = async (convId) => {
     try {
       const res = await httpRequest.delete(`/ai/conversations/${convId}`);
       if (res.success) {
@@ -101,6 +97,7 @@ export function useAICoach(userInfo) {
           setActiveConversationId("temp-new");
           setMessages([]);
         }
+        showToast("Đã xoá cuộc trò chuyện.", "info");
       }
     } catch (err) {
       console.error("Lỗi khi xóa cuộc trò chuyện:", err);

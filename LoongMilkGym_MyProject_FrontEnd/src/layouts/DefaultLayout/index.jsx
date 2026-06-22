@@ -9,7 +9,7 @@ function DefaultLayout({ children }) {
       <Header />
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 lg:py-8">
         {children}
       </main>
 

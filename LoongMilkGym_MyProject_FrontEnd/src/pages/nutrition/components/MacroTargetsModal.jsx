@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Settings, Sparkles } from "lucide-react";
 
 function MacroTargetsModal({
@@ -20,6 +20,15 @@ function MacroTargetsModal({
   handleAutoCalculateTargets,
   isSavingTarget,
 }) {
+  useEffect(() => {
+    if (showSettings) {
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showSettings]);
+
   if (!showSettings) return null;
 
   return (

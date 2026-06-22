@@ -49,12 +49,11 @@ function ProgressMedals() {
   });
 
   // Fetch active training plan days
-  const { data: activePlanData } = useGetActivePlanQuery(undefined, {
+  const { data: activePlanData, isError: isPlanError } = useGetActivePlanQuery(undefined, {
     skip: !isLoggedIn,
   });
-
   const apiStats = isLoggedIn ? responseData?.data?.stats : null;
-  const activePlan = isLoggedIn ? activePlanData?.data : null;
+  const activePlan = isLoggedIn && !isPlanError ? activePlanData?.data : null;
 
   // Compute actual daily progress values (0 or 100%)
   const dailyWorkouts = apiStats?.weeklyWorkoutDaysMap || [0, 0, 0, 0, 0, 0, 0];

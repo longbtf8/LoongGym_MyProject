@@ -16,7 +16,11 @@ function Dashboard() {
   const { userInfo, userName, userInitial } = useAuth();
   
   // Sử dụng RTK Query Hook để fetch dữ liệu từ API
-  const { data: responseData, isLoading } = useGetDashboardSummaryQuery();
+  const { data: responseData, isLoading } = useGetDashboardSummaryQuery(undefined, {
+    pollingInterval: 30000,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
   const apiData = responseData?.data;
 
   // Hiển thị màn hình Loading nếu đang fetch lần đầu

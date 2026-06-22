@@ -30,7 +30,7 @@ function QuickActionsGrid() {
         </Link>
 
         <Link 
-          to="/shop-placeholder"
+          to={paths.store}
           className="flex flex-col items-center justify-center p-4 bg-[var(--bg-color)]/60 border border-[var(--border-color)] hover:border-orange-500/45 rounded-2xl transition-all group no-underline shadow-sm"
         >
           <div className="w-9 h-9 rounded-full bg-orange-500/10 text-orange-500 flex items-center justify-center mb-2.5 transition-colors group-hover:bg-orange-500 group-hover:text-black">
@@ -40,7 +40,7 @@ function QuickActionsGrid() {
         </Link>
 
         <Link 
-          to="/community-placeholder"
+          to={paths.community}
           className="flex flex-col items-center justify-center p-4 bg-[var(--bg-color)]/60 border border-[var(--border-color)] hover:border-indigo-500/45 rounded-2xl transition-all group no-underline shadow-sm"
         >
           <div className="w-9 h-9 rounded-full bg-indigo-500/10 text-indigo-500 flex items-center justify-center mb-2.5 transition-colors group-hover:bg-indigo-500 group-hover:text-black">

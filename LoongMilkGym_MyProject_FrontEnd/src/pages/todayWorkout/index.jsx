@@ -304,9 +304,9 @@ export default function TodayWorkout() {
       )}
 
       {toast.show && (
-        <div className="fixed bottom-6 right-6 z-[160] bg-[var(--bg-secondary)] border border-primary/30 text-[var(--text-color)] rounded-xl px-4 py-3 flex items-center gap-2.5 shadow-2xl animate-slide-down">
-          <Check className="w-4 h-4 text-primary" />
-          <span className="text-xs font-bold">{toast.message}</span>
+        <div className="fixed left-1/2 top-[72px] -translate-x-1/2 z-[999999] bg-[var(--bg-secondary)]/90 backdrop-blur-sm border border-primary/30 text-[var(--text-color)] rounded-2xl px-4 py-2.5 flex items-center gap-2 shadow-lg animate-slide-down">
+          <Check className="w-4 h-4 text-primary shrink-0" />
+          <span className="text-xs font-bold leading-none">{toast.message}</span>
         </div>
       )}
     </>

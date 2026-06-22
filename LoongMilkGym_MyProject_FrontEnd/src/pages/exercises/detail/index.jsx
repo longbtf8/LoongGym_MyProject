@@ -28,6 +28,17 @@ const getStoredFavorites = () => {
   }
 };
 
+const getLocalDateString = (dateInput = new Date()) => {
+  if (typeof dateInput === "string" && dateInput.includes("T")) {
+    return dateInput.split("T")[0];
+  }
+  const date = new Date(dateInput);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 export default function ExerciseDetail() {
   const { slug } = useParams();
   const { data, isLoading, error } = useGetExerciseBySlugQuery(slug);
@@ -66,7 +77,10 @@ export default function ExerciseDetail() {
 
   const openScheduleModal = () => {
     setScheduleMessage("");
-    setSelectedScheduleDayId(scheduleDays.find((day) => day.status !== "completed")?.id || scheduleDays[0]?.id || "");
+    const todayStr = getLocalDateString();
+    const futureDays = scheduleDays.filter((day) => getLocalDateString(day.scheduledDate) >= todayStr);
+    const defaultDay = futureDays.find((day) => day.status !== "completed") || futureDays[0];
+    setSelectedScheduleDayId(defaultDay?.id || "");
     setShowScheduleModal(true);
   };
 
@@ -106,7 +120,8 @@ export default function ExerciseDetail() {
                 tempo: "2-0-1-0",
                 note: "Thêm từ trang chi tiết bài tập"
               }
-            ]
+            ],
+            customized: true
           }
         }
       }).unwrap();
@@ -167,9 +182,9 @@ export default function ExerciseDetail() {
     <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       {/* Toast Alert */}
       {toastMessage && (
-        <div className="fixed top-24 right-4 z-50 bg-[var(--bg-secondary)] border border-[#ccff00]/30 text-[var(--text-color)] rounded-xl px-4 py-3 flex items-center gap-2 shadow-2xl animate-slide-down">
-          <Sparkles size={16} className="text-[#ccff00]" />
-          <span className="text-sm font-semibold">{toastMessage}</span>
+        <div className="fixed left-1/2 top-[72px] -translate-x-1/2 z-[999999] bg-[var(--bg-secondary)]/90 backdrop-blur-sm border border-primary/30 text-[var(--text-color)] rounded-2xl px-4 py-2.5 flex items-center gap-2 shadow-lg animate-slide-down">
+          <Sparkles size={14} className="text-primary shrink-0" />
+          <span className="text-xs font-bold leading-none">{toastMessage}</span>
         </div>
       )}
 
@@ -422,25 +437,28 @@ export default function ExerciseDetail() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto pr-1">
-                  {scheduleDays.map((day, index) => {
-                    const date = new Date(day.scheduledDate);
-                    const isSelected = selectedScheduleDayId === day.id;
-                    return (
-                      <button
-                        key={day.id}
-                        onClick={() => setSelectedScheduleDayId(day.id)}
-                        className={`text-left rounded-xl border p-3 transition cursor-pointer ${
-                          isSelected
-                            ? "bg-[#ccff00] text-black border-[#ccff00]"
-                            : "bg-[var(--bg-color)] border-[var(--border-color)] text-[var(--text-color)] hover:border-[#ccff00]/50"
-                        }`}
-                      >
-                        <span className="block text-[10px] font-black uppercase opacity-70">Ngày {index + 1}</span>
-                        <span className="block text-xs font-bold line-clamp-1">{day.title}</span>
-                        <span className="block text-[10px] opacity-70 mt-1">{date.toLocaleDateString("vi-VN")}</span>
-                      </button>
-                    );
-                  })}
+                  {scheduleDays
+                    .filter((day) => getLocalDateString(day.scheduledDate) >= getLocalDateString())
+                    .map((day) => {
+                      const date = new Date(day.scheduledDate);
+                      const isSelected = selectedScheduleDayId === day.id;
+                      const originalIndex = scheduleDays.findIndex((d) => d.id === day.id);
+                      return (
+                        <button
+                          key={day.id}
+                          onClick={() => setSelectedScheduleDayId(day.id)}
+                          className={`text-left rounded-xl border p-3 transition cursor-pointer ${
+                            isSelected
+                              ? "bg-[#ccff00] text-black border-[#ccff00]"
+                              : "bg-[var(--bg-color)] border-[var(--border-color)] text-[var(--text-color)] hover:border-[#ccff00]/50"
+                          }`}
+                        >
+                          <span className="block text-[10px] font-black uppercase opacity-70">Ngày {originalIndex + 1}</span>
+                          <span className="block text-xs font-bold line-clamp-1">{day.title}</span>
+                          <span className="block text-[10px] opacity-70 mt-1">{date.toLocaleDateString("vi-VN")}</span>
+                        </button>
+                      );
+                    })}
                 </div>
               )}
 

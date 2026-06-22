@@ -1,4 +1,3 @@
-import React from "react";
 import { Plus, X, Loader2, Trash2 } from "lucide-react";
 
 function AICoachSidebar({
@@ -7,7 +6,7 @@ function AICoachSidebar({
   setActiveConversationId,
   loadingConversations,
   handleCreateNewConversation,
-  handleDeleteConversation,
+  handleRequestDeleteConversation,
   sidebarOpen,
   setSidebarOpen,
   formatDateString,
@@ -84,7 +83,10 @@ function AICoachSidebar({
                   </div>
                   {/* Nút xóa cuộc trò chuyện */}
                   <button
-                    onClick={(e) => handleDeleteConversation(conv.id, e)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRequestDeleteConversation(conv);
+                    }}
                     className={`
                       absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-xl transition-all duration-200 border-0 bg-transparent cursor-pointer
                       ${activeConversationId === conv.id

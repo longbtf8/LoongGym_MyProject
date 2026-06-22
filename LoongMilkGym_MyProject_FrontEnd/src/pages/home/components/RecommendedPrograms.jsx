@@ -81,11 +81,11 @@ function RecommendedPrograms() {
   const { data: apiData, isLoading: isLoadingPrograms } = useGetWorkoutProgramsQuery();
   
   // Fetch active plan if logged in
-  const { data: activePlanRes, isLoading: isLoadingActivePlan, refetch: refetchActivePlan } = useGetActivePlanQuery(undefined, {
+  const { data: activePlanRes, isLoading: isLoadingActivePlan, refetch: refetchActivePlan, isError: isPlanError } = useGetActivePlanQuery(undefined, {
     skip: !isLoggedIn,
   });
 
-  const activePlan = isLoggedIn && activePlanRes?.data ? activePlanRes.data : null;
+  const activePlan = isLoggedIn && !isPlanError && activePlanRes?.data ? activePlanRes.data : null;
 
   // Use API programs if available, otherwise mock
   const apiPrograms = apiData?.data?.data || [];
@@ -139,7 +139,7 @@ function RecommendedPrograms() {
       refetchActivePlan();
       setTimeout(() => {
         navigate(paths.myPlan);
-      }, 1500);
+      }, 3500);
       return;
     }
 
@@ -151,7 +151,7 @@ function RecommendedPrograms() {
     if (toastMsg) {
       const timer = setTimeout(() => {
         setToastMsg("");
-      }, 3000);
+      }, 4000);
       return () => clearTimeout(timer);
     }
   }, [toastMsg]);
@@ -163,9 +163,9 @@ function RecommendedPrograms() {
       
       {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed top-24 right-4 z-[99999] bg-[var(--bg-secondary)] border border-primary/30 text-[var(--text-color)] rounded-xl px-4 py-3 flex items-center gap-2 shadow-2xl animate-bounce">
-          <Check className="w-4 h-4 text-primary" />
-          <span className="text-sm font-semibold">{toastMsg}</span>
+        <div className="fixed left-1/2 top-[72px] -translate-x-1/2 z-[999999] bg-[var(--bg-secondary)]/90 backdrop-blur-sm border border-primary/30 text-[var(--text-color)] rounded-2xl px-4 py-2.5 flex items-center gap-2 shadow-lg animate-bounce">
+          <Check className="w-4 h-4 text-primary shrink-0" />
+          <span className="text-xs font-bold leading-none">{toastMsg}</span>
         </div>
       )}
 

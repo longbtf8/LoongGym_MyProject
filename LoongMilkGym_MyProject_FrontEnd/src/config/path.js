@@ -14,6 +14,11 @@ const paths = {
   nutrition: "/nutrition",
   recovery: "/recovery",
   aiCoach: "/ai-coach",
+  store: "/store",
+  storeDetail: "/store/:slug",
+  cart: "/cart",
+  community: "/community",
+  otherProfile: "/profile/:userId",
 };
 
 export default paths;

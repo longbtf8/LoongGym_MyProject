@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Play, X } from "lucide-react";
 
 const getYouTubeId = (url) => {
@@ -8,6 +9,12 @@ const getYouTubeId = (url) => {
 };
 
 export default function VideoGuideModal({ exercise, onClose }) {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-[2px] flex items-center justify-center z-[999999] p-4">
       <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[24px] p-4 w-full max-w-[760px] flex flex-col gap-4 shadow-2xl animate-slide-up">

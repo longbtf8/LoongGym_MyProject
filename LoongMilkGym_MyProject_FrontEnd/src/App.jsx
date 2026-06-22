@@ -1,14 +1,25 @@
-import { Fragment, Suspense } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Fragment, Suspense, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { publicRoutes, privateRoutes } from "@/routes";
 import { DefaultLayout } from "@/layouts";
 import LoadingScreen from "@/components/LoadingScreen";
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [pathname]);
+
+  return null;
+}
 
 function App() {
   const allRoutes = [...publicRoutes, ...privateRoutes];
 
   return (
     <Router>
+      <ScrollToTop />
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
         {allRoutes.map((route, index) => {

@@ -317,7 +317,7 @@ function RecoveryTab({
           
           {activeInfo === "rhr" && (
             <div className="absolute top-12 left-4 right-4 z-20 bg-[var(--bg-secondary)] border border-red-500/30 p-3.5 rounded-xl text-[11px] text-[var(--text-muted)] leading-relaxed shadow-xl backdrop-blur-md animate-slide-up">
-              👉 <strong>Nhịp tim nghỉ ngơi:</strong> Thường dao động từ 50-80 BPM ở vận động viên. Nhịp tim tăng đột biến (>7 BPM so với trung bình) là dấu hiệu quá sức.
+              👉 <strong>Nhịp tim nghỉ ngơi:</strong> Thường dao động từ 50-80 BPM ở vận động viên. Nhịp tim tăng đột biến (&gt;7 BPM so với trung bình) là dấu hiệu quá sức.
             </div>
           )}
 

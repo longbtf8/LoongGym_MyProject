@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import FilterSidebar from "./components/FilterSidebar";
 import ExerciseCard from "./components/ExerciseCard";
 import SortDropdown from "./components/SortDropdown";
@@ -19,7 +19,19 @@ const getStoredFavorites = () => {
   }
 };
 
+const getLocalDateString = (dateInput = new Date()) => {
+  if (typeof dateInput === "string" && dateInput.includes("T")) {
+    return dateInput.split("T")[0];
+  }
+  const date = new Date(dateInput);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 export default function Exercises() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState(getStoredFavorites);
@@ -46,7 +58,7 @@ export default function Exercises() {
   // Gọi các API lấy dữ liệu bổ trợ để render thanh trượt nhóm cơ & bottom sheet trên mobile
   const { data: muscleGroupsData } = useGetMuscleGroupsQuery();
   const { data: equipmentData, isLoading: loadingEquipment } = useGetEquipmentQuery();
-  const { data: activePlanRes, isFetching: isFetchingPlan } = useGetActivePlanQuery();
+  const { data: activePlanRes, isLoading: isLoadingPlan } = useGetActivePlanQuery();
   const [getDayDetails, { isFetching: isFetchingDayDetails }] = useLazyGetDayDetailsQuery();
   const [updateDayDetails, { isLoading: isAddingToSchedule }] = useUpdateDayDetailsMutation();
   
@@ -104,7 +116,10 @@ export default function Exercises() {
   const openScheduleModal = (exercise) => {
     setScheduleModalExercise(exercise);
     setScheduleMessage("");
-    setSelectedScheduleDayId(scheduleDays.find((day) => day.status !== "completed")?.id || scheduleDays[0]?.id || "");
+    const todayStr = getLocalDateString();
+    const futureDays = scheduleDays.filter((day) => getLocalDateString(day.scheduledDate) >= todayStr);
+    const defaultDay = futureDays.find((day) => day.status !== "completed") || futureDays[0];
+    setSelectedScheduleDayId(defaultDay?.id || "");
   };
 
   const handleAddExerciseToDay = async () => {
@@ -127,9 +142,13 @@ export default function Exercises() {
         note: ex.note || ""
       }));
 
+      const currentDay = dayDetailsRes?.data?.day;
+      const isRestDay = currentDay?.status === "rest";
+
       await updateDayDetails({
         dayId: selectedScheduleDayId,
         data: {
+          ...(isRestDay ? { status: "pending", title: "Buổi tập" } : {}),
           metadata: {
             customExercises: [
               ...cleanExercises,
@@ -144,7 +163,8 @@ export default function Exercises() {
                 tempo: "2-0-1-0",
                 note: "Thêm từ thư viện bài tập"
               }
-            ]
+            ],
+            customized: true
           }
         }
       }).unwrap();
@@ -153,6 +173,7 @@ export default function Exercises() {
       setTimeout(() => {
         setScheduleModalExercise(null);
         setScheduleMessage("");
+        navigate(`/my-plan?dayId=${selectedScheduleDayId}`);
       }, 900);
     } catch (err) {
       setScheduleMessage("Không thể thêm bài tập. Hãy đăng nhập và tạo lộ trình trước.");
@@ -162,7 +183,7 @@ export default function Exercises() {
   };
 
   return (
-    <div className="sm:min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] py-6 sm:py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+    <div className="sm:min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] pt-0 pb-6 sm:pt-2 sm:pb-8 lg:pt-3 lg:pb-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto flex flex-col gap-6 sm:gap-8">
         
         {/* Header Section */}
@@ -264,7 +285,7 @@ export default function Exercises() {
 
           {/* Grid bài tập chính */}
           <main className="flex-1 w-full">
-            {isLoading || isFetching ? (
+            {isLoading ? (
               // Trạng thái tải bài tập (Skeleton Grid) có chiều cao tối thiểu để khóa vị trí phân trang
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 sm:min-h-[1300px] lg:min-h-[1100px]">
                 {[...Array(6)].map((_, i) => (
@@ -311,7 +332,7 @@ export default function Exercises() {
             ) : (
               // Grid bài tập hiển thị (Có min-h đảm bảo vị trí phân trang không đổi)
               <div className="flex flex-col justify-between sm:min-h-[1300px] lg:min-h-[1100px]">
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+                <div className={`grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 transition-opacity duration-200 ${isFetching ? "opacity-60 pointer-events-none" : ""}`}>
                   {exercises.map((exercise) => (
                     <ExerciseCard
                       key={exercise.id}
@@ -458,7 +479,7 @@ export default function Exercises() {
                 Chọn ngày muốn thêm bài. Gợi ý: đặt bài nặng vào đầu buổi, giữ 3 hiệp x 8-12 lần lặp rồi chỉnh lại trong trang Lộ trình.
               </div>
 
-              {isFetchingPlan ? (
+              {isLoadingPlan ? (
                 <div className="py-6 text-center text-sm text-[var(--text-muted)]">Đang tải lịch tập...</div>
               ) : scheduleDays.length === 0 ? (
                 <div className="py-6 text-center text-sm text-[var(--text-muted)]">
@@ -466,25 +487,28 @@ export default function Exercises() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto pr-1">
-                  {scheduleDays.map((day, index) => {
-                    const date = new Date(day.scheduledDate);
-                    const isSelected = selectedScheduleDayId === day.id;
-                    return (
-                      <button
-                        key={day.id}
-                        onClick={() => setSelectedScheduleDayId(day.id)}
-                        className={`text-left rounded-xl border p-3 transition cursor-pointer ${
-                          isSelected
-                            ? "bg-primary text-black border-primary"
-                            : "bg-[var(--bg-color)] border-[var(--border-color)] text-[var(--text-color)] hover:border-primary/50"
-                        }`}
-                      >
-                        <span className="block text-[10px] font-black uppercase opacity-70">Ngày {index + 1}</span>
-                        <span className="block text-xs font-bold line-clamp-1">{day.title}</span>
-                        <span className="block text-[10px] opacity-70 mt-1">{date.toLocaleDateString("vi-VN")}</span>
-                      </button>
-                    );
-                  })}
+                  {scheduleDays
+                    .filter((day) => getLocalDateString(day.scheduledDate) >= getLocalDateString())
+                    .map((day) => {
+                      const date = new Date(day.scheduledDate);
+                      const isSelected = selectedScheduleDayId === day.id;
+                      const originalIndex = scheduleDays.findIndex((d) => d.id === day.id);
+                      return (
+                        <button
+                          key={day.id}
+                          onClick={() => setSelectedScheduleDayId(day.id)}
+                          className={`text-left rounded-xl border p-3 transition cursor-pointer ${
+                            isSelected
+                              ? "bg-primary text-black border-primary"
+                              : "bg-[var(--bg-color)] border-[var(--border-color)] text-[var(--text-color)] hover:border-primary/50"
+                          }`}
+                        >
+                          <span className="block text-[10px] font-black uppercase opacity-70">Ngày {originalIndex + 1}</span>
+                          <span className="block text-xs font-bold line-clamp-1">{day.title}</span>
+                          <span className="block text-[10px] opacity-70 mt-1">{date.toLocaleDateString("vi-VN")}</span>
+                        </button>
+                      );
+                    })}
                 </div>
               )}
 

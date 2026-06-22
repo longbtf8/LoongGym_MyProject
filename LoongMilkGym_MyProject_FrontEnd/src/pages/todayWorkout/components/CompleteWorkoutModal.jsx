@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Trophy, X } from "lucide-react";
 
 export default function CompleteWorkoutModal({
@@ -11,6 +12,13 @@ export default function CompleteWorkoutModal({
   isCompleting,
   formatTime,
 }) {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
   return (
     <div className="fixed inset-0 bg-black/75 backdrop-blur-[2px] flex items-center justify-center z-[999999] p-4">
       <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[24px] p-5 w-full max-w-[420px] flex flex-col gap-4 shadow-2xl animate-slide-up">

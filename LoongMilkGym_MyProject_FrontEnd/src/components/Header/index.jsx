@@ -1,9 +1,11 @@
 import { useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { 
+import {
   LogOut, 
   User, 
-  LayoutDashboard
+  LayoutDashboard,
+  ShoppingCart,
+  Settings
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useClickOutside } from "@/hooks/useClickOutside";
@@ -12,6 +14,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import paths from "@/config/path";
 import BottomNavBar from "./BottomNavBar";
 import MobileBottomSheet from "./MobileBottomSheet";
+import { useGetCartQuery } from "@/services/store/storeApi";
 
 // Danh sách các mục điều hướng chính trên Desktop
 const NAV_ITEMS = [
@@ -20,8 +23,8 @@ const NAV_ITEMS = [
   { label: "Lịch tập", path: paths.myPlan },
   { label: "Thư viện", path: paths.exercises },
   { label: "AI Coach", path: paths.aiCoach },
-  { label: "Cửa hàng", path: "#" },
-  { label: "Cộng đồng", path: "#" },
+  { label: "Cửa hàng", path: paths.store },
+  { label: "Cộng đồng", path: paths.community },
 ];
 
 function Header() {
@@ -38,6 +41,10 @@ function Header() {
     userInitial,
     handleLogout,
   } = useAuth();
+
+  // Lấy dữ liệu giỏ hàng để hiển thị badge
+  const { data: cartData } = useGetCartQuery(undefined, { skip: !isLoggedIn });
+  const cartItemCount = cartData?.data?.summary?.totalQuantity || 0;
 
   // Sử dụng custom hook useClickOutside để đóng dropdown menu khi click ra ngoài
   useClickOutside(userMenuRef, () => setShowUserMenu(false));
@@ -75,6 +82,22 @@ function Header() {
             <div className="flex items-center gap-1.5 sm:gap-3">
               {/* Nút chuyển đổi Theme Sáng/Tối */}
               <ThemeToggle />
+
+              {/* Nút Giỏ hàng (Chỉ hiện khi đã đăng nhập) */}
+              {isLoggedIn && (
+                <Link
+                  to={paths.cart}
+                  className="relative w-10 h-10 flex items-center justify-center rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-color)] hover:bg-[var(--border-color)]/30 transition-all duration-200 no-underline"
+                  aria-label="Giỏ hàng"
+                >
+                  <ShoppingCart className="w-4.5 h-4.5" />
+                  {cartItemCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-black text-black shadow-md shadow-primary/20">
+                      {cartItemCount}
+                    </span>
+                  )}
+                </Link>
+              )}
 
               {/* ═══ TRẠNG THÁI CHƯA ĐĂNG NHẬP ═══ */}
               {!isLoggedIn && (
@@ -156,13 +179,22 @@ function Header() {
                           Bảng điều khiển
                         </Link>
 
+                         <Link
+                          to={`/profile/${userInfo?.id}`}
+                          onClick={() => setShowUserMenu(false)}
+                          className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[var(--text-color)] no-underline hover:bg-[var(--border-color)]/30 transition-colors duration-200"
+                        >
+                          <User className="w-4 h-4 text-[var(--text-muted)]" />
+                          Trang cá nhân
+                        </Link>
+
                         <Link
                           to={paths.profile}
                           onClick={() => setShowUserMenu(false)}
                           className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[var(--text-color)] no-underline hover:bg-[var(--border-color)]/30 transition-colors duration-200"
                         >
-                          <User className="w-4 h-4 text-[var(--text-muted)]" />
-                          Thông tin cá nhân
+                          <Settings className="w-4 h-4 text-[var(--text-muted)]" />
+                          Chỉnh sửa hồ sơ
                         </Link>
 
                         {/* Nút Đăng xuất */}
@@ -177,11 +209,11 @@ function Header() {
                     )}
                   </div>
 
-                  {/* Mobile view (Click nhảy thẳng vào trang Profile) */}
-                  <Link
-                    to={paths.profile}
-                    className="sm:hidden w-10 h-10 flex items-center justify-center rounded-full p-[2px] bg-gradient-to-tr from-primary to-[#00f5d4] border-2 border-transparent shadow-[0_2px_10px_rgba(204,255,0,0.15)] hover:border-primary/50 transition-all duration-200"
-                    aria-label="Xem trang cá nhân"
+                  {/* Mobile view (Click mở menu chức năng) */}
+                  <button
+                    onClick={() => setShowMobileMenu(true)}
+                    className="sm:hidden w-10 h-10 flex items-center justify-center rounded-full p-[2px] bg-gradient-to-tr from-primary to-[#00f5d4] border-2 border-transparent shadow-[0_2px_10px_rgba(204,255,0,0.15)] hover:border-primary/50 transition-all duration-200 cursor-pointer"
+                    aria-label="Mở menu chức năng"
                   >
                     {userInfo?.profile?.avatarUrl ? (
                       <img 
@@ -194,7 +226,7 @@ function Header() {
                         {userInitial}
                       </div>
                     )}
-                  </Link>
+                  </button>
                 </>
               )}
             </div>

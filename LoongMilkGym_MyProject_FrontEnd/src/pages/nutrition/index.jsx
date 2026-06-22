@@ -93,7 +93,7 @@ export default function NutritionPage() {
   const actualNutritionData = { target, totals, mealLogs };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] py-8 px-4 w-full flex justify-center pb-24">
+    <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] pt-0 pb-8 px-4 lg:py-8 w-full flex justify-center pb-24">
       <div className="max-w-[1000px] w-full flex flex-col gap-6 animate-fade-in">
         
         {/* Header navigation */}
@@ -233,9 +233,9 @@ export default function NutritionPage() {
 
         {/* Global Toast */}
         {toast.show && (
-          <div className="fixed bottom-6 right-6 z-[999999] bg-[var(--bg-secondary)] border border-primary/30 text-[var(--text-color)] rounded-xl px-4 py-3 flex items-center gap-2.5 shadow-2xl animate-slide-down">
+          <div className="fixed left-1/2 top-[72px] -translate-x-1/2 z-[999999] bg-[var(--bg-secondary)]/90 backdrop-blur-sm border border-primary/30 text-[var(--text-color)] rounded-2xl px-4 py-2.5 flex items-center gap-2 shadow-lg animate-slide-down">
             <Check className="w-4 h-4 text-primary" />
-            <span className="text-xs font-bold">{toast.message}</span>
+            <span className="text-xs font-bold leading-none">{toast.message}</span>
           </div>
         )}
 

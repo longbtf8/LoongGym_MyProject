@@ -20,6 +20,7 @@ import ChatFooter from "./components/ChatFooter";
 function AICoach() {
   const { userInfo, userName, userInitial } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [conversationToDelete, setConversationToDelete] = useState(null);
   const chatContainerRef = useRef(null);
 
   // Sử dụng Custom Hook quản lý toàn bộ trạng thái và logic AI Coach
@@ -75,20 +76,35 @@ function AICoach() {
     });
   };
 
+  const handleRequestDeleteConversation = (conversation) => {
+    setConversationToDelete(conversation);
+  };
+
+  const handleCancelDeleteConversation = () => {
+    setConversationToDelete(null);
+  };
+
+  const handleConfirmDeleteConversation = async () => {
+    if (!conversationToDelete) return;
+
+    await handleDeleteConversation(conversationToDelete.id);
+    setConversationToDelete(null);
+  };
+
   return (
     <div className="flex bg-[var(--bg-color)] text-[var(--text-color)] h-[calc(100vh-8.5rem)] rounded-3xl border border-[var(--border-color)] overflow-hidden relative shadow-sm">
       {toast.show && (
-        <div className={`absolute top-4 right-4 z-30 max-w-[min(360px,calc(100%-2rem))] rounded-2xl border px-4 py-3 shadow-2xl animate-slide-down flex items-start gap-2.5 ${
+        <div className={`fixed left-1/2 top-[72px] -translate-x-1/2 z-[999999] flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-2xl border px-4 py-2.5 shadow-lg backdrop-blur-sm animate-slide-down ${
           toast.type === "error"
-            ? "bg-rose-500/12 border-rose-500/30 text-rose-300"
-            : "bg-emerald-500/12 border-emerald-500/30 text-emerald-300"
+            ? "border-rose-500/30 bg-rose-500/10 text-rose-500 dark:text-rose-400 dark:bg-rose-950/20"
+            : "border-primary/30 bg-[var(--bg-secondary)] text-[var(--text-color)]"
         }`}>
           {toast.type === "error" ? (
-            <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+            <AlertTriangle className="w-4 h-4 shrink-0" />
           ) : (
-            <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" />
+            <CheckCircle className="w-4 h-4 shrink-0 text-primary" />
           )}
-          <span className="text-xs font-black leading-relaxed">{toast.message}</span>
+          <span className="text-xs font-bold leading-none">{toast.message}</span>
         </div>
       )}
       
@@ -99,7 +115,7 @@ function AICoach() {
         setActiveConversationId={setActiveConversationId}
         loadingConversations={loadingConversations}
         handleCreateNewConversation={handleCreateNewConversation}
-        handleDeleteConversation={handleDeleteConversation}
+        handleRequestDeleteConversation={handleRequestDeleteConversation}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         formatDateString={formatDateString}
@@ -164,6 +180,35 @@ function AICoach() {
         />
 
       </main>
+
+      {conversationToDelete && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/55 backdrop-blur-sm px-4 animate-fade-in">
+          <div className="w-full max-w-sm rounded-2xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-5 shadow-2xl">
+            <h3 className="m-0 text-base font-black text-[var(--text-color)]">
+              Xoá cuộc trò chuyện?
+            </h3>
+            <p className="mt-2 mb-5 text-sm font-medium leading-relaxed text-[var(--text-muted)]">
+              Cuộc trò chuyện "{conversationToDelete.title || "Tư vấn AI"}" sẽ bị xoá khỏi danh sách của bạn.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleCancelDeleteConversation}
+                className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-color)] px-4 py-2 text-xs font-black text-[var(--text-color)] transition-all hover:border-primary/50 active:scale-95 cursor-pointer"
+              >
+                Huỷ
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteConversation}
+                className="rounded-xl border border-rose-500 bg-rose-500 px-4 py-2 text-xs font-black text-white transition-all hover:bg-rose-600 active:scale-95 cursor-pointer"
+              >
+                Xoá
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
