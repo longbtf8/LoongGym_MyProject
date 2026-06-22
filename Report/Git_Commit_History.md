@@ -49,6 +49,12 @@ Tài liệu này ghi nhận đầy đủ lịch sử các commits tính năng, s
     - Ghi nhận lịch sử commits đầy đủ và viết báo cáo nghiệm thu cuối cùng `Final_Verification_Report.md`.
 *   **Ý nghĩa**: Đảm bảo tài liệu dự án hoàn toàn đồng bộ với mã nguồn thực tế, hỗ trợ đắc lực cho việc chuyển giao và bảo trì hệ thống.
 
+### 7. `feat(store): dynamically load brands in store filter from database products`
+*   **Hành động**:
+    - **Frontend**: Tính toán động danh sách thương hiệu (`availableBrands`) qua `useMemo` từ dữ liệu sản phẩm trong DB (`allProducts`) thay vì khai báo cứng.
+    - Cập nhật prop truyền xuống `FilterSidebar` và hiển thị động checkbox thương hiệu.
+*   **Ý nghĩa**: Đồng bộ hóa thương hiệu và lọc sản phẩm chính xác, tránh lỗi dữ liệu giả.
+
 ---
 
 ## 🛠️ 2. Nguyên Tắc Cập Nhật Commit Chuẩn Mực
