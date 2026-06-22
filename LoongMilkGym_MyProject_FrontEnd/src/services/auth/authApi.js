@@ -109,7 +109,7 @@ export const authApi = createApi({
           "Content-Type": "multipart/form-data",
         },
       }),
-      invalidatesTags: ["User"],
+      invalidatesTags: ["User", "UserProfile"],
     }),
     uploadCover: builder.mutation({
       query: (formData) => ({
@@ -120,13 +120,29 @@ export const authApi = createApi({
           "Content-Type": "multipart/form-data",
         },
       }),
-      invalidatesTags: ["User"],
+      invalidatesTags: ["User", "UserProfile"],
+    }),
+    updateAvatarPhoto: builder.mutation({
+      query: (data) => ({
+        url: "/users/me/avatar-photo",
+        method: "PATCH",
+        data,
+      }),
+      invalidatesTags: ["User", "UserProfile"],
+    }),
+    updateCoverPhoto: builder.mutation({
+      query: (data) => ({
+        url: "/users/me/cover-photo",
+        method: "PATCH",
+        data,
+      }),
+      invalidatesTags: ["User", "UserProfile"],
     }),
     getUserProfileById: builder.query({
       query: (id) => ({
         url: `/users/${id}`,
       }),
-      providesTags: (result, error, id) => [{ type: "UserProfile", id }],
+      providesTags: (result, error, id) => ["UserProfile", { type: "UserProfile", id }],
     }),
     followUser: builder.mutation({
       query: (id) => ({
@@ -137,8 +153,8 @@ export const authApi = createApi({
     }),
     unfollowUser: builder.mutation({
       query: (id) => ({
-        url: `/community/users/${id}/unfollow`,
-        method: "POST",
+        url: `/community/users/${id}/follow`,
+        method: "DELETE",
       }),
       invalidatesTags: (result, error, id) => [{ type: "UserProfile", id }, "User"],
     }),
@@ -160,8 +176,9 @@ export const {
   useUpdateProfileMutation,
   useUploadAvatarMutation,
   useUploadCoverMutation,
+  useUpdateAvatarPhotoMutation,
+  useUpdateCoverPhotoMutation,
   useGetUserProfileByIdQuery,
   useFollowUserMutation,
   useUnfollowUserMutation,
 } = authApi;
-

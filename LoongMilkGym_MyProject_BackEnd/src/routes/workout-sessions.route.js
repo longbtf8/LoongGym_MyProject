@@ -10,6 +10,7 @@ const {
   completeSessionSchema,
 } = require("@/validations/workout-session.validation");
 
+router.get("/", authRequire, workoutSessionsController.listSessions);
 router.post("/start", authRequire, validate(startSessionSchema), workoutSessionsController.startSession);
 router.get("/:id", authRequire, validate(getSessionSchema), workoutSessionsController.getSession);
 router.post("/:id/exercises/:sessionExerciseId/sets", authRequire, validate(addSetSchema), workoutSessionsController.addSet);

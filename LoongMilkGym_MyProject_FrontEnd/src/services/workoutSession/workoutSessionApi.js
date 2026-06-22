@@ -17,6 +17,14 @@ export const workoutSessionApi = createApi({
       }),
       invalidatesTags: ["WorkoutSession"],
     }),
+    listSessions: builder.query({
+      query: (params) => ({
+        url: "/workout-sessions",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["WorkoutSession"],
+    }),
     getSession: builder.query({
       query: (id) => ({
         url: `/workout-sessions/${id}`,
@@ -66,4 +74,5 @@ export const {
   useUpdateSetMutation,
   useCompleteSessionMutation,
   useGetSessionByPlanDayQuery,
+  useListSessionsQuery,
 } = workoutSessionApi;

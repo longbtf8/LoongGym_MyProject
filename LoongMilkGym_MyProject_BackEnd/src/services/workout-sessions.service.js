@@ -265,6 +265,30 @@ class WorkoutSessionsService {
     });
     return sessions;
   }
+
+  async listSessions(userId, status) {
+    const where = { userId };
+    if (status) {
+      where.status = status;
+    }
+    return prisma.workoutSession.findMany({
+      where,
+      include: {
+        exercises: {
+          orderBy: { exerciseOrder: "asc" },
+          include: {
+            exercise: true,
+            sets: {
+              orderBy: { setNumber: "asc" },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }
 }
 
 module.exports = new WorkoutSessionsService();

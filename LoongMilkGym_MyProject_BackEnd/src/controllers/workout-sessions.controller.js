@@ -70,6 +70,17 @@ const getSessionByPlanDay = async (req, res, next) => {
   }
 };
 
+const listSessions = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { status } = req.query;
+    const result = await workoutSessionsService.listSessions(userId, status);
+    return res.success(result, httpCodes.success, "Lấy danh sách buổi tập thành công.");
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   startSession,
   getSession,
@@ -77,4 +88,5 @@ module.exports = {
   updateSet,
   completeSession,
   getSessionByPlanDay,
+  listSessions,
 };
