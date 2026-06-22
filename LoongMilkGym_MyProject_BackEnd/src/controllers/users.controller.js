@@ -73,7 +73,7 @@ const updateCoverPhoto = async (req, res, next) => {
 
 const getUserProfileById = async (req, res, next) => {
   try {
-    const currentUserId = req.user.id;
+    const currentUserId = req.user ? req.user.id : null;
     const { id } = req.params;
 
     const result = await usersService.getUserProfileById(id, currentUserId);

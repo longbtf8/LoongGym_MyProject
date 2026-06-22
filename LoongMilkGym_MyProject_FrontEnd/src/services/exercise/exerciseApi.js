@@ -6,7 +6,7 @@ export const exerciseApi = createApi({
   baseQuery: axiosBaseQuery({
     baseUrl: import.meta.env.VITE_API_BASE_URL,
   }),
-  tagTypes: ["Exercises", "ExerciseDetail", "MuscleGroups", "Equipment"],
+  tagTypes: ["Exercises", "ExerciseDetail", "MuscleGroups", "Equipment", "Favorites"],
 
   endpoints: (builder) => ({
     getExercises: builder.query({
@@ -38,6 +38,20 @@ export const exerciseApi = createApi({
       }),
       providesTags: ["Equipment"],
     }),
+    getFavoriteExercises: builder.query({
+      query: () => ({
+        url: "/exercises/favorites",
+        method: "GET",
+      }),
+      providesTags: ["Favorites"],
+    }),
+    toggleFavoriteExercise: builder.mutation({
+      query: (id) => ({
+        url: `/exercises/${id}/favorite`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Favorites", "Exercises"],
+    }),
   }),
 });
 
@@ -46,4 +60,6 @@ export const {
   useGetExerciseBySlugQuery,
   useGetMuscleGroupsQuery,
   useGetEquipmentQuery,
+  useGetFavoriteExercisesQuery,
+  useToggleFavoriteExerciseMutation,
 } = exerciseApi;

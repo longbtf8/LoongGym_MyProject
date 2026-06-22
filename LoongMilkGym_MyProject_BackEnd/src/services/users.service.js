@@ -317,6 +317,7 @@ const updateCoverPhoto = async (userId, { coverPhotoUrl, coverPhotoProfile }) =>
 };
 
 const getUserProfileById = async (userId, currentUserId) => {
+  const resolvedCurrentUserId = currentUserId || "00000000-0000-0000-0000-000000000000";
   const profile = await prisma.userProfile.findUnique({
     where: { userId },
     include: {
@@ -325,7 +326,7 @@ const getUserProfileById = async (userId, currentUserId) => {
           id: true,
           email: true,
           followers: {
-            where: { followerId: currentUserId },
+            where: { followerId: resolvedCurrentUserId },
             select: { followerId: true }
           },
           _count: {

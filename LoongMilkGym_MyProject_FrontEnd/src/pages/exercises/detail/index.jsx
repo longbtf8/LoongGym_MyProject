@@ -1,8 +1,14 @@
 import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useGetExerciseBySlugQuery } from "@/services/exercise/exerciseApi";
+import { 
+  useGetExerciseBySlugQuery,
+  useGetFavoriteExercisesQuery,
+  useToggleFavoriteExerciseMutation
+} from "@/services/exercise/exerciseApi";
 import { useGetActivePlanQuery, useLazyGetDayDetailsQuery, useUpdateDayDetailsMutation } from "@/services/roadmap/roadmapApi";
 import { ArrowLeft, Clock, Flame, Dumbbell, ShieldAlert, Award, Sparkles, Heart, Plus, Loader2, X, Check } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 const difficultyMap = {
   beginner: { label: "Người mới", css: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
@@ -41,19 +47,27 @@ const getLocalDateString = (dateInput = new Date()) => {
 
 export default function ExerciseDetail() {
   const { slug } = useParams();
+  const { isLoggedIn } = useAuth();
+  const { requireAuth } = useRequireAuth();
   const { data, isLoading, error } = useGetExerciseBySlugQuery(slug);
   const [toastMessage, setToastMessage] = useState("");
-  const [favoriteIds, setFavoriteIds] = useState(getStoredFavorites);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedScheduleDayId, setSelectedScheduleDayId] = useState("");
   const [scheduleMessage, setScheduleMessage] = useState("");
-  const { data: activePlanRes, isFetching: isFetchingPlan } = useGetActivePlanQuery();
+  const { data: activePlanRes, isFetching: isFetchingPlan } = useGetActivePlanQuery(undefined, {
+    skip: !isLoggedIn,
+  });
+  const { data: favoriteExercisesRes } = useGetFavoriteExercisesQuery(undefined, {
+    skip: !isLoggedIn,
+  });
+  const [toggleFavoriteDb] = useToggleFavoriteExerciseMutation();
   const [getDayDetails, { isFetching: isFetchingDayDetails }] = useLazyGetDayDetailsQuery();
   const [updateDayDetails, { isLoading: isAddingToSchedule }] = useUpdateDayDetailsMutation();
 
   const exercise = data?.data;
   const activePlan = activePlanRes?.data;
   const scheduleDays = activePlan?.days || [];
+  const favoriteIds = isLoggedIn ? (favoriteExercisesRes?.data?.favoriteIds || []) : [];
   const isFavorite = exercise ? favoriteIds.includes(exercise.id) : false;
 
   const showToast = (message) => {
@@ -63,19 +77,19 @@ export default function ExerciseDetail() {
     }, 3000);
   };
 
-  const toggleFavorite = () => {
+  const toggleFavorite = async () => {
     if (!exercise) return;
-    setFavoriteIds((prev) => {
-      const next = prev.includes(exercise.id)
-        ? prev.filter((id) => id !== exercise.id)
-        : [...prev, exercise.id];
-      localStorage.setItem(FAVORITE_EXERCISES_KEY, JSON.stringify(next));
-      showToast(next.includes(exercise.id) ? "Đã lưu vào yêu thích." : "Đã bỏ khỏi yêu thích.");
-      return next;
-    });
+    if (!requireAuth()) return;
+    try {
+      const res = await toggleFavoriteDb(exercise.id).unwrap();
+      showToast(res.message || (res.data?.isFavorite ? "Đã lưu vào yêu thích." : "Đã bỏ khỏi yêu thích."));
+    } catch (err) {
+      console.error("Lỗi khi thay đổi trạng thái yêu thích:", err);
+    }
   };
 
   const openScheduleModal = () => {
+    if (!requireAuth()) return;
     setScheduleMessage("");
     const todayStr = getLocalDateString();
     const futureDays = scheduleDays.filter((day) => getLocalDateString(day.scheduledDate) >= todayStr);

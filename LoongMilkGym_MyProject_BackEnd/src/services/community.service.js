@@ -964,6 +964,7 @@ const unsavePost = async ({ userId, postId }) => {
 const searchUsers = async ({ query, userId }) => {
   if (!query || !query.trim()) return [];
   const searchQuery = query.trim();
+  const resolvedUserId = userId || "00000000-0000-0000-0000-000000000000";
 
   const profiles = await prisma.userProfile.findMany({
     where: {
@@ -977,7 +978,7 @@ const searchUsers = async ({ query, userId }) => {
           id: true,
           email: true,
           followers: {
-            where: { followerId: userId },
+            where: { followerId: resolvedUserId },
             select: { followerId: true },
           },
           _count: {

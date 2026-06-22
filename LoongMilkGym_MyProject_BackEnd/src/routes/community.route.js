@@ -50,7 +50,7 @@ router.post("/posts/:id/reactions", authRequire, communityController.toggleReact
 router.delete("/posts/:id/reactions", authRequire, communityController.deleteReaction);
 
 // 4. Quản lý theo dõi người dùng (Followers/Following)
-router.get("/users/search", authRequire, communityController.searchUsers);
+router.get("/users/search", optionalAuth, communityController.searchUsers);
 router.post("/users/:id/follow", authRequire, communityController.followUser);
 router.delete("/users/:id/follow", authRequire, communityController.unfollowUser);
 

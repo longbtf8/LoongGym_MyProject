@@ -281,7 +281,7 @@ const unsavePost = async (req, res, next) => {
 
 const searchUsers = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id || null;
     const query = req.query.q || "";
     const users = await communityService.searchUsers({ query, userId });
     return res.success(users, httpCodes.success, "Tìm kiếm người dùng thành công.");

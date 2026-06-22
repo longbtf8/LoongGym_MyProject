@@ -48,13 +48,13 @@ const publicRoutes = [
   { path: paths.storeDetail, component: StoreDetail, layout: DefaultLayout },
   { path: paths.cart, component: Cart, layout: DefaultLayout },
   { path: paths.community, component: Community, layout: DefaultLayout },
+  { path: paths.otherProfile, component: Profile, layout: DefaultLayout },
   { path: "*", component: NotFound, layout: null },
 ];
 
 // Private Routes (Bắt buộc phải đăng nhập, tự động bảo vệ bởi AuthGuard)
 const privateRoutes = [
   { path: paths.profile, component: Profile, layout: DefaultLayout, guard: AuthGuard },
-  { path: paths.otherProfile, component: Profile, layout: DefaultLayout, guard: AuthGuard },
   { path: paths.dashboard, component: Dashboard, layout: DefaultLayout, guard: AuthGuard },
   { path: paths.myPlan, component: MyPlan, layout: DefaultLayout, guard: AuthGuard },
   { path: paths.todayWorkout, component: TodayWorkout, layout: DefaultLayout, guard: AuthGuard },

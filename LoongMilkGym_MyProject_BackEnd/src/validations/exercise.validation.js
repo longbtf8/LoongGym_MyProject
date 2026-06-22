@@ -30,7 +30,14 @@ const getExerciseBySlugSchema = z.object({
   }),
 });
 
+const toggleFavoriteSchema = z.object({
+  params: z.object({
+    id: z.string().uuid("ID không hợp lệ"),
+  }),
+});
+
 module.exports = {
   getExercisesSchema,
   getExerciseBySlugSchema,
+  toggleFavoriteSchema,
 };

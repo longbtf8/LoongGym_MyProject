@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -14,104 +8,91 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ╔══════════════════════════════════════════════════════════════════════════════╗
-// ║  NHÓM BẢNG 1: TÀI KHOẢN & NGƯỜI DÙNG (Account & User Management)         ║
-// ║  Quản lý đăng ký, đăng nhập, hồ sơ cá nhân, cài đặt, phiên đăng nhập     ║
-// ╚══════════════════════════════════════════════════════════════════════════════╝
-
 model User {
-  id              String               @id @default(uuid())
-  email           String               @unique
-  passwordHash    String               @map("password_hash")
-  role            String               @default("USER")
-  status          String               @default("ACTIVE")
-  emailVerifiedAt DateTime?            @map("email_verified_at")
-  lastLoginAt     DateTime?            @map("last_login_at")
-  profile         UserProfile?
-  settings        UserSetting?
-  resetTokens     PasswordResetToken[]
-  revokedTokens   RevokedTokens[]
-  refreshTokens   RefreshTokens[]
-
-  trainingPlans   UserTrainingPlan[]
-  workoutSessions WorkoutSession[]
-  nutritionTargets NutritionTarget[]
-  mealLogs         MealLog[]
-  bodyMetrics     BodyMetric[]
-  recoveryLogs    RecoveryLog[]
-  injuryLogs      InjuryLog[]
-  progressPhotos  ProgressPhoto[]
-  aiConversations   AiConversation[]
-  aiRecommendations AiRecommendation[]
-  carts             Cart[]
-  orders            Order[]
-
-  communityPosts   CommunityPost[]
-  postComments     PostComment[]
-  postReactions    PostReaction[]
-  mediaComments    PostMediaComment[]
-  mediaReactions   PostMediaReaction[]
+  id                    String                     @id @default(uuid())
+  email                 String                     @unique
+  passwordHash          String                     @map("password_hash")
+  role                  String                     @default("USER")
+  status                String                     @default("ACTIVE")
+  emailVerifiedAt       DateTime?                  @map("email_verified_at")
+  lastLoginAt           DateTime?                  @map("last_login_at")
+  createdAt             DateTime                   @default(now()) @map("created_at")
+  updatedAt             DateTime                   @updatedAt @map("updated_at")
+  aiConversations       AiConversation[]
+  aiRecommendations     AiRecommendation[]
+  bodyMetrics           BodyMetric[]
+  carts                 Cart[]
+  commentReactions      CommentReaction[]
+  hiddenComments        CommentUserHidden[]
+  communityPosts        CommunityPost[]
+  injuryLogs            InjuryLog[]
+  mealLogs              MealLog[]
+  nutritionTargets      NutritionTarget[]
+  orders                Order[]
+  resetTokens           PasswordResetToken[]
+  postComments          PostComment[]
   mediaCommentReactions PostMediaCommentReaction[]
-  commentReactions CommentReaction[]
-  hiddenPosts      PostUserHidden[]
-  hiddenComments   CommentUserHidden[]
-  archivedPosts    PostProfileArchive[]
-  postReports      PostReport[]     @relation("PostReporter")
-  postSaves        PostSave[]
-  followers        UserFollow[]    @relation("FollowingList")
-  following        UserFollow[]    @relation("FollowersList")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  mediaComments         PostMediaComment[]
+  mediaReactions        PostMediaReaction[]
+  archivedPosts         PostProfileArchive[]
+  postReactions         PostReaction[]
+  postReports           PostReport[]               @relation("PostReporter")
+  postSaves             PostSave[]
+  hiddenPosts           PostUserHidden[]
+  progressPhotos        ProgressPhoto[]
+  recoveryLogs          RecoveryLog[]
+  refreshTokens         RefreshTokens[]
+  revokedTokens         RevokedTokens[]
+  favoriteExercises     FavoriteExercise[]
+  following             UserFollow[]               @relation("FollowersList")
+  followers             UserFollow[]               @relation("FollowingList")
+  profile               UserProfile?
+  settings              UserSetting?
+  trainingPlans         UserTrainingPlan[]
+  workoutSessions       WorkoutSession[]
 
   @@map("users")
 }
 
 model UserProfile {
-  id     String @id @default(uuid())
-  userId String @unique @map("user_id")
-
-  fullName           String?   @map("full_name")
-  avatarUrl          String?   @map("avatar_url")
-  avatarProfile      Json?     @map("avatar_profile")
-  coverPhotoUrl      String?   @map("cover_photo_url") @db.Text
-  coverPhotoProfile  Json?     @map("cover_photo_profile")
-  phone              String?
-  address            String?
-  gender             String?
-  birthDate          DateTime? @map("birth_date")
-  heightCm           Float?    @map("height_cm")
-  weightKg           Float?    @map("weight_kg")
-  heightUnit         String?   @default("cm") @map("height_unit")
-  weightUnit         String?   @default("kg") @map("weight_unit")
-  membershipTier     String?   @default("Standard") @map("membership_tier")
-  fitnessLevel       String?   @map("fitness_level")
-  goal               String?
-  bio                String?
-  calorieGoal        Int?      @map("calorie_goal")
-  totalWorkoutDays   Int       @default(0) @map("total_workout_days")
+  id                  String    @id @default(uuid())
+  userId              String    @unique @map("user_id")
+  fullName            String?   @map("full_name")
+  avatarUrl           String?   @map("avatar_url")
+  gender              String?
+  birthDate           DateTime? @map("birth_date")
+  heightCm            Float?    @map("height_cm")
+  weightKg            Float?    @map("weight_kg")
+  fitnessLevel        String?   @map("fitness_level")
+  goal                String?
+  bio                 String?
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  address             String?
+  phone               String?
+  heightUnit          String?   @default("cm") @map("height_unit")
+  weightUnit          String?   @default("kg") @map("weight_unit")
+  membershipTier      String?   @default("Standard") @map("membership_tier")
+  calorieGoal         Int?      @map("calorie_goal")
   totalCaloriesBurned Float     @default(0) @map("total_calories_burned")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  totalWorkoutDays    Int       @default(0) @map("total_workout_days")
+  coverPhotoUrl       String?   @map("cover_photo_url") @db.Text
+  avatarProfile       Json?     @map("avatar_profile")
+  coverPhotoProfile   Json?     @map("cover_photo_profile")
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_profile")
 }
 
 model UserSetting {
-  id     String @id @default(uuid())
-  userId String @unique @map("user_id")
-
-  language   String @default("vi")
-  unitSystem String @default("metric") @map("unit_system") //imperial đơn vị đo khác 
-  theme      String @default("dark")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id         String   @id @default(uuid())
+  userId     String   @unique @map("user_id")
+  language   String   @default("vi")
+  unitSystem String   @default("metric") @map("unit_system")
+  theme      String   @default("dark")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_settings")
 }
@@ -122,41 +103,39 @@ model PasswordResetToken {
   tokenHash String    @map("token_hash")
   expiresAt DateTime  @map("expires_at")
   usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map("created_at")
-
+  @@index([userId], map: "password_reset_tokens_user_id_fkey")
   @@map("password_reset_tokens")
 }
 
 model RevokedTokens {
-  id     String  @id @default(uuid())
-  userId String? @map("user_id")
-
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
   tokenHash String   @map("token_hash") @db.VarChar(512)
   expiresAt DateTime @map("expires_at")
   reason    String?
+  createdAt DateTime @default(now()) @map("created_at")
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now()) @map("created_at")
-
+  @@index([userId], map: "revoked_tokens_user_id_fkey")
   @@map("revoked_tokens")
 }
 
 model RefreshTokens {
-  id     String  @id @default(uuid())
-  userId String? @map("user_id")
-  token  String  @map("token_hash") @db.VarChar(512)
-
-  sessionId    String?  @map("session_id")
+  id           String   @id @default(uuid())
+  userId       String?  @map("user_id")
+  token        String   @map("token_hash") @db.VarChar(512)
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
   deviceName   String?
   ipAddress    String?
   lastActiveAt DateTime @default(now())
-  expiresAt    DateTime @map("expires_at")
-  createdAt    DateTime @default(now()) @map("created_at")
+  sessionId    String?  @map("session_id")
   user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId], map: "refresh_tokens_user_id_fkey")
   @@map("refresh_tokens")
 }
 
@@ -171,139 +150,160 @@ model Queues {
   @@map("queues")
 }
 
-// ╔══════════════════════════════════════════════════════════════════════════════╗
-// ║  NHÓM BẢNG 2: THƯ VIỆN BÀI TẬP (Exercise Library)                            ║
-// ║  Quản lý bài tập, nhóm cơ, thiết bị, hướng dẫn, lỗi thường gặp, thẻ tag      ║
-// ╚══════════════════════════════════════════════════════════════════════════════╝
-
 /// Bảng "Nhóm cơ" – Lưu các nhóm cơ trên cơ thể (ngực, lưng, chân, vai, tay trước, tay sau)
 /// Hỗ trợ cấu trúc cha-con (ví dụ: "Tay" → "Tay trước", "Tay sau")
 model MuscleGroup {
-  id       String  @id @default(uuid()) /// Mã định danh duy nhất
-  name     String  @db.VarChar(100) /// Tên nhóm cơ (ví dụ: Ngực, Lưng, Chân)
-  slug     String  @unique @db.VarChar(100) /// Đường dẫn thân thiện (ví dụ: nguc, lung, chan)
-  parentId String? @map("parent_id") /// Mã nhóm cơ cha (null nếu là nhóm gốc)
-  imageUrl String? @map("image_url") @db.Text /// Đường dẫn ảnh bản đồ cơ bắp
+  /// Mã định danh duy nhất
+  id              String           @id @default(uuid())
+  /// Tên nhóm cơ (ví dụ: Ngực, Lưng, Chân)
+  name            String           @db.VarChar(100)
+  /// Đường dẫn thân thiện (ví dụ: nguc, lung, chan)
+  slug            String           @unique @db.VarChar(100)
+  /// Mã nhóm cơ cha (null nếu là nhóm gốc)
+  parentId        String?          @map("parent_id")
+  /// Ngày tạo bản ghi
+  createdAt       DateTime         @default(now()) @map("created_at")
+  /// Đường dẫn ảnh bản đồ cơ bắp
+  imageUrl        String?          @map("image_url") @db.Text
+  exerciseMuscles ExerciseMuscle[]
+  parent          MuscleGroup?     @relation("MuscleGroupHierarchy", fields: [parentId], references: [id])
+  children        MuscleGroup[]    @relation("MuscleGroupHierarchy")
 
-  parent   MuscleGroup?  @relation("MuscleGroupHierarchy", fields: [parentId], references: [id])
-  children MuscleGroup[] @relation("MuscleGroupHierarchy") /// Danh sách nhóm cơ con
-
-  exerciseMuscles ExerciseMuscle[] /// Quan hệ với bảng cơ tác động của bài tập
-
-  createdAt DateTime @default(now()) @map("created_at") /// Ngày tạo bản ghi
-
+  @@index([parentId], map: "muscle_groups_parent_id_fkey")
   @@map("muscle_groups")
 }
 
 /// Bảng "Thiết bị tập" – Lưu danh sách thiết bị tập luyện (tạ đòn, tạ đơn, máy tập, tự trọng)
 model Equipment {
-  id   String @id @default(uuid()) /// Mã định danh duy nhất
-  name String @db.VarChar(100) /// Tên thiết bị (ví dụ: Barbell, Dumbbell, Machine)
-  slug String @unique @db.VarChar(100) /// Đường dẫn thân thiện (ví dụ: barbell, dumbbell)
-
-  exercises Exercise[] /// Danh sách bài tập sử dụng thiết bị này
-
-  createdAt DateTime @default(now()) @map("created_at") /// Ngày tạo bản ghi
+  /// Mã định danh duy nhất
+  id        String     @id @default(uuid())
+  /// Tên thiết bị (ví dụ: Barbell, Dumbbell, Machine)
+  name      String     @db.VarChar(100)
+  /// Đường dẫn thân thiện (ví dụ: barbell, dumbbell)
+  slug      String     @unique @db.VarChar(100)
+  /// Ngày tạo bản ghi
+  createdAt DateTime   @default(now()) @map("created_at")
+  exercises Exercise[]
 
   @@map("equipment")
 }
 
 /// Bảng "Bài tập" – Lưu thông tin chi tiết từng bài tập (Bench Press, Squat, Deadlift,...)
 model Exercise {
-  id                 String  @id @default(uuid()) /// Mã định danh duy nhất
-  name               String  @db.VarChar(150) /// Tên bài tập (ví dụ: Bench Press, Squat)
-  slug               String  @unique @db.VarChar(150) /// Đường dẫn thân thiện (ví dụ: bench-press)
-  description        String? @db.Text /// Mô tả ngắn gọn về bài tập
-  difficulty         String  @db.VarChar(30) /// Độ khó: beginner, intermediate, advanced
-  exerciseType       String? @map("exercise_type") @db.VarChar(50) /// Loại bài tập: strength, cardio, mobility, hiit
-  primaryEquipmentId String? @map("primary_equipment_id") /// Mã thiết bị chính sử dụng cho bài tập
-  estimatedCalories  Float?  @map("estimated_calories") /// Calo ước tính tiêu hao (kcal / 3 set)
-  durationSeconds    Int?    @map("duration_seconds") /// Thời gian ước tính thực hiện (giây)
-  thumbnailUrl       String? @map("thumbnail_url") @db.Text /// Đường dẫn ảnh đại diện của bài tập
-  videoUrl           String? @map("video_url") @db.Text /// Đường dẫn video hướng dẫn bài tập
-  isPublished        Boolean @default(false) @map("is_published") /// Trạng thái xuất bản (true = hiển thị cho người dùng)
-  viewCount          Int     @default(0) @map("view_count") /// Số lượt xem bài tập
-
-  primaryEquipment Equipment? @relation(fields: [primaryEquipmentId], references: [id])
-
-  muscles        ExerciseMuscle[] /// Danh sách nhóm cơ tác động
-  steps          ExerciseStep[] /// Các bước hướng dẫn thực hiện
-  commonMistakes ExerciseCommonMistake[] /// Các lỗi kỹ thuật thường gặp
-  tags           ExerciseTag[] /// Các thẻ phân loại bài tập
-
-  workoutTemplateExercises WorkoutTemplateExercise[]
+  /// Mã định danh duy nhất
+  id                       String                    @id @default(uuid())
+  /// Tên bài tập (ví dụ: Bench Press, Squat)
+  name                     String                    @db.VarChar(150)
+  /// Đường dẫn thân thiện (ví dụ: bench-press)
+  slug                     String                    @unique @db.VarChar(150)
+  /// Mô tả ngắn gọn về bài tập
+  description              String?                   @db.Text
+  /// Độ khó: beginner, intermediate, advanced
+  difficulty               String                    @db.VarChar(30)
+  /// Loại bài tập: strength, cardio, mobility, hiit
+  exerciseType             String?                   @map("exercise_type") @db.VarChar(50)
+  /// Mã thiết bị chính sử dụng cho bài tập
+  primaryEquipmentId       String?                   @map("primary_equipment_id")
+  /// Calo ước tính tiêu hao (kcal / 3 set)
+  estimatedCalories        Float?                    @map("estimated_calories")
+  /// Thời gian ước tính thực hiện (giây)
+  durationSeconds          Int?                      @map("duration_seconds")
+  /// Đường dẫn ảnh đại diện của bài tập
+  thumbnailUrl             String?                   @map("thumbnail_url") @db.Text
+  /// Đường dẫn video hướng dẫn bài tập
+  videoUrl                 String?                   @map("video_url") @db.Text
+  /// Trạng thái xuất bản (true = hiển thị cho người dùng)
+  isPublished              Boolean                   @default(false) @map("is_published")
+  /// Ngày tạo bản ghi
+  createdAt                DateTime                  @default(now()) @map("created_at")
+  /// Ngày cập nhật gần nhất
+  updatedAt                DateTime                  @updatedAt @map("updated_at")
+  /// Số lượt xem bài tập
+  viewCount                Int                       @default(0) @map("view_count")
+  commonMistakes           ExerciseCommonMistake[]
+  muscles                  ExerciseMuscle[]
+  steps                    ExerciseStep[]
+  tags                     ExerciseTag[]
+  primaryEquipment         Equipment?                @relation(fields: [primaryEquipmentId], references: [id])
   workoutSessionExercises  WorkoutSessionExercise[]
+  workoutTemplateExercises WorkoutTemplateExercise[]
+  favoriteUsers            FavoriteExercise[]
 
-  createdAt DateTime @default(now()) @map("created_at") /// Ngày tạo bản ghi
-  updatedAt DateTime @updatedAt @map("updated_at") /// Ngày cập nhật gần nhất
-
+  @@index([primaryEquipmentId], map: "exercises_primary_equipment_id_fkey")
   @@map("exercises")
 }
 
 /// Bảng "Cơ tác động của bài tập" – Bảng trung gian liên kết bài tập với nhóm cơ
 /// Mỗi bài tập có thể tác động tới nhiều nhóm cơ với vai trò khác nhau (chính/phụ)
 model ExerciseMuscle {
-  exerciseId    String @map("exercise_id") /// Mã bài tập
-  muscleGroupId String @map("muscle_group_id") /// Mã nhóm cơ
-  role          String @db.VarChar(20) /// Vai trò tác động: primary (chính), secondary (phụ)
+  /// Mã bài tập
+  exerciseId    String      @map("exercise_id")
+  /// Mã nhóm cơ
+  muscleGroupId String      @map("muscle_group_id")
+  /// Vai trò tác động: primary (chính), secondary (phụ)
+  role          String      @db.VarChar(20)
+  exercise      Exercise    @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  muscleGroup   MuscleGroup @relation(fields: [muscleGroupId], references: [id])
 
-  exercise    Exercise    @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
-  muscleGroup MuscleGroup @relation(fields: [muscleGroupId], references: [id])
-
-  @@id([exerciseId, muscleGroupId, role]) /// Khóa chính tổ hợp (bài tập + nhóm cơ + vai trò)
+  @@id([exerciseId, muscleGroupId, role])
+  @@index([muscleGroupId], map: "exercise_muscles_muscle_group_id_fkey")
   @@map("exercise_muscles")
 }
 
 /// Bảng "Các bước thực hiện bài tập" – Lưu hướng dẫn từng bước chi tiết
 model ExerciseStep {
-  id          String @id @default(uuid()) /// Mã định danh duy nhất
-  exerciseId  String @map("exercise_id") /// Mã bài tập liên kết
-  stepOrder   Int    @map("step_order") /// Thứ tự bước (1, 2, 3, 4,...)
-  title       String @db.VarChar(150) /// Tiêu đề bước (ví dụ: "Chuẩn bị tư thế")
-  instruction String @db.Text /// Nội dung hướng dẫn chi tiết của bước
+  /// Mã định danh duy nhất
+  id          String   @id @default(uuid())
+  /// Mã bài tập liên kết
+  exerciseId  String   @map("exercise_id")
+  /// Thứ tự bước (1, 2, 3, 4,...)
+  stepOrder   Int      @map("step_order")
+  /// Tiêu đề bước (ví dụ: "Chuẩn bị tư thế")
+  title       String   @db.VarChar(150)
+  /// Nội dung hướng dẫn chi tiết của bước
+  instruction String   @db.Text
+  /// Ngày tạo bản ghi
+  createdAt   DateTime @default(now()) @map("created_at")
+  exercise    Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
 
-  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map("created_at") /// Ngày tạo bản ghi
-
+  @@index([exerciseId], map: "exercise_steps_exercise_id_fkey")
   @@map("exercise_steps")
 }
 
 /// Bảng "Lỗi thường gặp" – Lưu các lỗi kỹ thuật phổ biến khi thực hiện bài tập
 model ExerciseCommonMistake {
-  id          String  @id @default(uuid()) /// Mã định danh duy nhất
-  exerciseId  String  @map("exercise_id") /// Mã bài tập liên kết
-  title       String  @db.VarChar(150) /// Tiêu đề lỗi (ví dụ: "Lưng bị cong")
-  description String? @db.Text /// Mô tả chi tiết lỗi và cách khắc phục
-  severity    String  @default("medium") @db.VarChar(30) /// Mức độ nghiêm trọng: low, medium, high
+  /// Mã định danh duy nhất
+  id          String   @id @default(uuid())
+  /// Mã bài tập liên kết
+  exerciseId  String   @map("exercise_id")
+  /// Tiêu đề lỗi (ví dụ: "Lưng bị cong")
+  title       String   @db.VarChar(150)
+  /// Mô tả chi tiết lỗi và cách khắc phục
+  description String?  @db.Text
+  /// Mức độ nghiêm trọng: low, medium, high
+  severity    String   @default("medium") @db.VarChar(30)
+  /// Ngày tạo bản ghi
+  createdAt   DateTime @default(now()) @map("created_at")
+  exercise    Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
 
-  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map("created_at") /// Ngày tạo bản ghi
-
+  @@index([exerciseId], map: "exercise_common_mistakes_exercise_id_fkey")
   @@map("exercise_common_mistakes")
 }
 
 /// Bảng "Thẻ bài tập" – Lưu các tag phân loại bài tập (strength, chest, powerlifting,...)
 model ExerciseTag {
-  id         String @id @default(uuid()) /// Mã định danh duy nhất
-  exerciseId String @map("exercise_id") /// Mã bài tập liên kết
-  tag        String @db.VarChar(80) /// Nội dung thẻ (ví dụ: strength, chest, beginner)
+  /// Mã định danh duy nhất
+  id         String   @id @default(uuid())
+  /// Mã bài tập liên kết
+  exerciseId String   @map("exercise_id")
+  /// Nội dung thẻ (ví dụ: strength, chest, beginner)
+  tag        String   @db.VarChar(80)
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
 
-  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
-
+  @@index([exerciseId], map: "exercise_tags_exercise_id_fkey")
   @@map("exercise_tags")
 }
 
-
-
-
-
-
-// ╔══════════════════════════════════════════════════════════════════════════════╗
-// ║  NHÓM BẢNG 3: LỘ TRÌNH TẬP LUYỆN (Workout Program & Training Plan)           ║
-// ║  Quản lý chương trình tập, mẫu thiết kế bài tập, lộ trình huấn luyện của user ║
-// ╚══════════════════════════════════════════════════════════════════════════════╝
 model WorkoutProgram {
   id            String              @id @default(uuid())
   title         String              @db.VarChar(200)
@@ -314,27 +314,27 @@ model WorkoutProgram {
   coverImageUrl String?             @map("cover_image_url") @db.Text
   createdBy     String?             @map("created_by")
   isPublished   Boolean             @default(false) @map("is_published")
-  price         Decimal             @default(0) @db.Decimal(12, 2)
-  metadata      Json                @default("{}")
+  price         Decimal             @default(0.00) @db.Decimal(12, 2)
+  metadata      Json
   createdAt     DateTime            @default(now()) @map("created_at")
   updatedAt     DateTime            @updatedAt @map("updated_at")
-  days          WorkoutProgramDay[]
   userPlans     UserTrainingPlan[]
+  days          WorkoutProgramDay[]
 
   @@map("workout_programs")
 }
 
 model WorkoutProgramDay {
-  id          String            @id @default(uuid())
-  programId   String            @map("program_id")
-  program     WorkoutProgram    @relation(fields: [programId], references: [id], onDelete: Cascade)
-  cycleDay    Int               @map("cycle_day")
-  title       String            @db.VarChar(150)
-  description String?           @db.Text
+  id           String            @id @default(uuid())
+  programId    String            @map("program_id")
+  title        String            @db.VarChar(150)
+  description  String?           @db.Text
   focusArea    String?           @map("focus_area") @db.VarChar(100)
-  muscleMapUrl String?           @map("muscle_map_url") @db.Text
   createdAt    DateTime          @default(now()) @map("created_at")
-  templates   WorkoutTemplate[]
+  muscleMapUrl String?           @map("muscle_map_url") @db.Text
+  cycleDay     Int               @map("cycle_day")
+  program      WorkoutProgram    @relation(fields: [programId], references: [id], onDelete: Cascade)
+  templates    WorkoutTemplate[]
 
   @@unique([programId, cycleDay])
   @@map("workout_program_days")
@@ -343,22 +343,21 @@ model WorkoutProgramDay {
 model WorkoutTemplate {
   id                       String                    @id @default(uuid())
   programDayId             String?                   @map("program_day_id")
-  programDay               WorkoutProgramDay?        @relation(fields: [programDayId], references: [id], onDelete: Cascade)
   title                    String                    @db.VarChar(150)
   description              String?                   @db.Text
   estimatedDurationMinutes Int?                      @map("estimated_duration_minutes")
   createdAt                DateTime                  @default(now()) @map("created_at")
   exercises                WorkoutTemplateExercise[]
+  programDay               WorkoutProgramDay?        @relation(fields: [programDayId], references: [id], onDelete: Cascade)
 
+  @@index([programDayId], map: "workout_templates_program_day_id_fkey")
   @@map("workout_templates")
 }
 
 model WorkoutTemplateExercise {
   id                String          @id @default(uuid())
   workoutTemplateId String          @map("workout_template_id")
-  template          WorkoutTemplate @relation(fields: [workoutTemplateId], references: [id], onDelete: Cascade)
   exerciseId        String          @map("exercise_id")
-  exercise          Exercise        @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
   exerciseOrder     Int             @map("exercise_order")
   sets              Int?
   repsMin           Int?            @map("reps_min")
@@ -367,109 +366,107 @@ model WorkoutTemplateExercise {
   restSeconds       Int?            @map("rest_seconds")
   tempo             String?         @db.VarChar(30)
   note              String?         @db.Text
+  exercise          Exercise        @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  template          WorkoutTemplate @relation(fields: [workoutTemplateId], references: [id], onDelete: Cascade)
 
+  @@index([exerciseId], map: "workout_template_exercises_exercise_id_fkey")
+  @@index([workoutTemplateId], map: "workout_template_exercises_workout_template_id_fkey")
   @@map("workout_template_exercises")
 }
 
 model UserTrainingPlan {
   id          String                @id @default(uuid())
   userId      String                @map("user_id")
-  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   programId   String?               @map("program_id")
-  program     WorkoutProgram?       @relation(fields: [programId], references: [id], onDelete: SetNull)
   title       String                @db.VarChar(200)
   startDate   DateTime              @map("start_date") @db.Date
   status      String                @default("active") @db.VarChar(30)
   aiGenerated Boolean               @default(false) @map("ai_generated")
   aiPrompt    String?               @map("ai_prompt") @db.Text
-  metadata    Json                  @default("{}")
+  metadata    Json
   createdAt   DateTime              @default(now()) @map("created_at")
   days        UserTrainingPlanDay[]
+  program     WorkoutProgram?       @relation(fields: [programId], references: [id])
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([programId], map: "user_training_plans_program_id_fkey")
+  @@index([userId], map: "user_training_plans_user_id_fkey")
   @@map("user_training_plans")
 }
 
 model UserTrainingPlanDay {
   id                 String           @id @default(uuid())
   userTrainingPlanId String           @map("user_training_plan_id")
-  plan               UserTrainingPlan @relation(fields: [userTrainingPlanId], references: [id], onDelete: Cascade)
   scheduledDate      DateTime         @map("scheduled_date") @db.Date
   title              String           @db.VarChar(150)
   status             String           @default("pending") @db.VarChar(30)
   skipReason         String?          @map("skip_reason") @db.VarChar(100)
-  notes              String?          @db.Text
-  metadata           Json             @default("{}")
   createdAt          DateTime         @default(now()) @map("created_at")
-
+  metadata           Json
+  notes              String?          @db.Text
+  plan               UserTrainingPlan @relation(fields: [userTrainingPlanId], references: [id], onDelete: Cascade)
   workoutSessions    WorkoutSession[]
 
+  @@index([userTrainingPlanId], map: "user_training_plan_days_user_training_plan_id_fkey")
   @@map("user_training_plan_days")
 }
 
-
-// ╔══════════════════════════════════════════════════════════════════════════════╗
-// ║  NHÓM BẢNG 4: PHIÊN LUYỆN TẬP (Workout Sessions & Workout Sets)              ║
-// ║  Ghi nhật ký chi tiết quá trình tập luyện, bài tập, hiệp tập và kết quả      ║
-// ╚══════════════════════════════════════════════════════════════════════════════╝
-
 model WorkoutSession {
-  id              String                 @id @default(uuid())
-  userId          String                 @map("user_id")
-  planDayId       String?                @map("plan_day_id")
-  title           String?                @db.VarChar(150)
-  startedAt       DateTime?              @map("started_at")
-  endedAt         DateTime?              @map("ended_at")
-  durationSeconds Int?                   @map("duration_seconds")
-  status          String                 @default("in_progress") @db.VarChar(30) // in_progress, completed, cancelled
-  perceivedEffort Int?                   @map("perceived_effort") // perceived_effort BETWEEN 1 AND 10
-  notes           String?                @db.Text
-  createdAt       DateTime               @default(now()) @map("created_at")
-
-  user            User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planDay         UserTrainingPlanDay?   @relation(fields: [planDayId], references: [id], onDelete: SetNull)
+  id              String                   @id @default(uuid())
+  userId          String                   @map("user_id")
+  planDayId       String?                  @map("plan_day_id")
+  title           String?                  @db.VarChar(150)
+  startedAt       DateTime?                @map("started_at")
+  endedAt         DateTime?                @map("ended_at")
+  durationSeconds Int?                     @map("duration_seconds")
+  status          String                   @default("in_progress") @db.VarChar(30)
+  perceivedEffort Int?                     @map("perceived_effort")
+  notes           String?                  @db.Text
+  createdAt       DateTime                 @default(now()) @map("created_at")
+  communityPosts  CommunityPost[]
   exercises       WorkoutSessionExercise[]
-  communityPosts   CommunityPost[]
+  planDay         UserTrainingPlanDay?     @relation(fields: [planDayId], references: [id])
+  user            User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([planDayId], map: "workout_sessions_plan_day_id_fkey")
+  @@index([userId], map: "workout_sessions_user_id_fkey")
   @@map("workout_sessions")
 }
 
 model WorkoutSessionExercise {
-  id               String           @id @default(uuid())
-  workoutSessionId String           @map("workout_session_id")
-  exerciseId       String           @map("exercise_id")
-  exerciseOrder    Int              @map("exercise_order")
-  status           String           @default("pending") @db.VarChar(30)
-  notes            String?          @db.Text
-
-  workoutSession   WorkoutSession   @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
-  exercise         Exercise         @relation(fields: [exerciseId], references: [id])
+  id               String         @id @default(uuid())
+  workoutSessionId String         @map("workout_session_id")
+  exerciseId       String         @map("exercise_id")
+  exerciseOrder    Int            @map("exercise_order")
+  status           String         @default("pending") @db.VarChar(30)
+  notes            String?        @db.Text
+  exercise         Exercise       @relation(fields: [exerciseId], references: [id])
+  workoutSession   WorkoutSession @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
   sets             WorkoutSet[]
 
+  @@index([exerciseId], map: "workout_session_exercises_exercise_id_fkey")
+  @@index([workoutSessionId], map: "workout_session_exercises_workout_session_id_fkey")
   @@map("workout_session_exercises")
 }
 
 model WorkoutSet {
-  id                 String                 @id @default(uuid())
-  sessionExerciseId  String                 @map("session_exercise_id")
-  setNumber          Int                    @map("set_number")
-  setType            String                 @default("working") @db.VarChar(30) @map("set_type") // warmup, working, dropset, failure
-  reps               Int?
-  weightKg           Decimal?               @map("weight_kg") @db.Decimal(7, 2)
-  durationSeconds    Int?                   @map("duration_seconds")
-  distanceMeters     Decimal?               @map("distance_meters") @db.Decimal(10, 2)
-  rpe                Decimal?               @db.Decimal(3, 1)
-  isCompleted        Boolean                @default(false) @map("is_completed")
-  completedAt        DateTime?              @map("completed_at")
+  id                String                 @id @default(uuid())
+  sessionExerciseId String                 @map("session_exercise_id")
+  setNumber         Int                    @map("set_number")
+  setType           String                 @default("working") @map("set_type") @db.VarChar(30)
+  reps              Int?
+  weightKg          Decimal?               @map("weight_kg") @db.Decimal(7, 2)
+  durationSeconds   Int?                   @map("duration_seconds")
+  distanceMeters    Decimal?               @map("distance_meters") @db.Decimal(10, 2)
+  rpe               Decimal?               @db.Decimal(3, 1)
+  isCompleted       Boolean                @default(false) @map("is_completed")
+  completedAt       DateTime?              @map("completed_at")
+  sessionExercise   WorkoutSessionExercise @relation(fields: [sessionExerciseId], references: [id], onDelete: Cascade)
 
-  sessionExercise    WorkoutSessionExercise @relation(fields: [sessionExerciseId], references: [id], onDelete: Cascade)
-
+  @@index([sessionExerciseId], map: "workout_sets_session_exercise_id_fkey")
   @@map("workout_sets")
 }
 
-// ╔══════════════════════════════════════════════════════════════════════════════╗
-// ║  NHÓM BẢNG 5: DINH DƯỠNG & BỮA ĂN (Nutrition & Meal Logs)                    ║
-// ║  Theo dõi mục tiêu dinh dưỡng, nhật ký món ăn, định lượng calo tiêu thụ      ║
-// ╚══════════════════════════════════════════════════════════════════════════════╝
 model NutritionTarget {
   id             String   @id @default(uuid())
   userId         String   @map("user_id")
@@ -481,8 +478,7 @@ model NutritionTarget {
   fiberGTarget   Decimal? @map("fiber_g_target") @db.Decimal(8, 2)
   waterMlTarget  Int?     @map("water_ml_target")
   createdAt      DateTime @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, targetDate])
   @@map("nutrition_targets")
@@ -497,7 +493,7 @@ model FoodItem {
   proteinG     Decimal?      @map("protein_g") @db.Decimal(8, 2)
   carbsG       Decimal?      @map("carbs_g") @db.Decimal(8, 2)
   fatG         Decimal?      @map("fat_g") @db.Decimal(8, 2)
-  metadata     Json          @default("{}")
+  metadata     Json
   createdAt    DateTime      @default(now()) @map("created_at")
   mealLogItems MealLogItem[]
 
@@ -512,9 +508,9 @@ model MealLog {
   note      String?       @db.Text
   createdAt DateTime      @default(now()) @map("created_at")
   items     MealLogItem[]
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  @@index([userId], map: "meal_logs_user_id_fkey")
   @@map("meal_logs")
 }
 
@@ -528,32 +524,29 @@ model MealLogItem {
   proteinG       Decimal?  @map("protein_g") @db.Decimal(8, 2)
   carbsG         Decimal?  @map("carbs_g") @db.Decimal(8, 2)
   fatG           Decimal?  @map("fat_g") @db.Decimal(8, 2)
+  foodItem       FoodItem? @relation(fields: [foodItemId], references: [id])
   mealLog        MealLog   @relation(fields: [mealLogId], references: [id], onDelete: Cascade)
-  foodItem       FoodItem? @relation(fields: [foodItemId], references: [id], onDelete: SetNull)
 
+  @@index([foodItemId], map: "meal_log_items_food_item_id_fkey")
+  @@index([mealLogId], map: "meal_log_items_meal_log_id_fkey")
   @@map("meal_log_items")
 }
 
-// ╔══════════════════════════════════════════════════════════════════════════════╗
-// ║  NHÓM BẢNG 6: SỨC KHỎE & PHỤC HỒI (Health, Recovery & AI Coach)              ║
-// ║  Theo dõi thể trạng, giấc ngủ, chấn thương, ảnh tiến trình, hội thoại AI PT  ║
-// ╚══════════════════════════════════════════════════════════════════════════════╝
-
 model BodyMetric {
-  id             String    @id @default(uuid())
-  userId         String    @map("user_id")
-  measuredAt     DateTime  @default(now()) @map("measured_at")
-  weightKg       Float?    @map("weight_kg")
-  bodyFatPercent Float?    @map("body_fat_percent")
-  muscleMassKg   Float?    @map("muscle_mass_kg")
-  waistCm        Float?    @map("waist_cm")
-  chestCm        Float?    @map("chest_cm")
-  armCm          Float?    @map("arm_cm")
-  thighCm        Float?    @map("thigh_cm")
-  notes          String?   @db.Text
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  measuredAt     DateTime @default(now()) @map("measured_at")
+  weightKg       Float?   @map("weight_kg")
+  bodyFatPercent Float?   @map("body_fat_percent")
+  muscleMassKg   Float?   @map("muscle_mass_kg")
+  waistCm        Float?   @map("waist_cm")
+  chestCm        Float?   @map("chest_cm")
+  armCm          Float?   @map("arm_cm")
+  thighCm        Float?   @map("thigh_cm")
+  notes          String?  @db.Text
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  @@index([userId], map: "body_metrics_user_id_fkey")
   @@map("body_metrics")
 }
 
@@ -569,8 +562,7 @@ model RecoveryLog {
   hrvMs            Float?   @map("hrv_ms")
   restingHeartRate Int?     @map("resting_heart_rate")
   notes            String?  @db.Text
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, logDate])
   @@map("recovery_logs")
@@ -587,69 +579,70 @@ model InjuryLog {
   resolvedAt  DateTime? @map("resolved_at") @db.Date
   status      String    @default("active") @db.VarChar(30)
   createdAt   DateTime  @default(now()) @map("created_at")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  @@index([userId], map: "injury_logs_user_id_fkey")
   @@map("injury_logs")
 }
 
 model ProgressPhoto {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  photoUrl  String   @map("photo_url") @db.Text
-  photoType String   @map("photo_type") @db.VarChar(30)
-  takenAt   DateTime @map("taken_at") @db.Date
-  visibility String  @default("private") @db.VarChar(30)
-  createdAt DateTime @default(now()) @map("created_at")
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  photoUrl   String   @map("photo_url") @db.Text
+  photoType  String   @map("photo_type") @db.VarChar(30)
+  takenAt    DateTime @map("taken_at") @db.Date
+  visibility String   @default("private") @db.VarChar(30)
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  @@index([userId], map: "progress_photos_user_id_fkey")
   @@map("progress_photos")
 }
 
 model AiConversation {
-  id          String   @id @default(uuid())
-  userId      String   @map("user_id")
-  title       String?  @db.VarChar(200)
-  contextType String?  @map("context_type") @db.VarChar(50)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
+  id              String             @id @default(uuid())
+  userId          String             @map("user_id")
+  title           String?            @db.VarChar(200)
+  contextType     String?            @map("context_type") @db.VarChar(50)
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
   user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages        AiMessage[]
   recommendations AiRecommendation[]
 
+  @@index([userId], map: "ai_conversations_user_id_fkey")
   @@map("ai_conversations")
 }
 
 model AiMessage {
-  id             String   @id @default(uuid())
-  conversationId String   @map("conversation_id")
-  role           String   @db.VarChar(20)
-  content        String   @db.LongText
-  metadata       Json     @default("{}")
-  createdAt      DateTime @default(now()) @map("created_at")
+  id             String         @id @default(uuid())
+  conversationId String         @map("conversation_id")
+  role           String         @db.VarChar(20)
+  content        String         @db.LongText
+  metadata       Json
+  createdAt      DateTime       @default(now()) @map("created_at")
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
-  conversation AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
+  @@index([conversationId], map: "ai_messages_conversation_id_fkey")
   @@map("ai_messages")
 }
 
 model AiRecommendation {
-  id                 String   @id @default(uuid())
-  userId             String   @map("user_id")
-  conversationId     String?  @map("conversation_id")
-  recommendationType String   @map("recommendation_type") @db.VarChar(50)
-  title              String?  @db.VarChar(200)
+  id                 String          @id @default(uuid())
+  userId             String          @map("user_id")
+  conversationId     String?         @map("conversation_id")
+  recommendationType String          @map("recommendation_type") @db.VarChar(50)
+  title              String?         @db.VarChar(200)
   payload            Json
-  status             String   @default("pending") @db.VarChar(30)
-  appliedAt          DateTime? @map("applied_at")
-  expiresAt          DateTime? @map("expires_at")
-  createdAt          DateTime  @default(now()) @map("created_at")
+  status             String          @default("pending") @db.VarChar(30)
+  appliedAt          DateTime?       @map("applied_at")
+  expiresAt          DateTime?       @map("expires_at")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  conversation       AiConversation? @relation(fields: [conversationId], references: [id])
+  user               User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversation AiConversation? @relation(fields: [conversationId], references: [id])
-
+  @@index([conversationId], map: "ai_recommendations_conversation_id_fkey")
+  @@index([userId], map: "ai_recommendations_user_id_fkey")
   @@map("ai_recommendations")
 }
 
@@ -659,7 +652,7 @@ model AiKnowledgeDocument {
   sourceType String   @map("source_type") @db.VarChar(50)
   sourceId   String?  @map("source_id")
   content    String   @db.LongText
-  metadata   Json     @default("{}")
+  metadata   Json
   embedding  Json?
   createdAt  DateTime @default(now()) @map("created_at")
 
@@ -667,42 +660,36 @@ model AiKnowledgeDocument {
   @@map("ai_knowledge_documents")
 }
 
-// ╔══════════════════════════════════════════════════════════════════════════════╗
-// ║  NHÓM BẢNG 7: CỬA HÀNG SẢN PHẨM (Digital Product Store)                      ║
-// ║  Quản lý danh mục, sản phẩm, tệp tin tải về, giỏ hàng, đơn hàng & thanh toán ║
-// ╚══════════════════════════════════════════════════════════════════════════════╝
-
 model ProductCategory {
-  id        String   @id @default(uuid())
-  name      String   @db.VarChar(120)
-  slug      String   @unique @db.VarChar(120)
-  createdAt DateTime @default(now()) @map("created_at")
-
+  id        String    @id @default(uuid())
+  name      String    @db.VarChar(120)
+  slug      String    @unique @db.VarChar(120)
+  createdAt DateTime  @default(now()) @map("created_at")
   products  Product[]
 
   @@map("product_categories")
 }
 
 model Product {
-  id           String   @id @default(uuid())
-  categoryId   String?  @map("category_id")
-  title        String   @db.VarChar(250)
-  slug         String   @unique @db.VarChar(250)
-  description  String?  @db.Text
-  productType  String   @map("product_type") @db.VarChar(50)
-  price        Decimal  @default(0) @db.Decimal(12, 2)
-  currency     String?  @default("VND") @db.VarChar(10)
-  thumbnailUrl String?  @map("thumbnail_url") @db.Text
-  status       String?  @default("draft") @db.VarChar(30)
-  metadata     Json?    @default("{}")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
-
-  category     ProductCategory? @relation(fields: [categoryId], references: [id])
-  assets       ProductAsset[]
+  id           String           @id @default(uuid())
+  categoryId   String?          @map("category_id")
+  title        String           @db.VarChar(250)
+  slug         String           @unique @db.VarChar(250)
+  description  String?          @db.Text
+  productType  String           @map("product_type") @db.VarChar(50)
+  price        Decimal          @default(0.00) @db.Decimal(12, 2)
+  currency     String?          @default("VND") @db.VarChar(10)
+  thumbnailUrl String?          @map("thumbnail_url") @db.Text
+  status       String?          @default("draft") @db.VarChar(30)
+  metadata     Json?
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @default(now()) @updatedAt @map("updated_at")
   cartItems    CartItem[]
   orderItems   OrderItem[]
+  assets       ProductAsset[]
+  category     ProductCategory? @relation(fields: [categoryId], references: [id])
 
+  @@index([categoryId], map: "products_category_id_fkey")
   @@map("products")
 }
 
@@ -712,71 +699,73 @@ model ProductAsset {
   assetType  String?  @map("asset_type") @db.VarChar(50)
   title      String?  @db.VarChar(200)
   fileUrl    String?  @map("file_url") @db.Text
-  accessRule Json?    @default("{}") @map("access_rule")
+  accessRule Json?    @map("access_rule")
   createdAt  DateTime @default(now()) @map("created_at")
-
   product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
+  @@index([productId], map: "product_assets_product_id_fkey")
   @@map("product_assets")
 }
 
 model Cart {
-  id        String   @id @default(uuid())
-  userId    String?  @map("user_id")
-  status    String?  @default("active") @db.VarChar(30)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
-
-  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String     @id @default(uuid())
+  userId    String?    @map("user_id")
+  status    String?    @default("active") @db.VarChar(30)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @default(now()) @updatedAt @map("updated_at")
   items     CartItem[]
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId], map: "carts_user_id_fkey")
   @@map("carts")
 }
 
 model CartItem {
-  id        String   @id @default(uuid())
-  cartId    String   @map("cart_id")
-  productId String   @map("product_id")
-  quantity  Int      @default(1)
-  unitPrice Decimal  @map("unit_price") @db.Decimal(12, 2)
+  id        String  @id @default(uuid())
+  cartId    String  @map("cart_id")
+  productId String  @map("product_id")
+  quantity  Int     @default(1)
+  unitPrice Decimal @map("unit_price") @db.Decimal(12, 2)
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
 
-  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id])
-
+  @@index([cartId], map: "cart_items_cart_id_fkey")
+  @@index([productId], map: "cart_items_product_id_fkey")
   @@map("cart_items")
 }
 
 model Order {
-  id            String    @id @default(uuid())
-  userId        String    @map("user_id")
-  orderNumber   String    @unique @map("order_number") @db.VarChar(50)
-  status        String?   @default("pending") @db.VarChar(30)
-  subtotal      Decimal   @db.Decimal(12, 2)
-  discountTotal Decimal?  @default(0) @map("discount_total") @db.Decimal(12, 2)
-  total         Decimal   @db.Decimal(12, 2)
-  currency      String?   @default("VND") @db.VarChar(10)
-  createdAt     DateTime  @default(now()) @map("created_at")
-  paidAt        DateTime? @map("paid_at")
-
-  user          User      @relation(fields: [userId], references: [id])
+  id            String      @id @default(uuid())
+  userId        String      @map("user_id")
+  orderNumber   String      @unique @map("order_number") @db.VarChar(50)
+  status        String?     @default("pending") @db.VarChar(30)
+  subtotal      Decimal     @db.Decimal(12, 2)
+  discountTotal Decimal?    @default(0.00) @map("discount_total") @db.Decimal(12, 2)
+  total         Decimal     @db.Decimal(12, 2)
+  currency      String?     @default("VND") @db.VarChar(10)
+  createdAt     DateTime    @default(now()) @map("created_at")
+  paidAt        DateTime?   @map("paid_at")
   items         OrderItem[]
+  user          User        @relation(fields: [userId], references: [id])
   payments      Payment[]
 
+  @@index([userId], map: "orders_user_id_fkey")
   @@map("orders")
 }
 
 model OrderItem {
-  id           String   @id @default(uuid())
-  orderId      String   @map("order_id")
-  productId    String   @map("product_id")
-  productTitle String   @map("product_title") @db.VarChar(250)
+  id           String  @id @default(uuid())
+  orderId      String  @map("order_id")
+  productId    String  @map("product_id")
+  productTitle String  @map("product_title") @db.VarChar(250)
   quantity     Int
-  unitPrice    Decimal  @map("unit_price") @db.Decimal(12, 2)
-  totalPrice   Decimal  @map("total_price") @db.Decimal(12, 2)
+  unitPrice    Decimal @map("unit_price") @db.Decimal(12, 2)
+  totalPrice   Decimal @map("total_price") @db.Decimal(12, 2)
+  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product      Product @relation(fields: [productId], references: [id])
 
-  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product      Product  @relation(fields: [productId], references: [id])
-
+  @@index([orderId], map: "order_items_order_id_fkey")
+  @@index([productId], map: "order_items_product_id_fkey")
   @@map("order_items")
 }
 
@@ -788,115 +777,114 @@ model Payment {
   amount            Decimal  @db.Decimal(12, 2)
   currency          String?  @default("VND") @db.VarChar(10)
   status            String?  @default("pending") @db.VarChar(30)
-  rawResponse       Json?    @default("{}") @map("raw_response")
+  rawResponse       Json?    @map("raw_response")
   createdAt         DateTime @default(now()) @map("created_at")
-
   order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
+  @@index([orderId], map: "payments_order_id_fkey")
   @@map("payments")
 }
 
-// ╔══════════════════════════════════════════════════════════════════════════════╗
-// ║  NHÓM BẢNG 8: CỘNG ĐỒNG & MẠNG XÃ HỘI (Community & Social)                   ║
-// ║  Quản lý bài đăng, ảnh đính kèm, bình luận, tương tác thích và theo dõi      ║
-// ╚══════════════════════════════════════════════════════════════════════════════╝
-
 model CommunityPost {
-  id                      String           @id @default(uuid())
-  userId                  String           @map("user_id")
-  content                 String?          @db.Text
-  postType                String           @default("text") @map("post_type") @db.VarChar(50)
-  visibility              String           @default("public") @db.VarChar(30)
-  relatedWorkoutSessionId String?          @map("related_workout_session_id")
-  metadata                Json?            @map("metadata")
-  createdAt               DateTime         @default(now()) @map("created_at")
-  updatedAt               DateTime         @updatedAt @map("updated_at")
+  id                      String               @id @default(uuid())
+  userId                  String               @map("user_id")
+  content                 String?              @db.Text
+  postType                String               @default("text") @map("post_type") @db.VarChar(50)
+  visibility              String               @default("public") @db.VarChar(30)
+  relatedWorkoutSessionId String?              @map("related_workout_session_id")
+  metadata                Json?                @map("metadata")
+  createdAt               DateTime             @default(now()) @map("created_at")
+  updatedAt               DateTime             @updatedAt @map("updated_at")
+  relatedWorkoutSession   WorkoutSession?      @relation(fields: [relatedWorkoutSessionId], references: [id])
+  user                    User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments                PostComment[]
+  media                   PostMedia[]
+  profileArchives         PostProfileArchive[]
+  reactions               PostReaction[]
+  reports                 PostReport[]
+  saves                   PostSave[]
+  hiddenBy                PostUserHidden[]
 
-  user                 User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  relatedWorkoutSession WorkoutSession? @relation(fields: [relatedWorkoutSessionId], references: [id], onDelete: SetNull)
-  media                PostMedia[]
-  comments             PostComment[]
-  reactions            PostReaction[]
-  hiddenBy             PostUserHidden[]
-  profileArchives      PostProfileArchive[]
-  reports              PostReport[]
-  saves                PostSave[]
-
+  @@index([relatedWorkoutSessionId], map: "community_posts_related_workout_session_id_fkey")
+  @@index([userId], map: "community_posts_user_id_fkey")
   @@map("community_posts")
 }
 
 model PostMedia {
-  id        String   @id @default(uuid())
-  postId    String   @map("post_id")
-  mediaUrl  String   @map("media_url") @db.Text
-  mediaType String?  @map("media_type") @db.VarChar(30)
-  caption   String?  @db.Text
-  sortOrder Int      @default(0) @map("sort_order")
-
-  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  id        String              @id @default(uuid())
+  postId    String              @map("post_id")
+  mediaUrl  String              @map("media_url") @db.Text
+  mediaType String?             @map("media_type") @db.VarChar(30)
+  sortOrder Int                 @default(0) @map("sort_order")
+  caption   String?             @db.Text
+  post      CommunityPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
   comments  PostMediaComment[]
   reactions PostMediaReaction[]
 
+  @@index([postId], map: "post_media_post_id_fkey")
   @@map("post_media")
 }
 
 model PostMediaComment {
-  id        String   @id @default(uuid())
-  mediaId   String   @map("media_id")
-  userId    String   @map("user_id")
-  content   String   @db.Text
-  createdAt DateTime @default(now()) @map("created_at")
-
-  media PostMedia @relation(fields: [mediaId], references: [id], onDelete: Cascade)
-  user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String                     @id @default(uuid())
+  mediaId   String                     @map("media_id")
+  userId    String                     @map("user_id")
+  content   String                     @db.Text
+  createdAt DateTime                   @default(now()) @map("created_at")
   reactions PostMediaCommentReaction[]
+  media     PostMedia                  @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  user      User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([mediaId], map: "post_media_comments_media_id_fkey")
+  @@index([userId], map: "post_media_comments_user_id_fkey")
   @@map("post_media_comments")
 }
 
 model PostMediaCommentReaction {
-  id           String   @id @default(uuid())
-  commentId    String   @map("comment_id")
-  userId       String   @map("user_id")
-  reactionType String   @default("like") @map("reaction_type") @db.VarChar(30)
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  comment PostMediaComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String           @id @default(uuid())
+  commentId    String           @map("comment_id")
+  userId       String           @map("user_id")
+  reactionType String           @default("like") @map("reaction_type") @db.VarChar(30)
+  createdAt    DateTime         @default(now()) @map("created_at")
+  comment      PostMediaComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([commentId, userId, reactionType], map: "pmcr_comment_user_type_key")
+  @@index([userId], map: "post_media_comment_reactions_user_id_fkey")
   @@map("post_media_comment_reactions")
 }
 
 model PostMediaReaction {
-  id           String   @id @default(uuid())
-  mediaId      String   @map("media_id")
-  userId       String   @map("user_id")
-  reactionType String   @default("like") @map("reaction_type") @db.VarChar(30)
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  media PostMedia @relation(fields: [mediaId], references: [id], onDelete: Cascade)
-  user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String    @id @default(uuid())
+  mediaId      String    @map("media_id")
+  userId       String    @map("user_id")
+  reactionType String    @default("like") @map("reaction_type") @db.VarChar(30)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  media        PostMedia @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([mediaId, userId, reactionType])
+  @@index([userId], map: "post_media_reactions_user_id_fkey")
   @@map("post_media_reactions")
 }
 
 model PostComment {
-  id              String        @id @default(uuid())
-  postId          String        @map("post_id")
-  userId          String        @map("user_id")
-  parentCommentId String?       @map("parent_comment_id")
-  content         String        @db.Text
-  createdAt       DateTime      @default(now()) @map("created_at")
+  id              String              @id @default(uuid())
+  postId          String              @map("post_id")
+  userId          String              @map("user_id")
+  parentCommentId String?             @map("parent_comment_id")
+  content         String              @db.Text
+  createdAt       DateTime            @default(now()) @map("created_at")
+  reactions       CommentReaction[]
+  hiddenBy        CommentUserHidden[]
+  parentComment   PostComment?        @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+  replies         PostComment[]       @relation("CommentReplies")
+  post            CommunityPost       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  post          CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parentComment PostComment?  @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
-  replies       PostComment[] @relation("CommentReplies")
-  reactions     CommentReaction[]
-  hiddenBy      CommentUserHidden[]
-
+  @@index([parentCommentId], map: "post_comments_parent_comment_id_fkey")
+  @@index([postId], map: "post_comments_post_id_fkey")
+  @@index([userId], map: "post_comments_user_id_fkey")
   @@map("post_comments")
 }
 
@@ -906,85 +894,81 @@ model CommentReaction {
   userId       String      @map("user_id")
   reactionType String      @default("like") @map("reaction_type") @db.VarChar(30)
   createdAt    DateTime    @default(now()) @map("created_at")
-
   comment      PostComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([commentId, userId, reactionType])
+  @@index([userId], map: "comment_reactions_user_id_fkey")
   @@map("comment_reactions")
 }
 
 model PostReaction {
-  id           String   @id @default(uuid())
-  postId       String   @map("post_id")
-  userId       String   @map("user_id")
-  reactionType String   @default("like") @map("reaction_type") @db.VarChar(30)
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String        @id @default(uuid())
+  postId       String        @map("post_id")
+  userId       String        @map("user_id")
+  reactionType String        @default("like") @map("reaction_type") @db.VarChar(30)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  post         CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId, reactionType])
+  @@index([userId], map: "post_reactions_user_id_fkey")
   @@map("post_reactions")
 }
 
 model PostUserHidden {
-  id        String   @id @default(uuid())
-  postId    String   @map("post_id")
-  userId    String   @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String        @id @default(uuid())
+  postId    String        @map("post_id")
+  userId    String        @map("user_id")
+  createdAt DateTime      @default(now()) @map("created_at")
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
+  @@index([userId], map: "post_user_hidden_user_id_fkey")
   @@map("post_user_hidden")
 }
 
 model CommentUserHidden {
-  id        String   @id @default(uuid())
-  commentId String   @map("comment_id")
-  userId    String   @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at")
-
+  id        String      @id @default(uuid())
+  commentId String      @map("comment_id")
+  userId    String      @map("user_id")
+  createdAt DateTime    @default(now()) @map("created_at")
   comment   PostComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
   user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([commentId, userId])
+  @@index([userId], map: "comment_user_hidden_user_id_fkey")
   @@map("comment_user_hidden")
 }
 
 model PostProfileArchive {
-  id        String   @id @default(uuid())
-  postId    String   @map("post_id")
-  userId    String   @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at")
-
-  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String        @id @default(uuid())
+  postId    String        @map("post_id")
+  userId    String        @map("user_id")
+  createdAt DateTime      @default(now()) @map("created_at")
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
+  @@index([userId], map: "post_profile_archives_user_id_fkey")
   @@map("post_profile_archives")
 }
 
-// ╔══════════════════════════════════════════════════════════════════════════════╗
-// ║  BÁO CÁO BÀI VIẾT CHO ADMIN (Post Reports)                                  ║
-// ║  Lưu các báo cáo từ người dùng để trang admin duyệt và xử lý sau             ║
-// ╚══════════════════════════════════════════════════════════════════════════════╝
-
 model PostReport {
-  id         String    @id @default(uuid())
-  postId     String    @map("post_id")
-  reporterId String    @map("reporter_id")
-  reason     String?   @db.Text
-  status     String    @default("pending") @db.VarChar(30)
-  resolvedAt DateTime? @map("resolved_at")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
+  id         String        @id @default(uuid())
+  postId     String        @map("post_id")
+  reporterId String        @map("reporter_id")
+  reason     String?       @db.Text
+  status     String        @default("pending") @db.VarChar(30)
+  resolvedAt DateTime?     @map("resolved_at")
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime      @updatedAt @map("updated_at")
+  post       CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reporter   User          @relation("PostReporter", fields: [reporterId], references: [id], onDelete: Cascade)
 
-  post     CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  reporter User          @relation("PostReporter", fields: [reporterId], references: [id], onDelete: Cascade)
-
+  @@index([postId], map: "post_reports_post_id_fkey")
+  @@index([reporterId], map: "post_reports_reporter_id_fkey")
   @@map("post_reports")
 }
 
@@ -992,23 +976,39 @@ model UserFollow {
   followerId  String   @map("follower_id")
   followingId String   @map("following_id")
   createdAt   DateTime @default(now()) @map("created_at")
-
-  follower  User @relation("FollowersList", fields: [followerId], references: [id], onDelete: Cascade)
-  following User @relation("FollowingList", fields: [followingId], references: [id], onDelete: Cascade)
+  follower    User     @relation("FollowersList", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("FollowingList", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@id([followerId, followingId])
+  @@index([followingId], map: "user_follows_following_id_fkey")
   @@map("user_follows")
 }
 
 model PostSave {
-  id        String   @id @default(uuid())
-  postId    String   @map("post_id")
-  userId    String   @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at")
-
+  id        String        @id @default(uuid())
+  postId    String        @map("post_id")
+  userId    String        @map("user_id")
+  createdAt DateTime      @default(now()) @map("created_at")
   post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
+  @@index([userId], map: "post_saves_user_id_fkey")
   @@map("post_saves")
 }
+
+model FavoriteExercise {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  exerciseId String   @map("exercise_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, exerciseId])
+  @@index([userId])
+  @@index([exerciseId])
+  @@map("favorite_exercises")
+}
+

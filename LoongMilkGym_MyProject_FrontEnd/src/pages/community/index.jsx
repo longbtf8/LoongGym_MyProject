@@ -95,13 +95,20 @@ export default function Community() {
     setCommentInputs((prev) => ({ ...prev, [postId]: value }));
   };
 
+  const handleNavSelect = (navItem) => {
+    if (navItem !== "feed" && !requireAuth()) {
+      return;
+    }
+    setActiveNav(navItem);
+  };
+
   return (
     <div className="w-full min-h-screen pt-0 pb-3 mb-16 animate-slide-down lg:h-[calc(100dvh-8rem)] lg:min-h-0 lg:overflow-hidden lg:py-0 lg:mb-0">
       <div className="flex flex-col lg:flex-row gap-3 px-2 sm:px-4 lg:gap-6 max-w-[1200px] mx-auto lg:h-full">
         <LeftSidebar
           activeNav={activeNav}
           navItems={NAV_ITEMS}
-          onNavSelect={setActiveNav}
+          onNavSelect={handleNavSelect}
         />
 
         <main ref={feedScrollRef} className="community-feed-scroll flex-1 flex flex-col gap-3 sm:gap-4 lg:gap-6 min-w-0 lg:h-full lg:overflow-y-auto lg:pr-2 lg:pb-6 scroll-smooth">
@@ -175,7 +182,7 @@ export default function Community() {
           activeNav={activeNav}
           navItems={NAV_ITEMS}
           onClose={() => setShowMobileNav(false)}
-          onNavSelect={setActiveNav}
+          onNavSelect={handleNavSelect}
         />
       )}
 

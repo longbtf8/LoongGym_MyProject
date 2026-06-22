@@ -5,9 +5,17 @@ import ExerciseCard from "./components/ExerciseCard";
 import SortDropdown from "./components/SortDropdown";
 import Pagination from "./components/Pagination";
 import { useExerciseFilters } from "./hooks/useExerciseFilters";
-import { useGetExercisesQuery, useGetMuscleGroupsQuery, useGetEquipmentQuery } from "@/services/exercise/exerciseApi";
+import { 
+  useGetExercisesQuery, 
+  useGetMuscleGroupsQuery, 
+  useGetEquipmentQuery,
+  useGetFavoriteExercisesQuery,
+  useToggleFavoriteExerciseMutation 
+} from "@/services/exercise/exerciseApi";
 import { useGetActivePlanQuery, useLazyGetDayDetailsQuery, useUpdateDayDetailsMutation } from "@/services/roadmap/roadmapApi";
 import { CalendarPlus, Check, Info, RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 const FAVORITE_EXERCISES_KEY = "loongmilk.favoriteExercises";
 
@@ -32,9 +40,10 @@ const getLocalDateString = (dateInput = new Date()) => {
 
 export default function Exercises() {
   const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
+  const { requireAuth } = useRequireAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const [favoriteIds, setFavoriteIds] = useState(getStoredFavorites);
   const [scheduleModalExercise, setScheduleModalExercise] = useState(null);
   const [selectedScheduleDayId, setSelectedScheduleDayId] = useState("");
   const [scheduleMessage, setScheduleMessage] = useState("");
@@ -58,12 +67,20 @@ export default function Exercises() {
   // Gọi các API lấy dữ liệu bổ trợ để render thanh trượt nhóm cơ & bottom sheet trên mobile
   const { data: muscleGroupsData } = useGetMuscleGroupsQuery();
   const { data: equipmentData, isLoading: loadingEquipment } = useGetEquipmentQuery();
-  const { data: activePlanRes, isLoading: isLoadingPlan } = useGetActivePlanQuery();
+  const { data: activePlanRes, isLoading: isLoadingPlan } = useGetActivePlanQuery(undefined, {
+    skip: !isLoggedIn,
+  });
+  const { data: favoriteExercisesRes } = useGetFavoriteExercisesQuery(undefined, {
+    skip: !isLoggedIn,
+  });
+  const [toggleFavoriteDb] = useToggleFavoriteExerciseMutation();
   const [getDayDetails, { isFetching: isFetchingDayDetails }] = useLazyGetDayDetailsQuery();
   const [updateDayDetails, { isLoading: isAddingToSchedule }] = useUpdateDayDetailsMutation();
   
   const muscleGroups = muscleGroupsData?.data || [];
   const equipmentList = equipmentData?.data || [];
+
+  const favoriteIds = isLoggedIn ? (favoriteExercisesRes?.data?.favoriteIds || []) : [];
 
   const difficulties = [
     { label: "Người mới", value: "beginner" },
@@ -103,17 +120,17 @@ export default function Exercises() {
     });
   };
 
-  const toggleFavorite = (exerciseId) => {
-    setFavoriteIds((prev) => {
-      const next = prev.includes(exerciseId)
-        ? prev.filter((id) => id !== exerciseId)
-        : [...prev, exerciseId];
-      localStorage.setItem(FAVORITE_EXERCISES_KEY, JSON.stringify(next));
-      return next;
-    });
+  const toggleFavorite = async (exerciseId) => {
+    if (!requireAuth()) return;
+    try {
+      await toggleFavoriteDb(exerciseId).unwrap();
+    } catch (err) {
+      console.error("Lỗi khi thay đổi trạng thái yêu thích:", err);
+    }
   };
 
   const openScheduleModal = (exercise) => {
+    if (!requireAuth()) return;
     setScheduleModalExercise(exercise);
     setScheduleMessage("");
     const todayStr = getLocalDateString();

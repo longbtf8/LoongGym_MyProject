@@ -1,4 +1,5 @@
 const authRequire = require("@/middlewares/authRequire");
+const optionalAuth = require("@/middlewares/optionalAuth");
 const uploadCloud = require("@/utils/upload");
 const express = require("express");
 const router = express.Router();
@@ -32,6 +33,6 @@ router.post(
 router.patch("/me/avatar-photo", authRequire, usersController.updateAvatarPhoto);
 router.patch("/me/cover-photo", authRequire, usersController.updateCoverPhoto);
 
-router.get("/:id", authRequire, usersController.getUserProfileById);
+router.get("/:id", optionalAuth, usersController.getUserProfileById);
 
 module.exports = router;

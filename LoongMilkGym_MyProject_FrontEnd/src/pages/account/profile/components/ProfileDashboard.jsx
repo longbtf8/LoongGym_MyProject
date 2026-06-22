@@ -45,6 +45,7 @@ import {
   useDeletePostMutation
 } from "@/services/community/communityApi";
 import { useAuth } from "@/hooks/useAuth";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { getFitnessLevelLabel } from "@/pages/account/profile/PersonalInfoSection/constants";
 import CreatePostModal from "@/pages/community/components/CreatePostModal";
 import DeletePostModal from "@/pages/community/components/DeletePostModal";
@@ -57,6 +58,7 @@ const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1534438327276-14e5300c
 
 export default function ProfileDashboard({ profile, isOwnProfile }) {
   const { userInfo } = useAuth();
+  const { requireAuth } = useRequireAuth();
   const [activeTab, setActiveTab] = useState("posts");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [avatarModalMode, setAvatarModalMode] = useState(null);
@@ -341,6 +343,7 @@ export default function ProfileDashboard({ profile, isOwnProfile }) {
   };
 
   const handleFollowToggle = async () => {
+    if (!requireAuth()) return;
     if (profile?.isFollowing) {
       await unfollowUser(profile.userId).unwrap();
     } else {

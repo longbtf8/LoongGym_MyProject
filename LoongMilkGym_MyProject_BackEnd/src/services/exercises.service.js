@@ -134,7 +134,77 @@ const getExerciseBySlug = async (slug) => {
   return exercise;
 };
 
+/**
+ * Service toggles favorite status of an exercise for a user
+ */
+const toggleFavorite = async (userId, exerciseId) => {
+  const exercise = await prisma.exercise.findUnique({
+    where: { id: exerciseId },
+  });
+
+  if (!exercise) {
+    throw new AppError("Không tìm thấy bài tập.", httpCodes.notFound);
+  }
+
+  const existingFavorite = await prisma.favoriteExercise.findUnique({
+    where: {
+      userId_exerciseId: {
+        userId,
+        exerciseId,
+      },
+    },
+  });
+
+  if (existingFavorite) {
+    await prisma.favoriteExercise.delete({
+      where: {
+        id: existingFavorite.id,
+      },
+    });
+    return { isFavorite: false, message: "Đã xóa bài tập khỏi danh sách yêu thích." };
+  } else {
+    await prisma.favoriteExercise.create({
+      data: {
+        userId,
+        exerciseId,
+      },
+    });
+    return { isFavorite: true, message: "Đã thêm bài tập vào danh sách yêu thích." };
+  }
+};
+
+/**
+ * Service gets user's favorite exercises
+ */
+const getFavorites = async (userId) => {
+  const favorites = await prisma.favoriteExercise.findMany({
+    where: { userId },
+    include: {
+      exercise: {
+        include: {
+          primaryEquipment: true,
+          muscles: {
+            include: {
+              muscleGroup: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const favoriteIds = favorites.map((fav) => fav.exerciseId);
+  const exercises = favorites.map((fav) => fav.exercise);
+
+  return {
+    favoriteIds,
+    exercises,
+  };
+};
+
 module.exports = {
   getExercises,
   getExerciseBySlug,
+  toggleFavorite,
+  getFavorites,
 };
