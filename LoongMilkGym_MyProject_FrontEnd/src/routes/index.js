@@ -44,6 +44,10 @@ const publicRoutes = [
   { path: paths.verifyEmail, component: VerifyEmail, layout: MessageLayout, guard: GuestGuard },
   { path: paths.exercises, component: Exercises, layout: DefaultLayout },
   { path: paths.exerciseDetail, component: ExerciseDetail, layout: DefaultLayout },
+  { path: paths.store, component: Store, layout: DefaultLayout },
+  { path: paths.storeDetail, component: StoreDetail, layout: DefaultLayout },
+  { path: paths.cart, component: Cart, layout: DefaultLayout },
+  { path: paths.community, component: Community, layout: DefaultLayout },
   { path: "*", component: NotFound, layout: null },
 ];
 
@@ -57,10 +61,6 @@ const privateRoutes = [
   { path: paths.nutrition, component: Nutrition, layout: DefaultLayout, guard: AuthGuard },
   { path: paths.recovery, component: Recovery, layout: DefaultLayout, guard: AuthGuard },
   { path: paths.aiCoach, component: AICoach, layout: DefaultLayout, guard: AuthGuard },
-  { path: paths.store, component: Store, layout: DefaultLayout, guard: AuthGuard },
-  { path: paths.storeDetail, component: StoreDetail, layout: DefaultLayout, guard: AuthGuard },
-  { path: paths.cart, component: Cart, layout: DefaultLayout, guard: AuthGuard },
-  { path: paths.community, component: Community, layout: DefaultLayout, guard: AuthGuard },
 ];
 
 export { publicRoutes, privateRoutes };
