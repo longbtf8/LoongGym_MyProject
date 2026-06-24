@@ -29,6 +29,12 @@ RUN rm -rf /etc/nginx/conf.d/* \
         root /usr/share/nginx/html; \
         index index.html index.htm; \
         try_files $uri $uri/ /index.html; \
+        add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"; \
+    } \
+    location /assets/ { \
+        root /usr/share/nginx/html; \
+        expires 1y; \
+        add_header Cache-Control "public, no-transform"; \
     } \
 }' > /etc/nginx/conf.d/default.conf
 
