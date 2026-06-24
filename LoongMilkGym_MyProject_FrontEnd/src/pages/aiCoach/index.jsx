@@ -163,6 +163,7 @@ function AICoach() {
           isGenerating={isGenerating}
           userName={userName}
           userInitial={userInitial}
+          userAvatar={userInfo?.profile?.avatarUrl}
           QUICK_ACTIONS={QUICK_ACTIONS}
           handleSendMessage={handleSendMessage}
           actionProcessingId={actionProcessingId}

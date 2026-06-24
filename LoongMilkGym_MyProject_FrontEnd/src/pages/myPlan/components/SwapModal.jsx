@@ -122,9 +122,9 @@ export default function SwapModal({
                       <Dumbbell className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                     </div>
                   )}
-                  <div className="max-w-[180px]">
+                  <div className="min-w-0 flex-1">
                     <h4 className="text-xs font-bold truncate">{exercise.name}</h4>
-                    <span className="text-[8px] text-[var(--text-muted)] capitalize">
+                    <span className="text-[8px] text-[var(--text-muted)] capitalize block truncate">
                       {exercise.difficulty} • {exercise.exerciseType}
                     </span>
                   </div>

@@ -135,40 +135,39 @@ export default function ExerciseList({
 
         return (
           <div key={ex.id || exIndex} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-3 flex flex-col gap-2 transition-all hover:border-[var(--border-color-hover)]">
-            <div className="flex justify-between items-start gap-2.5">
-              <div className="flex gap-2">
+            <div className="flex justify-between items-start gap-2.5 min-w-0">
+              <div className="flex gap-2 min-w-0 flex-1">
                 {ex.exercise?.thumbnailUrl ? (
                   <img 
                     src={ex.exercise.thumbnailUrl} 
                     alt={ex.exercise.name} 
-                    className="w-9.5 h-9.5 rounded-lg object-cover border border-[var(--border-color)]"
+                    className="w-9.5 h-9.5 rounded-lg object-cover border border-[var(--border-color)] shrink-0"
                   />
                 ) : (
-                  <div className="w-9.5 h-9.5 rounded-lg object-cover border border-[var(--border-color)] flex items-center justify-center bg-[var(--bg-color)]">
+                  <div className="w-9.5 h-9.5 rounded-lg object-cover border border-[var(--border-color)] flex items-center justify-center bg-[var(--bg-color)] shrink-0">
                     <Dumbbell className="w-4 h-4 text-[var(--text-muted)]" />
                   </div>
                 )}
-                <div>
+                <div className="min-w-0 flex-1">
                   {ex.exercise?.slug ? (
                     <Link
                       to={`/exercises/${ex.exercise.slug}`}
-                      className="hover:text-primary transition-colors font-extrabold flex items-center gap-0.5 text-xs text-[var(--text-color)]"
-                      style={{ textDecoration: 'none' }}
+                      className="hover:text-primary transition-colors font-extrabold flex items-center gap-0.5 text-xs text-[var(--text-color)] w-full no-underline"
                       title="Xem chi tiết bài tập"
                     >
-                      <span>{ex.exercise?.name || "Bài tập"}</span>
-                      <Info className="w-2.5 h-2.5 text-[var(--text-muted)] inline-block opacity-60 hover:opacity-100" />
+                      <span className="truncate">{ex.exercise?.name || "Bài tập"}</span>
+                      <Info className="w-2.5 h-2.5 text-[var(--text-muted)] shrink-0 opacity-60 hover:opacity-100" />
                     </Link>
                   ) : (
-                    <span className="font-extrabold flex items-center gap-0.5 text-xs text-[var(--text-color)]">
+                    <span className="font-extrabold flex items-center gap-0.5 text-xs text-[var(--text-color)] w-full truncate">
                       {ex.exercise?.name || "Bài tập"}
                     </span>
                   )}
-                  <p className="text-[9px] text-[var(--text-muted)] mt-0.5">Cơ chủ đạo: {ex.exercise?.focusArea || "Đa khớp"}</p>
+                  <p className="text-[9px] text-[var(--text-muted)] mt-0.5 truncate">Cơ chủ đạo: {ex.exercise?.focusArea || "Đa khớp"}</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 shrink-0">
                 {!isEditing ? (
                   <>
                     <button 

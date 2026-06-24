@@ -56,6 +56,7 @@ function ChatMessages({
   isGenerating,
   userName,
   userInitial,
+  userAvatar,
   QUICK_ACTIONS,
   handleSendMessage,
   actionProcessingId,
@@ -121,12 +122,18 @@ function ChatMessages({
             key={msg.id} 
             className={`flex gap-3 max-w-[85%] sm:max-w-[75%] ${isAi ? "mr-auto" : "ml-auto flex-row-reverse"}`}
           >
-            <div className={`w-8.5 h-8.5 rounded-full shrink-0 flex items-center justify-center text-xs font-bold border ${
+            <div className={`w-8.5 h-8.5 rounded-full shrink-0 flex items-center justify-center text-xs font-bold border overflow-hidden ${
               isAi 
                 ? "bg-neutral-800 text-primary border-neutral-700 dark:bg-neutral-900" 
                 : "bg-primary text-black border-primary"
             }`}>
-              {isAi ? <Bot className="w-4.5 h-4.5" /> : userInitial}
+              {isAi ? (
+                <Bot className="w-4.5 h-4.5" />
+              ) : userAvatar ? (
+                <img src={userAvatar} alt={userName} className="w-full h-full object-cover" />
+              ) : (
+                userInitial
+              )}
             </div>
 
             <div className="flex flex-col gap-1.5 min-w-0 flex-1">
