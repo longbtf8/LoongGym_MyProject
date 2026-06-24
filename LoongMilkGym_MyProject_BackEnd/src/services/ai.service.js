@@ -338,6 +338,7 @@ const createMessageAndStream = async (userId, conversationId, content) => {
       conversationId,
       role: "user",
       content,
+      metadata: {},
     },
   });
 
