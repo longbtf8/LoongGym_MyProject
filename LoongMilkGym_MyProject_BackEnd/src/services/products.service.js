@@ -9,7 +9,7 @@ const getProducts = async (queryParams) => {
   const { search, type, categorySlug, page, limit } = queryParams;
 
   const where = {
-    status: "active",
+    status: { in: ["active", "out_of_stock"] },
   };
 
   if (search) {
@@ -69,7 +69,7 @@ const getProductBySlug = async (slug) => {
     },
   });
 
-  if (!product || product.status !== "active") {
+  if (!product || !["active", "out_of_stock"].includes(product.status)) {
     throw new AppError("Không tìm thấy sản phẩm hoặc sản phẩm không ở trạng thái mở bán.", httpCodes.notFound);
   }
 

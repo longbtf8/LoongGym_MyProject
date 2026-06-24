@@ -1,5 +1,12 @@
 import React from "react";
 import { Sparkles, Scale, Camera, Loader2, ArrowRight } from "lucide-react";
+import CustomSelect from "@/components/common/CustomSelect";
+
+const PHOTO_TYPE_OPTIONS = [
+  { label: "Chụp phía trước (Front)", value: "front" },
+  { label: "Chụp phía sau (Back)", value: "back" },
+  { label: "Chụp góc nghiêng (Side)", value: "side" },
+];
 
 function MetricsTab({
   weightKg,
@@ -164,15 +171,13 @@ function MetricsTab({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
             <label className="text-xs font-extrabold text-[var(--text-color)]">Góc chụp ảnh</label>
-            <select
+            <CustomSelect
               value={photoType}
-              onChange={(e) => setPhotoType(e.target.value)}
-              className="bg-[var(--bg-color)] border border-[var(--border-color)] focus:border-primary/65 rounded-xl px-4 py-3 text-xs sm:text-sm font-semibold outline-none text-[var(--text-color)]"
-            >
-              <option value="front">Chụp phía trước (Front)</option>
-              <option value="back">Chụp phía sau (Back)</option>
-              <option value="side">Chụp góc nghiêng (Side)</option>
-            </select>
+              onChange={setPhotoType}
+              options={PHOTO_TYPE_OPTIONS}
+              placeholder="Chọn góc chụp"
+              variant="form"
+            />
           </div>
 
           <div className="flex flex-col gap-2">

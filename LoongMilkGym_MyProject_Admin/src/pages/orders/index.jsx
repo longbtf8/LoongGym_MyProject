@@ -19,7 +19,7 @@ export default function Orders() {
       </div>
 
       {/* Orders table */}
-      <div className="overflow-x-auto rounded-2xl border border-[var(--border-color)]/60 bg-[var(--bg-secondary)] shadow-lg">
+      <div className="overflow-x-auto min-h-[300px] rounded-2xl border border-[var(--border-color)]/60 bg-[var(--bg-secondary)] shadow-lg">
         <table className="w-full border-collapse text-left">
           <thead>
             <tr className="border-b border-[var(--border-color)]/60 bg-[var(--border-color)]/20 text-xs font-bold text-[var(--text-muted)]">

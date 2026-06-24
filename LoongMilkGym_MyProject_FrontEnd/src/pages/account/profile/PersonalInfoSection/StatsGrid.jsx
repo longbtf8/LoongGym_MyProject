@@ -1,6 +1,7 @@
 import React from "react";
 import { Flame } from "lucide-react";
 import { WEIGHT_UNIT_OPTIONS, HEIGHT_UNIT_OPTIONS } from "./constants";
+import CustomSelect from "@/components/common/CustomSelect";
 
 function StatsGrid({ formData, isEditing, handleChange }) {
   return (
@@ -21,16 +22,15 @@ function StatsGrid({ formData, isEditing, handleChange }) {
                   onChange={handleChange}
                   className="w-16 px-1.5 py-0.5 text-lg sm:text-xl font-black rounded-lg border-2 border-primary bg-[var(--input-bg)] text-[var(--text-color)] outline-none focus:ring-1 focus:ring-primary"
                 />
-                <select
-                  name="weightUnit"
+                <CustomSelect
                   value={formData.weightUnit}
-                  onChange={handleChange}
-                  className="px-1.5 py-1 text-xs font-bold rounded-lg border-2 border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-color)] outline-none focus:border-primary cursor-pointer"
-                >
-                  {WEIGHT_UNIT_OPTIONS.map(unit => (
-                    <option key={unit} value={unit}>{unit}</option>
-                  ))}
-                </select>
+                  onChange={(val) =>
+                    handleChange({ target: { name: "weightUnit", value: val } })
+                  }
+                  options={WEIGHT_UNIT_OPTIONS.map((unit) => ({ label: unit, value: unit }))}
+                  placeholder="kg"
+                  variant="compact"
+                />
               </div>
             ) : (
               <>
@@ -64,16 +64,15 @@ function StatsGrid({ formData, isEditing, handleChange }) {
                   onChange={handleChange}
                   className="w-16 px-1.5 py-0.5 text-lg sm:text-xl font-black rounded-lg border-2 border-primary bg-[var(--input-bg)] text-[var(--text-color)] outline-none focus:ring-1 focus:ring-primary"
                 />
-                <select
-                  name="heightUnit"
+                <CustomSelect
                   value={formData.heightUnit}
-                  onChange={handleChange}
-                  className="px-1.5 py-1 text-xs font-bold rounded-lg border-2 border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-color)] outline-none focus:border-primary cursor-pointer"
-                >
-                  {HEIGHT_UNIT_OPTIONS.map(unit => (
-                    <option key={unit} value={unit}>{unit}</option>
-                  ))}
-                </select>
+                  onChange={(val) =>
+                    handleChange({ target: { name: "heightUnit", value: val } })
+                  }
+                  options={HEIGHT_UNIT_OPTIONS.map((unit) => ({ label: unit, value: unit }))}
+                  placeholder="cm"
+                  variant="compact"
+                />
               </div>
             ) : (
               <>

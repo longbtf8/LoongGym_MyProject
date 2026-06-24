@@ -56,6 +56,13 @@ function ProductCard({ product }) {
           alt={product.title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
+        {product.status === "out_of_stock" && (
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center transition-all duration-300">
+            <span className="bg-rose-500 text-white text-xs font-black uppercase tracking-widest px-3.5 py-1.5 rounded-full shadow-lg border border-rose-400/20">
+              Hết hàng
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Thông tin sản phẩm */}
@@ -90,21 +97,33 @@ function ProductCard({ product }) {
 
         {/* Nút hành động */}
         <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={handleBuyNow}
-            disabled={isLoading}
-            className="py-2 px-1 bg-primary text-black font-extrabold text-xs sm:text-sm rounded-full flex items-center justify-center border border-primary hover:bg-primary-hover active:scale-95 transition-all duration-200 cursor-pointer shadow-md shadow-primary/10"
-          >
-            Mua ngay
-          </button>
-          <button
-            onClick={handleAddToCart}
-            disabled={isLoading}
-            className="py-2 px-1 bg-[var(--bg-color)] text-[var(--text-color)] font-extrabold text-xs sm:text-sm rounded-full flex items-center justify-center gap-1 border border-[var(--border-color)] hover:bg-primary hover:text-black hover:border-primary active:scale-95 transition-all duration-200 cursor-pointer"
-          >
-            <ShoppingCart className="w-3.5 h-3.5" />
-            {isLoading ? "..." : "Thêm giỏ"}
-          </button>
+          {product.status === "out_of_stock" ? (
+            <button
+              disabled
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              className="col-span-2 py-2 px-1 bg-neutral-500/10 text-neutral-400 border border-neutral-500/20 font-extrabold text-xs sm:text-sm rounded-full flex items-center justify-center cursor-not-allowed"
+            >
+              Hết hàng
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={handleBuyNow}
+                disabled={isLoading}
+                className="py-2 px-1 bg-primary text-black font-extrabold text-xs sm:text-sm rounded-full flex items-center justify-center border border-primary hover:bg-primary-hover active:scale-95 transition-all duration-200 cursor-pointer shadow-md shadow-primary/10"
+              >
+                Mua ngay
+              </button>
+              <button
+                onClick={handleAddToCart}
+                disabled={isLoading}
+                className="py-2 px-1 bg-[var(--bg-color)] text-[var(--text-color)] font-extrabold text-xs sm:text-sm rounded-full flex items-center justify-center gap-1 border border-[var(--border-color)] hover:bg-primary hover:text-black hover:border-primary active:scale-95 transition-all duration-200 cursor-pointer"
+              >
+                <ShoppingCart className="w-3.5 h-3.5" />
+                {isLoading ? "..." : "Thêm giỏ"}
+              </button>
+            </>
+          )}
         </div>
       </div>
     </Link>

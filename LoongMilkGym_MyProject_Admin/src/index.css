@@ -7,23 +7,23 @@
 }
 
 :root, [data-theme="light"] {
-  --bg-color: #f8fafc;
-  --bg-secondary: #ffffff;
-  --text-color: #0f172a;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
-  --input-bg: #f1f5f9;
+  --bg-color: #ffffff;
+  --bg-secondary: #f3f4f6;
+  --text-color: #111827;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
+  --input-bg: #eceff1;
   --input-focus-border: #b5e600;
   --text-primary: #4d7c0f;
 }
 
 [data-theme="dark"] {
-  --bg-color: #0b0f19;
-  --bg-secondary: #111827;
+  --bg-color: #121212;
+  --bg-secondary: #1a1a1a;
   --text-color: #f9fafb;
   --text-muted: #9ca3af;
-  --border-color: #1f2937;
-  --input-bg: #1e293b;
+  --border-color: #2a2a2a;
+  --input-bg: #1e1e1e;
   --input-focus-border: #ccff00;
   --text-primary: #ccff00;
 }
@@ -70,3 +70,32 @@ body {
 .animate-reactions-in {
   animation: reactionsIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-up {
+  animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

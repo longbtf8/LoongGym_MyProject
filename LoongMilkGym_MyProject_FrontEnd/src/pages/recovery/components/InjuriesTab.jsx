@@ -1,5 +1,12 @@
 import React from "react";
 import { ShieldAlert, PlusCircle, CheckCircle2, AlertCircle } from "lucide-react";
+import CustomSelect from "@/components/common/CustomSelect";
+
+const SEVERITY_OPTIONS = [
+  { label: "Nhẹ (Căng cơ nhẹ, mỏi khớp)", value: "mild" },
+  { label: "Vừa (Đau khi chuyển động nhất định)", value: "moderate" },
+  { label: "Nặng (Đau nhói liên tục, hạn chế vận động)", value: "severe" },
+];
 
 function InjuriesTab({
   bodyPart,
@@ -49,15 +56,13 @@ function InjuriesTab({
 
           <div className="flex flex-col gap-2">
             <label className="text-xs font-extrabold text-[var(--text-color)]">Mức độ chấn thương</label>
-            <select
+            <CustomSelect
               value={severity}
-              onChange={(e) => setSeverity(e.target.value)}
-              className="bg-[var(--bg-color)] border border-[var(--border-color)] focus:border-primary/65 rounded-xl px-4 py-3 text-xs sm:text-sm font-semibold outline-none text-[var(--text-color)]"
-            >
-              <option value="mild">Nhẹ (Căng cơ nhẹ, mỏi khớp)</option>
-              <option value="moderate">Vừa (Đau khi chuyển động nhất định)</option>
-              <option value="severe">Nặng (Đau nhói liên tục, hạn chế vận động)</option>
-            </select>
+              onChange={setSeverity}
+              options={SEVERITY_OPTIONS}
+              placeholder="Chọn mức độ"
+              variant="form"
+            />
           </div>
         </div>
 

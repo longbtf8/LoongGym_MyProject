@@ -1,5 +1,6 @@
 import React from "react";
 import { GENDER_OPTIONS, FITNESS_LEVEL_OPTIONS, GOAL_OPTIONS } from "./constants";
+import CustomSelect from "@/components/common/CustomSelect";
 
 function ProfileDetailsList({
   formData,
@@ -56,18 +57,20 @@ function ProfileDetailsList({
             <div className="flex-1">
               {isEditing ? (
                 field.type === "select" ? (
-                  <select 
-                    name={field.name}
+                  <CustomSelect
                     value={formData[field.name]}
-                    onChange={handleChange}
-                    className="w-full max-w-md px-4 py-2 text-sm font-semibold rounded-xl border-2 border-[var(--border-color)] bg-[var(--input-bg)] text-[var(--text-color)] outline-none focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer"
-                  >
-                    {field.options.map(opt => {
-                      const val = typeof opt === 'object' ? opt.value : opt;
-                      const lbl = typeof opt === 'object' ? opt.label : opt;
-                      return <option key={val} value={val}>{lbl}</option>;
+                    onChange={(val) =>
+                      handleChange({ target: { name: field.name, value: val } })
+                    }
+                    options={field.options.map((opt) => {
+                      const val = typeof opt === "object" ? opt.value : opt;
+                      const lbl = typeof opt === "object" ? opt.label : opt;
+                      return { label: lbl, value: val };
                     })}
-                  </select>
+                    placeholder={`Chọn ${field.label.toLowerCase()}`}
+                    variant="form"
+                    className="max-w-md"
+                  />
                 ) : (
                   <input 
                     type={field.type} 

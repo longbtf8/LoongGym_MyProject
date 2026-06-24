@@ -9,6 +9,8 @@ function FilterSidebar({
   selectedBrands,
   setSelectedBrands,
   availableBrands = [],
+  minPrice = 0,
+  maxPrice = 2000000,
 }) {
   const { data: categoriesData } = useGetProductCategoriesQuery();
   const categories = categoriesData?.data || [];
@@ -25,13 +27,16 @@ function FilterSidebar({
     return new Intl.NumberFormat("vi-VN").format(value) + "đ";
   };
 
+  const isFilterActive = priceRange !== null;
+  const currentMaxPrice = isFilterActive ? priceRange[1] : maxPrice;
+
   const handlePriceChange = (e) => {
-    setPriceRange([100000, Number(e.target.value)]);
+    setPriceRange([minPrice, Number(e.target.value)]);
   };
 
   const handleReset = () => {
     setSelectedCategory("");
-    setPriceRange([100000, 2000000]);
+    setPriceRange(null);
     setSelectedBrands([]);
   };
 
@@ -76,22 +81,57 @@ function FilterSidebar({
             Giá bán
           </h4>
           <span className="text-xs font-bold text-primary">
-            Dưới {formatVND(priceRange[1])}
+            {isFilterActive ? `Dưới ${formatVND(currentMaxPrice)}` : "Tất cả mức giá"}
           </span>
         </div>
         <input
           type="range"
-          min="100000"
-          max="2000000"
-          step="50000"
-          value={priceRange[1]}
+          min={minPrice}
+          max={maxPrice}
+          step={Math.max(10000, Math.floor((maxPrice - minPrice) / 50))}
+          value={currentMaxPrice}
           onChange={handlePriceChange}
           className="w-full accent-primary cursor-pointer mb-2"
         />
         <div className="flex justify-between text-[10px] font-bold text-[var(--text-muted)]">
-          <span>{formatVND(100000)}</span>
-          <span>{formatVND(2000000)}</span>
+          <span>{formatVND(minPrice)}</span>
+          <span>{formatVND(maxPrice)}</span>
         </div>
+
+        {/* Quick price select chips */}
+        <div className="flex flex-wrap gap-1.5 mt-3">
+          {[
+            { label: "Dưới 500k", value: 500000 },
+            { label: "Dưới 1M", value: 1000000 },
+            { label: "Dưới 2M", value: 2000000 },
+            { label: "Dưới 5M", value: 5000000 },
+          ].map((chip) => {
+            const isActive = isFilterActive && priceRange[1] === chip.value;
+            return (
+              <button
+                key={chip.value}
+                type="button"
+                onClick={() => setPriceRange([minPrice, chip.value])}
+                className={`px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all duration-200 cursor-pointer ${
+                  isActive
+                    ? "bg-primary/10 border-primary text-primary"
+                    : "bg-[var(--bg-color)] border-[var(--border-color)]/60 text-[var(--text-muted)] hover:text-[var(--text-color)] hover:border-[var(--text-muted)]"
+                }`}
+              >
+                {chip.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {isFilterActive && (
+          <button
+            onClick={() => setPriceRange(null)}
+            className="mt-3.5 text-left text-[10px] font-black uppercase tracking-wider text-rose-500 hover:text-rose-400 transition cursor-pointer border-0 bg-transparent p-0 flex items-center gap-1"
+          >
+            × Xem tất cả mức giá
+          </button>
+        )}
       </div>
 
       {/* Brands */}

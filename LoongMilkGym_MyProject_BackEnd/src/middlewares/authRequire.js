@@ -30,6 +30,8 @@ const authRequire = async (req, res, next) => {
         email: true,
         role: true,
         status: true,
+        isSuperAdmin: true,
+        suspendedUntil: true,
         emailVerifiedAt: true,
         lastLoginAt: true,
         createdAt: true,
@@ -42,7 +44,20 @@ const authRequire = async (req, res, next) => {
     }
 
     if (user.status !== "ACTIVE") {
-      return res.error("Tài khoản đã bị khóa hoặc không hoạt động", httpCodes.forbidden);
+      if (user.status === "SUSPENDED" && user.suspendedUntil && new Date(user.suspendedUntil) < new Date()) {
+        // Hết thời hạn khóa -> tự động kích hoạt lại
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            status: "ACTIVE",
+            suspendedUntil: null,
+          },
+        });
+        user.status = "ACTIVE";
+        user.suspendedUntil = null;
+      } else {
+        return res.error("Tài khoản đã bị khóa hoặc không hoạt động", httpCodes.forbidden);
+      }
     }
     req.user = user;
     req.tokenPayload = payload;

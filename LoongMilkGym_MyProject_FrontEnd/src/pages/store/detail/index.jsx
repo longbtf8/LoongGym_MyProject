@@ -97,16 +97,15 @@ function StoreDetail() {
             Mô tả sản phẩm chi tiết
           </h3>
           <div className="prose dark:prose-invert max-w-none text-sm leading-relaxed text-[var(--text-muted)]">
-            <p className="mb-4">
+            <p className="mb-6">
               Sản phẩm {product.title} được nghiên cứu kỹ lưỡng nhằm mang đến giải pháp dinh dưỡng hoặc hỗ trợ tập luyện tối ưu cho các hội viên của LoongMilkGym. 
               Các nguyên liệu chế biến và chất liệu thiết kế đều tuân thủ các quy trình khắt khe, đạt kiểm định quốc tế, đảm bảo an toàn tuyệt đối cho sức khỏe của bạn.
             </p>
-            <h4 className="font-extrabold text-[var(--text-color)] text-sm sm:text-base mt-6 mb-2">Hướng dẫn sử dụng & bảo quản</h4>
-            <ul className="list-disc pl-5 flex flex-col gap-1.5">
-              <li>Đối với thực phẩm bổ sung: Pha nước ấm hoặc lạnh tuỳ ý, sử dụng tốt nhất trước/sau buổi tập hoặc buổi sáng.</li>
-              <li>Đối với thiết bị tập luyện: Lau khô mồ hôi sau khi sử dụng để tăng tuổi thọ kim loại và lớp sơn cao su.</li>
-              <li>Bảo quản nơi khô ráo, thoáng mát, tránh ánh nắng mặt trời chiếu trực tiếp.</li>
-            </ul>
+            {product.description && (
+              <div className="whitespace-pre-wrap border-t border-[var(--border-color)]/60 pt-6">
+                {product.description}
+              </div>
+            )}
           </div>
         </div>
       </div>

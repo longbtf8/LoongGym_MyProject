@@ -14,10 +14,12 @@ model User {
   passwordHash          String                     @map("password_hash")
   role                  String                     @default("USER")
   status                String                     @default("ACTIVE")
+  isSuperAdmin          Boolean                    @default(false) @map("is_super_admin")
   emailVerifiedAt       DateTime?                  @map("email_verified_at")
   lastLoginAt           DateTime?                  @map("last_login_at")
   createdAt             DateTime                   @default(now()) @map("created_at")
   updatedAt             DateTime                   @updatedAt @map("updated_at")
+  suspendedUntil        DateTime?                  @map("suspended_until")
   aiConversations       AiConversation[]
   aiRecommendations     AiRecommendation[]
   bodyMetrics           BodyMetric[]
@@ -37,6 +39,8 @@ model User {
   archivedPosts         PostProfileArchive[]
   postReactions         PostReaction[]
   postReports           PostReport[]               @relation("PostReporter")
+  resolvedReports       PostReport[]               @relation("PostReportResolver")
+  moderatedPosts        CommunityPost[]            @relation("PostModerator")
   postSaves             PostSave[]
   hiddenPosts           PostUserHidden[]
   progressPhotos        ProgressPhoto[]
@@ -795,6 +799,11 @@ model CommunityPost {
   metadata                Json?                @map("metadata")
   createdAt               DateTime             @default(now()) @map("created_at")
   updatedAt               DateTime             @updatedAt @map("updated_at")
+  moderationStatus        String               @default("VISIBLE") @map("moderation_status") @db.VarChar(30)
+  moderationReason        String?              @map("moderation_reason") @db.Text
+  moderatedAt             DateTime?            @map("moderated_at")
+  moderatedById           String?              @map("moderated_by_id")
+  moderatedBy             User?                @relation("PostModerator", fields: [moderatedById], references: [id])
   relatedWorkoutSession   WorkoutSession?      @relation(fields: [relatedWorkoutSessionId], references: [id])
   user                    User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   comments                PostComment[]
@@ -807,6 +816,8 @@ model CommunityPost {
 
   @@index([relatedWorkoutSessionId], map: "community_posts_related_workout_session_id_fkey")
   @@index([userId], map: "community_posts_user_id_fkey")
+  @@index([moderationStatus], map: "community_posts_moderation_status_idx")
+  @@index([moderatedById], map: "community_posts_moderated_by_id_fkey")
   @@map("community_posts")
 }
 
@@ -956,19 +967,25 @@ model PostProfileArchive {
 }
 
 model PostReport {
-  id         String        @id @default(uuid())
-  postId     String        @map("post_id")
-  reporterId String        @map("reporter_id")
-  reason     String?       @db.Text
-  status     String        @default("pending") @db.VarChar(30)
-  resolvedAt DateTime?     @map("resolved_at")
-  createdAt  DateTime      @default(now()) @map("created_at")
-  updatedAt  DateTime      @updatedAt @map("updated_at")
-  post       CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  reporter   User          @relation("PostReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  id               String        @id @default(uuid())
+  postId           String        @map("post_id")
+  reporterId       String        @map("reporter_id")
+  reason           String?       @db.Text
+  status           String        @default("pending") @db.VarChar(30)
+  resolvedAt       DateTime?     @map("resolved_at")
+  resolvedById     String?       @map("resolved_by_id")
+  resolutionAction String?       @map("resolution_action") @db.VarChar(50)
+  resolutionNotes  String?       @map("resolution_notes") @db.Text
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  post             CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reporter         User          @relation("PostReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  resolvedBy       User?         @relation("PostReportResolver", fields: [resolvedById], references: [id])
 
+  @@unique([postId, reporterId])
   @@index([postId], map: "post_reports_post_id_fkey")
   @@index([reporterId], map: "post_reports_reporter_id_fkey")
+  @@index([resolvedById], map: "post_reports_resolved_by_id_fkey")
   @@map("post_reports")
 }
 
@@ -1011,4 +1028,20 @@ model FavoriteExercise {
   @@index([exerciseId])
   @@map("favorite_exercises")
 }
+
+model AdminAuditLog {
+  id          String   @id @default(uuid())
+  adminId     String   @map("admin_id")
+  action      String   @db.VarChar(100)
+  targetType  String   @map("target_type") @db.VarChar(50)
+  targetId    String?  @map("target_id")
+  description String?  @db.Text
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([adminId])
+  @@index([createdAt])
+  @@map("admin_audit_logs")
+}
+
 

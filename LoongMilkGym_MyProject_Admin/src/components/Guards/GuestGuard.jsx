@@ -15,7 +15,7 @@ function GuestGuard({ children }) {
   }
 
   if (isLoggedIn) {
-    return <Navigate to={paths.dashboard} replace />;
+    return <Navigate to={paths.DASHBOARD} replace />;
   }
 
   return children;

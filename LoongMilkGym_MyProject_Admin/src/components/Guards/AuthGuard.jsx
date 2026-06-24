@@ -6,7 +6,7 @@ import { STORAGE_KEYS } from "@/services/api";
 import AuthConfirmModal from "@/components/Modals/AuthConfirmModal";
 
 function AuthGuard({ children }) {
-  const { isLoggedIn, isLoading, isFinishedChecking, isAdmin } = useAuth();
+  const { isLoggedIn, isLoading, isFinishedChecking, isAdmin, userInfo } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [showModal, setShowModal] = useState(false);
@@ -18,14 +18,20 @@ function AuthGuard({ children }) {
   }, [isLoading, isLoggedIn]);
 
   useEffect(() => {
-    if (isLoggedIn && isFinishedChecking && !isAdmin) {
-      // Clear tokens and redirect
-      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-      navigate(`${paths.login}?error=forbidden`, { replace: true });
-      window.location.reload();
+    if (isLoggedIn && isFinishedChecking) {
+      if (!isAdmin) {
+        navigate(paths.FORBIDDEN, { replace: true });
+        return;
+      }
+      if (userInfo && userInfo.status !== "ACTIVE") {
+        // Clear tokens and redirect
+        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+        navigate(`${paths.LOGIN}?error=inactive`, { replace: true });
+        window.location.reload();
+      }
     }
-  }, [isLoggedIn, isFinishedChecking, isAdmin, navigate]);
+  }, [isLoggedIn, isFinishedChecking, isAdmin, userInfo, navigate]);
 
   if (isLoading || (isLoggedIn && !isFinishedChecking)) {
     return (
@@ -46,19 +52,19 @@ function AuthGuard({ children }) {
           onConfirm={() => {
             setShowModal(false);
             const returnUrl = encodeURIComponent(location.pathname + location.search);
-            navigate(`${paths.login}?returnUrl=${returnUrl}`, { replace: true });
+            navigate(`${paths.LOGIN}?returnUrl=${returnUrl}`, { replace: true });
           }}
           onCancel={() => {
             setShowModal(false);
-            navigate(paths.login, { replace: true });
+            navigate(paths.LOGIN, { replace: true });
           }}
         />
       </>
     );
   }
 
-  // If logged in and checking completed and user is NOT admin, show a loading placeholder while useEffect handles redirection
-  if (isLoggedIn && !isAdmin) {
+  // If logged in and checking completed and user is NOT admin or is inactive, show a loading placeholder while useEffect handles redirection
+  if (isLoggedIn && (!isAdmin || userInfo?.status !== "ACTIVE")) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[var(--bg-color)]">
         <div className="w-10 h-10 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
@@ -70,4 +76,5 @@ function AuthGuard({ children }) {
 }
 
 export default AuthGuard;
+
 

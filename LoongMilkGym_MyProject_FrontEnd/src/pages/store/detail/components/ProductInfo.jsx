@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Star, Heart, ShoppingCart, ShieldCheck, CheckCircle } from "lucide-react";
+import { Star, Heart, ShoppingCart, ShieldCheck, CheckCircle, XCircle } from "lucide-react";
 import { useAddToCartMutation } from "@/services/store/storeApi";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 
@@ -99,10 +99,17 @@ function ProductInfo({ product }) {
             </span>
           )}
         </div>
-        <span className="px-3 py-1 rounded-full text-[10px] font-black tracking-wider uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
-          <CheckCircle className="w-3 h-3" />
-          Còn hàng
-        </span>
+        {product?.status === "out_of_stock" ? (
+          <span className="px-3 py-1 rounded-full text-[10px] font-black tracking-wider uppercase bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center gap-1">
+            <XCircle className="w-3 h-3" />
+            Hết hàng
+          </span>
+        ) : (
+          <span className="px-3 py-1 rounded-full text-[10px] font-black tracking-wider uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
+            <CheckCircle className="w-3 h-3" />
+            Còn hàng
+          </span>
+        )}
       </div>
 
       {/* Mô tả */}
@@ -181,16 +188,18 @@ function ProductInfo({ product }) {
           <div className="flex items-center bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-1">
             <button
               onClick={() => handleQuantityChange("dec")}
-              className="w-8 h-8 flex items-center justify-center text-lg font-bold border-0 bg-transparent text-[var(--text-color)] hover:text-primary transition-colors cursor-pointer"
+              disabled={product?.status === "out_of_stock"}
+              className="w-8 h-8 flex items-center justify-center text-lg font-bold border-0 bg-transparent text-[var(--text-color)] hover:text-primary transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
             >
               −
             </button>
             <span className="w-10 text-center font-extrabold text-sm sm:text-base">
-              {quantity}
+              {product?.status === "out_of_stock" ? 0 : quantity}
             </span>
             <button
               onClick={() => handleQuantityChange("inc")}
-              className="w-8 h-8 flex items-center justify-center text-lg font-bold border-0 bg-transparent text-[var(--text-color)] hover:text-primary transition-colors cursor-pointer"
+              disabled={product?.status === "out_of_stock"}
+              className="w-8 h-8 flex items-center justify-center text-lg font-bold border-0 bg-transparent text-[var(--text-color)] hover:text-primary transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
             >
               +
             </button>
@@ -212,20 +221,31 @@ function ProductInfo({ product }) {
 
         {/* Nút Thêm vào giỏ & Mua ngay */}
         <div className="flex flex-col sm:flex-row gap-3 mt-2">
-          <button
-            onClick={handleAddToCart}
-            disabled={isLoading}
-            className="flex-1 py-3 px-6 bg-primary text-black font-extrabold text-sm sm:text-base rounded-xl flex items-center justify-center gap-2 border border-primary hover:bg-primary-hover transition-all duration-200 cursor-pointer shadow-md shadow-primary/10 active:scale-98"
-          >
-            <ShoppingCart className="w-5 h-5" />
-            {isLoading ? "Đang xử lý..." : "Thêm vào giỏ hàng"}
-          </button>
-          <button
-            onClick={handleBuyNow}
-            className="flex-1 py-3 px-6 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-90 font-extrabold text-sm sm:text-base rounded-xl border border-transparent transition-all cursor-pointer active:scale-98"
-          >
-            Mua ngay
-          </button>
+          {product?.status === "out_of_stock" ? (
+            <button
+              disabled
+              className="flex-1 py-3 px-6 bg-neutral-500/10 text-neutral-400 border border-neutral-500/20 font-extrabold text-sm sm:text-base rounded-xl flex items-center justify-center gap-2 cursor-not-allowed"
+            >
+              Hết hàng
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={handleAddToCart}
+                disabled={isLoading}
+                className="flex-1 py-3 px-6 bg-primary text-black font-extrabold text-sm sm:text-base rounded-xl flex items-center justify-center gap-2 border border-primary hover:bg-primary-hover transition-all duration-200 cursor-pointer shadow-md shadow-primary/10 active:scale-98"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                {isLoading ? "Đang xử lý..." : "Thêm vào giỏ hàng"}
+              </button>
+              <button
+                onClick={handleBuyNow}
+                className="flex-1 py-3 px-6 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-90 font-extrabold text-sm sm:text-base rounded-xl border border-transparent transition-all cursor-pointer active:scale-98"
+              >
+                Mua ngay
+              </button>
+            </>
+          )}
         </div>
       </div>
 

@@ -13,13 +13,20 @@ const SORT_OPTIONS = [
 function Store() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [priceRange, setPriceRange] = useState([100000, 2000000]);
+  const [priceRange, setPriceRange] = useState(null);
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [sortBy, setSortBy] = useState("newest");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, priceRange, selectedBrands, search, sortBy]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -39,6 +46,18 @@ function Store() {
   } = useGetProductsQuery({ limit: 100 });
   const allProducts = productsData?.data?.data || [];
 
+  const { minPrice, maxPrice } = useMemo(() => {
+    const activeProducts = allProducts.filter(
+      (p) => p.status === "active" || p.status === "out_of_stock"
+    );
+    if (activeProducts.length === 0) return { minPrice: 0, maxPrice: 2000000 };
+    const prices = activeProducts.map((p) => Number(p.price));
+    return {
+      minPrice: Math.min(...prices),
+      maxPrice: Math.max(...prices),
+    };
+  }, [allProducts]);
+
   const availableBrands = useMemo(() => {
     const brandsSet = new Set();
     allProducts.forEach((p) => {
@@ -52,7 +71,9 @@ function Store() {
 
   // Lọc sản phẩm ở Client-side theo các tiêu chí bộ lọc
   const filteredProducts = useMemo(() => {
-    let result = [...allProducts];
+    let result = allProducts.filter(
+      (p) => p.status === "active" || p.status === "out_of_stock",
+    );
 
     // 1. Lọc theo danh mục
     if (selectedCategory) {
@@ -60,10 +81,12 @@ function Store() {
     }
 
     // 2. Lọc theo khoảng giá
-    result = result.filter(
-      (p) =>
-        Number(p.price) >= priceRange[0] && Number(p.price) <= priceRange[1],
-    );
+    if (priceRange) {
+      result = result.filter(
+        (p) =>
+          Number(p.price) >= priceRange[0] && Number(p.price) <= priceRange[1],
+      );
+    }
 
     // 3. Lọc theo thương hiệu
     if (selectedBrands.length > 0) {
@@ -106,6 +129,13 @@ function Store() {
     search,
     sortBy,
   ]);
+
+  const totalPages = Math.ceil(filteredProducts.length / 12);
+
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * 12;
+    return filteredProducts.slice(start, start + 12);
+  }, [filteredProducts, currentPage]);
 
   return (
     <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] pb-20 animate-fade-in">
@@ -193,6 +223,8 @@ function Store() {
               selectedBrands={selectedBrands}
               setSelectedBrands={setSelectedBrands}
               availableBrands={availableBrands}
+              minPrice={minPrice}
+              maxPrice={maxPrice}
             />
           </div>
 
@@ -223,6 +255,8 @@ function Store() {
                   selectedBrands={selectedBrands}
                   setSelectedBrands={setSelectedBrands}
                   availableBrands={availableBrands}
+                  minPrice={minPrice}
+                  maxPrice={maxPrice}
                 />
               </div>
             </div>
@@ -261,10 +295,48 @@ function Store() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
-                {filteredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
+              <div className="space-y-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+                  {paginatedProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center gap-1.5 pt-6 border-t border-[var(--border-color)]/40">
+                    <button
+                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1.5 rounded-xl border border-[var(--border-color)]/60 text-xs font-bold transition hover:bg-black/10 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-[var(--text-color)]"
+                    >
+                      Trước
+                    </button>
+                    {Array.from({ length: totalPages }).map((_, i) => {
+                      const pageNum = i + 1;
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`w-8 h-8 rounded-xl text-xs font-bold transition cursor-pointer ${
+                            currentPage === pageNum
+                              ? "bg-emerald-500 text-black font-black"
+                              : "border border-[var(--border-color)]/60 text-[var(--text-color)] hover:bg-black/10"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                    <button
+                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1.5 rounded-xl border border-[var(--border-color)]/60 text-xs font-bold transition hover:bg-black/10 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-[var(--text-color)]"
+                    >
+                      Sau
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

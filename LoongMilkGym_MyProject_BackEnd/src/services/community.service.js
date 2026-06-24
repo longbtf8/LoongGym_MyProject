@@ -342,6 +342,11 @@ const getPosts = async ({ userId, page = 1, limit = 10, authorId, feedType }) =>
   const skip = (page - 1) * limit;
 
   const whereClause = {};
+  if (authorId && authorId === userId) {
+    whereClause.moderationStatus = { in: ["VISIBLE", "HIDDEN"] };
+  } else {
+    whereClause.moderationStatus = "VISIBLE";
+  }
   let orderByClause = { createdAt: "desc" };
 
   if (authorId) {
@@ -393,7 +398,12 @@ const getArchivedPosts = async ({ userId, page = 1, limit = 10 }) => {
   const skip = (page - 1) * limit;
 
   const archives = await prisma.postProfileArchive.findMany({
-    where: { userId },
+    where: { 
+      userId,
+      post: {
+        moderationStatus: "VISIBLE"
+      }
+    },
     orderBy: { createdAt: "desc" },
     skip,
     take: limit,
@@ -513,6 +523,10 @@ const getPostById = async ({ userId, postId }) => {
 
   if (!post) {
     throw new AppError("Không tìm thấy bài viết.", httpCodes.notFound);
+  }
+
+  if (post.moderationStatus !== "VISIBLE" && post.userId !== userId) {
+    throw new AppError("Bài viết này không còn khả dụng.", httpCodes.notFound);
   }
 
   return serializePost(post, userId);
@@ -688,7 +702,9 @@ const updatePost = async ({
 
 const archivePostOnProfile = async ({ userId, postId }) => {
   const post = await prisma.communityPost.findUnique({ where: { id: postId } });
-  if (!post) throw new AppError("Không tìm thấy bài viết.", httpCodes.notFound);
+  if (!post || post.moderationStatus !== "VISIBLE") {
+    throw new AppError("Không tìm thấy bài viết.", httpCodes.notFound);
+  }
   if (post.userId !== userId) {
     throw new AppError("Bạn không có quyền ẩn bài viết này khỏi trang cá nhân.", httpCodes.forbidden);
   }
@@ -709,7 +725,9 @@ const restorePostToProfile = async ({ userId, postId }) => {
 
 const hidePostForUser = async ({ userId, postId }) => {
   const post = await prisma.communityPost.findUnique({ where: { id: postId } });
-  if (!post) throw new AppError("Không tìm thấy bài viết.", httpCodes.notFound);
+  if (!post || post.moderationStatus !== "VISIBLE") {
+    throw new AppError("Không tìm thấy bài viết.", httpCodes.notFound);
+  }
 
   return prisma.postUserHidden.upsert({
     where: { postId_userId: { postId, userId } },
@@ -720,27 +738,216 @@ const hidePostForUser = async ({ userId, postId }) => {
 
 const reportPost = async ({ userId, postId, reason }) => {
   const post = await prisma.communityPost.findUnique({ where: { id: postId } });
-  if (!post) throw new AppError("Không tìm thấy bài viết.", httpCodes.notFound);
+  if (!post || post.moderationStatus !== "VISIBLE") {
+    throw new AppError("Không tìm thấy bài viết.", httpCodes.notFound);
+  }
 
-  return prisma.postReport.create({
-    data: {
+  // Check if this user already reported this post
+  const existingAnyReport = await prisma.postReport.findFirst({
+    where: {
       postId,
-      reporterId: userId,
-      reason: reason || null,
-      status: "pending",
-    },
+      reporterId: userId
+    }
   });
+
+  let newReport;
+
+  if (existingAnyReport) {
+    const statusUpper = existingAnyReport.status?.toUpperCase();
+    if (statusUpper === "PENDING") {
+      throw new AppError("Bạn đã gửi báo cáo cho bài viết này rồi và đang chờ xử lý.", httpCodes.badRequest);
+    }
+
+    // Reuse the existing record, resetting it to pending
+    newReport = await prisma.postReport.update({
+      where: { id: existingAnyReport.id },
+      data: {
+        reason: reason || null,
+        status: "pending",
+        resolvedAt: null,
+        resolvedById: null,
+        resolutionAction: null,
+        resolutionNotes: null
+      },
+      include: {
+        post: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                status: true,
+                profile: {
+                  select: {
+                    fullName: true,
+                    avatarUrl: true
+                  }
+                }
+              }
+            },
+            media: {
+              select: {
+                id: true,
+                mediaUrl: true
+              }
+            }
+          }
+        },
+        reporter: {
+          select: {
+            id: true,
+            email: true,
+            profile: {
+              select: {
+                fullName: true,
+                avatarUrl: true
+              }
+            }
+          }
+        }
+      }
+    });
+  } else {
+    // Safe to create new report
+    newReport = await prisma.postReport.create({
+      data: {
+        postId,
+        reporterId: userId,
+        reason: reason || null,
+        status: "pending",
+      },
+      include: {
+        post: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                status: true,
+                profile: {
+                  select: {
+                    fullName: true,
+                    avatarUrl: true
+                  }
+                }
+              }
+            },
+            media: {
+              select: {
+                id: true,
+                mediaUrl: true
+              }
+            }
+          }
+        },
+        reporter: {
+          select: {
+            id: true,
+            email: true,
+            profile: {
+              select: {
+                fullName: true,
+                avatarUrl: true
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Trigger real-time event to notify admin
+  try {
+    const totalReportsOnPost = await prisma.postReport.count({
+      where: { postId: newReport.postId }
+    });
+
+    const reportCountData = await prisma.postReport.count();
+    const pendingReportsCount = await prisma.postReport.count({
+      where: { status: { in: ["pending", "PENDING"] } }
+    });
+    const resolvedReportsCount = await prisma.postReport.count({
+      where: { status: { in: ["resolved", "RESOLVED", "dismissed", "DISMISSED"] } }
+    });
+
+    const postAuthorId = newReport.post?.userId;
+    let totalReportsOfPostAuthor = 0;
+    let totalHiddenPostsOfPostAuthor = 0;
+
+    if (postAuthorId) {
+      totalReportsOfPostAuthor = await prisma.postReport.count({
+        where: {
+          post: { userId: postAuthorId }
+        }
+      });
+
+      totalHiddenPostsOfPostAuthor = await prisma.communityPost.count({
+        where: {
+          userId: postAuthorId,
+          moderationStatus: { in: ['HIDDEN', 'REMOVED'] }
+        }
+      });
+    }
+
+    await pusher.trigger("admin-reports", "report.created", {
+      report: {
+        id: newReport.id,
+        reason: newReport.reason,
+        status: newReport.status,
+        createdAt: newReport.createdAt,
+        resolvedAt: null,
+        resolutionAction: null,
+        resolutionNotes: null,
+        reporter: {
+          id: newReport.reporter?.id,
+          fullName: newReport.reporter?.profile?.fullName || 'Chưa đặt tên',
+          avatarUrl: newReport.reporter?.profile?.avatarUrl || null,
+          email: newReport.reporter?.email || ''
+        },
+        postAuthor: {
+          id: newReport.post?.user?.id,
+          fullName: newReport.post?.user?.profile?.fullName || 'Chưa đặt tên',
+          avatarUrl: newReport.post?.user?.profile?.avatarUrl || null,
+          email: newReport.post?.user?.email || '',
+          status: newReport.post?.user?.status
+        },
+        post: {
+          id: newReport.post?.id,
+          content: newReport.post?.content || '',
+          createdAt: newReport.post?.createdAt,
+          visibility: newReport.post?.visibility || 'public',
+          moderationStatus: newReport.post?.moderationStatus || 'VISIBLE',
+          mediaCount: newReport.post?.media?.length || 0,
+          firstImageUrl: newReport.post?.media?.[0]?.mediaUrl || null
+        },
+        stats: {
+          totalReportsOfThisPost: totalReportsOnPost,
+          totalReportsOfPostAuthor,
+          totalHiddenPostsOfPostAuthor
+        }
+      },
+      stats: {
+        total: reportCountData,
+        pending: pendingReportsCount,
+        resolved: resolvedReportsCount
+      }
+    });
+  } catch (err) {
+    console.error("Lỗi gửi Pusher realtime report.created:", err);
+  }
+
+  return newReport;
 };
 
 /**
  * Thêm bình luận hoặc phản hồi bình luận
  */
 const addComment = async ({ userId, postId, parentCommentId, content }) => {
-  // Kiểm tra bài viết tồn tại
+  // Kiểm tra bài viết tồn tại và hoạt động bình thường
   const postExists = await prisma.communityPost.findUnique({
     where: { id: postId },
   });
-  if (!postExists) {
+  if (!postExists || postExists.moderationStatus !== "VISIBLE") {
     throw new AppError("Không tìm thấy bài viết để bình luận.", httpCodes.notFound);
   }
 
@@ -821,7 +1028,7 @@ const toggleReaction = async ({ userId, postId, reactionType = "like" }) => {
   const postExists = await prisma.communityPost.findUnique({
     where: { id: postId },
   });
-  if (!postExists) {
+  if (!postExists || postExists.moderationStatus !== "VISIBLE") {
     throw new AppError("Không tìm thấy bài viết.", httpCodes.notFound);
   }
 
@@ -920,7 +1127,7 @@ const savePost = async ({ userId, postId }) => {
   const post = await prisma.communityPost.findUnique({
     where: { id: postId },
   });
-  if (!post) {
+  if (!post || post.moderationStatus !== "VISIBLE") {
     throw new AppError("Không tìm thấy bài viết.", httpCodes.notFound);
   }
 

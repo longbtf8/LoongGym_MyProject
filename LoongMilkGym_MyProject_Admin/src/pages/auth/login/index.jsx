@@ -48,7 +48,7 @@ export default function Login() {
         localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.data.access_token);
         localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.data.refresh_token || "");
         
-        const returnUrl = searchParams.get("returnUrl") || paths.dashboard;
+        const returnUrl = searchParams.get("returnUrl") || paths.DASHBOARD;
         navigate(decodeURIComponent(returnUrl), { replace: true });
         window.location.reload(); // Reload to refresh queries & state
       } else {

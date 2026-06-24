@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Eye,
   EyeOff,
@@ -664,15 +665,15 @@ export default function PostCard({
         />
       )}
 
-      {showAudienceModal && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
-          <div className="w-[min(520px,calc(100vw-32px))] overflow-hidden rounded-3xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-2xl">
+      {showAudienceModal && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-[min(520px,calc(100vw-32px))] overflow-hidden rounded-3xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-2xl animate-scale-up">
             <div className="relative border-b border-[var(--border-color)] px-5 py-4 text-center">
               <h3 className="m-0 text-lg font-black text-[var(--text-color)]">Chọn đối tượng</h3>
               <button
                 type="button"
                 onClick={() => setShowAudienceModal(false)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-[var(--border-color)]/40 p-2 text-[var(--text-muted)] hover:text-[var(--text-color)]"
+                className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-[var(--border-color)]/40 p-2 text-[var(--text-muted)] hover:text-[var(--text-color)] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -697,7 +698,7 @@ export default function PostCard({
               <button
                 type="button"
                 onClick={() => setShowAudienceModal(false)}
-                className="rounded-2xl px-5 py-3 text-sm font-black text-[var(--text-color)] hover:bg-[var(--border-color)]/25"
+                className="rounded-2xl px-5 py-3 text-sm font-black text-[var(--text-color)] hover:bg-[var(--border-color)]/25 cursor-pointer"
               >
                 Hủy
               </button>
@@ -705,18 +706,19 @@ export default function PostCard({
                 type="button"
                 onClick={handleSaveAudience}
                 disabled={isUpdatingPost}
-                className="rounded-2xl bg-primary px-6 py-3 text-sm font-black text-black disabled:opacity-60"
+                className="rounded-2xl bg-primary px-6 py-3 text-sm font-black text-black disabled:opacity-60 cursor-pointer"
               >
                 Lưu
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {showReportModal && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm">
-          <div className="w-[min(480px,calc(100vw-32px))] overflow-hidden rounded-3xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-2xl">
+      {showReportModal && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-[min(480px,calc(100vw-32px))] overflow-hidden rounded-3xl border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-2xl animate-scale-up">
             <div className="border-b border-[var(--border-color)] px-5 py-4 text-center">
               <h3 className="m-0 text-lg font-black text-[var(--text-color)]">Báo cáo bài viết</h3>
             </div>
@@ -731,7 +733,7 @@ export default function PostCard({
                 <button
                   type="button"
                   onClick={() => setShowReportModal(false)}
-                  className="rounded-2xl px-5 py-3 text-sm font-black text-[var(--text-color)] hover:bg-[var(--border-color)]/35"
+                  className="rounded-2xl px-5 py-3 text-sm font-black text-[var(--text-color)] hover:bg-[var(--border-color)]/35 cursor-pointer"
                 >
                   Hủy
                 </button>
@@ -739,14 +741,15 @@ export default function PostCard({
                   type="button"
                   onClick={handleSubmitReport}
                   disabled={isReporting}
-                  className="rounded-2xl bg-primary px-6 py-3 text-sm font-black text-black disabled:opacity-60"
+                  className="rounded-2xl bg-primary px-6 py-3 text-sm font-black text-black disabled:opacity-60 cursor-pointer"
                 >
                   {isReporting ? "Đang gửi..." : "Gửi"}
                 </button>
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </article>
   );

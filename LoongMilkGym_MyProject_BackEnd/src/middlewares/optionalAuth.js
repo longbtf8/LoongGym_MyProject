@@ -38,6 +38,7 @@ const optionalAuth = async (req, res, next) => {
         email: true,
         role: true,
         status: true,
+        isSuperAdmin: true,
         emailVerifiedAt: true,
         lastLoginAt: true,
         createdAt: true,

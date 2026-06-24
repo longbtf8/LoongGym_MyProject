@@ -1,7 +1,9 @@
 // Đăng ký alias module và load biến môi trường
 require("module-alias/register");
 require("dotenv/config");
+require("@/jobs/cleanupAuditLogs");
 const express = require("express");
+
 const app = express();
 const port = 3009;
 const apiRouter = require("@/routes/index");

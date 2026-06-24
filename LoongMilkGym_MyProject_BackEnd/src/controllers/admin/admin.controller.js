@@ -1,4 +1,5 @@
 const { httpCodes } = require("@/config/constants");
+const dashboardService = require("@/services/admin/dashboard.service");
 
 const healthCheck = (req, res) => {
   return res.success(
@@ -13,6 +14,16 @@ const healthCheck = (req, res) => {
   );
 };
 
+const getDashboard = async (req, res, next) => {
+  try {
+    const result = await dashboardService.getDashboardStats();
+    return res.success(result, httpCodes.success, "Lấy thông tin tổng quan Dashboard thành công");
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   healthCheck,
+  getDashboard,
 };
