@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:22-alpine
 
 # Cài đặt rclone và mariadb-client để hỗ trợ backup CSDL
 RUN apk add --no-cache rclone mariadb-client
