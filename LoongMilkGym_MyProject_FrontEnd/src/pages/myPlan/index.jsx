@@ -664,7 +664,7 @@ export default function MyPlan() {
                     </button>
                   )
                 ) : (
-                  !isTodayCompleted && (
+                  !isTodayCompleted && !(todayDay?.status === "rest" && dayDetails?.day?.status === "rest") && (
                     <button
                       onClick={handleSwapToToday}
                       disabled={isPending}
