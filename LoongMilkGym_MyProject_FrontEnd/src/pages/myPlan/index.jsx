@@ -22,7 +22,6 @@ import SwapModal from "./components/SwapModal";
 import AIModal from "./components/AIModal";
 import SchedulerModal from "./components/SchedulerModal";
 import RestoreModal from "./components/RestoreModal";
-import DaySwapModal from "./components/DaySwapModal";
 
 const toSavedExercise = (exercise, index) => ({
   id: exercise.id || exercise.exerciseId,
@@ -68,7 +67,6 @@ export default function MyPlan() {
   const [showAIModal, setShowAIModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
-  const [showDaySwapModal, setShowDaySwapModal] = useState(false);
   const [selectedProgramId, setSelectedProgramId] = useState(null);
 
   const [toast, setToast] = useState({ show: false, message: "" });
@@ -449,22 +447,6 @@ export default function MyPlan() {
       } catch {
         showToast("Lỗi khi hoán đổi ngày tập.");
       }
-    }
-  };
-
-  const handleSwapDates = async (targetDayId) => {
-    if (isPending) return;
-    try {
-      await swapDaysDates({
-        dayId1: selectedDayId,
-        dayId2: targetDayId
-      }).unwrap();
-      showToast("🔄 Hoán đổi ngày tập thành công!");
-      setShowDaySwapModal(false);
-      refetchActivePlan();
-    } catch {
-      showToast("Lỗi khi hoán đổi ngày tập.");
-    }
   };
 
   // handleCancelPlanSuccess: Xử lý sau khi huỷ lộ trình thành công bên trong Modal
@@ -519,17 +501,6 @@ export default function MyPlan() {
               </div>
               
               <div className="flex items-center gap-2">
-                {dayDetails?.day && dayDetails?.day?.status !== "completed" && (
-                  <button
-                    onClick={() => setShowDaySwapModal(true)}
-                    disabled={isPending}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-primary/30 bg-primary/10 text-primary hover:bg-primary hover:text-black text-[10px] font-black transition cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
-                  >
-                    <RefreshCw className="w-3 h-3 animate-pulse" />
-                    <span>Hoán đổi ngày</span>
-                  </button>
-                )}
-                
                 {activePlan?.programId && 
                  Array.isArray(dayDetails?.day?.metadata?.originalExercises) &&
                  dayDetails.day.metadata.originalExercises.length > 0 &&
@@ -686,27 +657,37 @@ export default function MyPlan() {
               </div>
             )}
 
-            {dayDetails?.day?.status !== "completed" && dayDetails?.day?.status !== "rest" && dayDetails?.day && (
+            {dayDetails?.day?.status !== "completed" && dayDetails?.day && (
               <>
                 {isSelectedDayToday ? (
-                  <button
-                    onClick={() => navigate(`/today-workout?dayId=${selectedDayId}`)}
-                    className="w-full h-11 bg-primary text-black rounded-xl text-xs font-black flex items-center justify-center gap-2 hover:bg-primary-hover active:scale-[0.99] transition cursor-pointer shadow-md shadow-primary/5 mb-3 border-0"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-black" />
-                    Bắt đầu buổi tập hôm nay (Theo dõi Set & Reps)
-                  </button>
+                  dayDetails?.day?.status !== "rest" && (
+                    <button
+                      onClick={() => navigate(`/today-workout?dayId=${selectedDayId}`)}
+                      className="w-full h-11 bg-primary text-black rounded-xl text-xs font-black flex items-center justify-center gap-2 hover:bg-primary-hover active:scale-[0.99] transition cursor-pointer shadow-md shadow-primary/5 mb-3 border-0"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-black" />
+                      Bắt đầu buổi tập hôm nay (Theo dõi Set & Reps)
+                    </button>
+                  )
                 ) : (
-                  <button
-                    onClick={handleSwapToToday}
-                    disabled={isPending}
-                    className="w-full h-11 bg-emerald-500 text-white rounded-xl text-xs font-black flex items-center justify-center gap-2 hover:bg-emerald-600 active:scale-[0.99] transition cursor-pointer shadow-md shadow-emerald-500/15 mb-3 border-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
-                  >
-                    <Activity className="w-3.5 h-3.5" />
-                    {isTodayCompleted
-                      ? "Tập thêm buổi này hôm nay (Thay thế bài tập hôm nay)"
-                      : "Tập buổi này hôm nay (Thay thế buổi tập hiện tại)"}
-                  </button>
+                  !isTodayCompleted && (
+                    <button
+                      onClick={handleSwapToToday}
+                      disabled={isPending}
+                      className="w-full h-11 bg-emerald-500 text-white rounded-xl text-xs font-black flex items-center justify-center gap-2 hover:bg-emerald-600 active:scale-[0.99] transition cursor-pointer shadow-md shadow-emerald-500/15 mb-3 border-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
+                    >
+                      <Activity className="w-3.5 h-3.5" />
+                      {(() => {
+                        if (todayDay?.status === "rest" && dayDetails?.day?.status !== "rest") {
+                          return "Bạn muốn tập hôm nay";
+                        }
+                        if (todayDay?.status !== "rest" && dayDetails?.day?.status === "rest") {
+                          return "Thay thế hôm nay thành ngày nghỉ";
+                        }
+                        return "Tập buổi này hôm nay (Thay thế buổi tập hiện tại)";
+                      })()}
+                    </button>
+                  )
                 )}
               </>
             )}
@@ -834,16 +815,6 @@ export default function MyPlan() {
         swapTargetIndex={swapTargetIndex}
         dayDetails={dayDetails}
         onSelectExercise={handleSelectExercise}
-        isPending={isPending}
-      />
-
-      {/* Modal Day Swap */}
-      <DaySwapModal
-        isOpen={showDaySwapModal}
-        onClose={() => setShowDaySwapModal(false)}
-        daysList={daysList}
-        selectedDayId={selectedDayId}
-        onSwap={handleSwapDates}
         isPending={isPending}
       />
     </div>
