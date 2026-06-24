@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import Logo from "@/components/Logo";
+import paths from "@/config/path";
 
 function Footer() {
   return (
@@ -25,7 +26,7 @@ function Footer() {
             <ul className="list-none p-0 m-0 flex flex-col gap-2.5">
               <li>
                 <Link
-                  to="#"
+                  to={paths.home}
                   className="text-sm text-[var(--text-muted)] hover:text-primary no-underline transition-all duration-200 hover:translate-x-1 inline-block"
                 >
                   Về LoongMilKGym
@@ -33,7 +34,7 @@ function Footer() {
               </li>
               <li>
                 <Link
-                  to="#"
+                  to={paths.exercises}
                   className="text-sm text-[var(--text-muted)] hover:text-primary no-underline transition-all duration-200 hover:translate-x-1 inline-block"
                 >
                   Thư viện bài tập
@@ -41,7 +42,7 @@ function Footer() {
               </li>
               <li>
                 <Link
-                  to="#"
+                  to={paths.myPlan}
                   className="text-sm text-[var(--text-muted)] hover:text-primary no-underline transition-all duration-200 hover:translate-x-1 inline-block"
                 >
                   Lộ trình AI
@@ -58,7 +59,7 @@ function Footer() {
             <ul className="list-none p-0 m-0 flex flex-col gap-2.5">
               <li>
                 <Link
-                  to="#"
+                  to={paths.home}
                   className="text-sm text-[var(--text-muted)] hover:text-primary no-underline transition-all duration-200 hover:translate-x-1 inline-block"
                 >
                   Hỗ trợ
@@ -66,7 +67,7 @@ function Footer() {
               </li>
               <li>
                 <Link
-                  to="#"
+                  to={paths.home}
                   className="text-sm text-[var(--text-muted)] hover:text-primary no-underline transition-all duration-200 hover:translate-x-1 inline-block"
                 >
                   Liên hệ
@@ -74,7 +75,7 @@ function Footer() {
               </li>
               <li>
                 <Link
-                  to="#"
+                  to={paths.home}
                   className="text-sm text-[var(--text-muted)] hover:text-primary no-underline transition-all duration-200 hover:translate-x-1 inline-block"
                 >
                   Chính sách bảo mật

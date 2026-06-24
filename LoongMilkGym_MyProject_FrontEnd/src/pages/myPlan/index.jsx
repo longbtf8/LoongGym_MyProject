@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Dumbbell, Activity, Check, Play, History, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
+import { Dumbbell, Activity, Check, Play, History, ChevronDown, ChevronUp, RotateCcw, RefreshCw } from "lucide-react";
 import {
   useGetActivePlanQuery,
   useGetStatsQuery,
@@ -22,6 +22,7 @@ import SwapModal from "./components/SwapModal";
 import AIModal from "./components/AIModal";
 import SchedulerModal from "./components/SchedulerModal";
 import RestoreModal from "./components/RestoreModal";
+import DaySwapModal from "./components/DaySwapModal";
 
 const toSavedExercise = (exercise, index) => ({
   id: exercise.id || exercise.exerciseId,
@@ -67,6 +68,7 @@ export default function MyPlan() {
   const [showAIModal, setShowAIModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [showDaySwapModal, setShowDaySwapModal] = useState(false);
   const [selectedProgramId, setSelectedProgramId] = useState(null);
 
   const [toast, setToast] = useState({ show: false, message: "" });
@@ -450,6 +452,21 @@ export default function MyPlan() {
     }
   };
 
+  const handleSwapDates = async (targetDayId) => {
+    if (isPending) return;
+    try {
+      await swapDaysDates({
+        dayId1: selectedDayId,
+        dayId2: targetDayId
+      }).unwrap();
+      showToast("🔄 Hoán đổi ngày tập thành công!");
+      setShowDaySwapModal(false);
+      refetchActivePlan();
+    } catch {
+      showToast("Lỗi khi hoán đổi ngày tập.");
+    }
+  };
+
   // handleCancelPlanSuccess: Xử lý sau khi huỷ lộ trình thành công bên trong Modal
   const handleCancelPlanSuccess = (message) => {
     setSelectedDayId(null);
@@ -496,24 +513,40 @@ export default function MyPlan() {
                   <Dumbbell className="w-4 h-4 text-primary" />
                   {selectedWorkoutTitle}
                 </h2>
-                <span className="text-[10px] text-[var(--text-muted)] pl-5.5">Dự kiến: 65 phút</span>
+                <span className="text-[10px] text-[var(--text-muted)] pl-5.5">
+                  {dayDetails?.day?.status === "rest" ? "Nghỉ ngơi phục hồi" : "Dự kiến: 65 phút"}
+                </span>
               </div>
               
-              {activePlan?.programId && 
-               Array.isArray(dayDetails?.day?.metadata?.originalExercises) &&
-               dayDetails.day.metadata.originalExercises.length > 0 &&
-               dayDetails?.day?.status !== "completed" && 
-               dayDetails?.day?.metadata?.customized === true && (
-                <button
-                  onClick={() => setShowRestoreModal(true)}
-                  disabled={isPending}
-                  className="flex items-center gap-1 text-[10px] font-bold text-rose-400 hover:text-rose-300 transition-colors border-0 bg-transparent cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
-                  title="Khôi phục lại danh sách bài tập ban đầu của giáo án"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  <span>Khôi phục lịch gốc</span>
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                {dayDetails?.day && dayDetails?.day?.status !== "completed" && (
+                  <button
+                    onClick={() => setShowDaySwapModal(true)}
+                    disabled={isPending}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-primary/30 bg-primary/10 text-primary hover:bg-primary hover:text-black text-[10px] font-black transition cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                  >
+                    <RefreshCw className="w-3 h-3 animate-pulse" />
+                    <span>Hoán đổi ngày</span>
+                  </button>
+                )}
+                
+                {activePlan?.programId && 
+                 Array.isArray(dayDetails?.day?.metadata?.originalExercises) &&
+                 dayDetails.day.metadata.originalExercises.length > 0 &&
+                 dayDetails?.day?.status !== "completed" && 
+                 dayDetails?.day?.status !== "rest" &&
+                 dayDetails?.day?.metadata?.customized === true && (
+                  <button
+                    onClick={() => setShowRestoreModal(true)}
+                    disabled={isPending}
+                    className="flex items-center gap-1 text-[10px] font-bold text-rose-400 hover:text-rose-300 transition-colors border-0 bg-transparent cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
+                    title="Khôi phục lại danh sách bài tập ban đầu của giáo án"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Khôi phục lịch gốc</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {dayDetails?.day?.status === "completed" && (
@@ -801,6 +834,16 @@ export default function MyPlan() {
         swapTargetIndex={swapTargetIndex}
         dayDetails={dayDetails}
         onSelectExercise={handleSelectExercise}
+        isPending={isPending}
+      />
+
+      {/* Modal Day Swap */}
+      <DaySwapModal
+        isOpen={showDaySwapModal}
+        onClose={() => setShowDaySwapModal(false)}
+        daysList={daysList}
+        selectedDayId={selectedDayId}
+        onSwap={handleSwapDates}
         isPending={isPending}
       />
     </div>
