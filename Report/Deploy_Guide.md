@@ -231,7 +231,7 @@ sudo apt install -y nginx
 
 ### 2. Tạo file cấu hình chuyển hướng tên miền
 ```bash
-sudo nano /etc/nginx/sites-available/loonggym
+sudo nano /etc/nginx/sites-available/loongmilkgym
 ```
 
 Dán nội dung cấu hình dưới đây:
@@ -310,7 +310,7 @@ server {
 ### 3. Kích hoạt và chạy Nginx
 ```bash
 # Tạo liên kết cấu hình sang thư mục sites-enabled
-sudo ln -s /etc/nginx/sites-available/loonggym /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/loongmilkgym /etc/nginx/sites-enabled/
 
 # Kiểm tra cú pháp xem có bị lỗi không
 sudo nginx -t
