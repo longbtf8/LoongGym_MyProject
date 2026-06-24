@@ -53,9 +53,12 @@ Tài liệu này ghi nhận kết quả nghiệm thu, kiểm tra chất lượng
 | **Xoay vòng Refresh Token** | Bảo mật | ✅ Hoàn thành | Multi-tab request race condition prevention. |
 | **Toasts & Mobile Drawer Menu** | Giao diện | ✅ Hoàn thành | Unified toast top position, corrected mobile routing. |
 | **Hệ thống Báo cáo (`Report/`)** | Tài liệu | ✅ Hoàn thành | Updated all 4 main reports and Git history. |
+| **Biểu đồ tiến độ Dashboard sau hoàn thành tập** | Nghiệp vụ | ✅ Hoàn thành | Đồng bộ múi giờ VN + refetch cache RTK Query. |
+| **Chuẩn 5 bài/buổi (Admin + FE)** | Nghiệp vụ | ✅ Hoàn thành | Seed + plan-setup bỏ random, đồng bộ template. |
+| **Vùng chạm nút Đăng nhập/Đăng ký** | Giao diện | ✅ Hoàn thành | min-h-11, touch-manipulation, giảm flicker mobile. |
 
 ---
 
 ## 🚀 3. KẾT LUẬN
 
-Hệ thống mã nguồn của dự án LoongGym hiện tại đang ở trạng thái **hoàn toàn ổn định, sạch sẽ, không có lỗi runtime** và các file báo cáo nghiệp vụ đã được đồng bộ hóa chính xác 100% với cấu trúc mã nguồn. Dự án đã sẵn sàng để thực hiện commit git và triển khai lên môi trường thử nghiệm tiếp theo.
+Hệ thống mã nguồn đã được cập nhật: biểu đồ tiến độ tuần trên Dashboard phản ánh đúng sau khi hoàn thành buổi tập, Admin và Frontend đồng bộ 5 bài mỗi buổi tập, vùng chạm nút xác thực được mở rộng. Chạy lại `seed-roadmap.js` trên môi trường triển khai để cập nhật template giáo án trong database.

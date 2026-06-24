@@ -103,16 +103,16 @@ function Header() {
               {!isLoggedIn && (
                 <>
                   {/* Desktop view */}
-                  <div className="hidden sm:flex items-center gap-1.5 xl:gap-2.5">
+                  <div className="hidden sm:flex items-center gap-2 xl:gap-3">
                     <Link
                       to={paths.register}
-                      className="hidden xl:inline-flex px-3 py-1.5 text-xs xl:text-sm xl:px-5 xl:py-2 font-bold no-underline rounded-full whitespace-nowrap text-[var(--text-color)] border border-[var(--border-color)] bg-transparent hover:bg-[var(--bg-secondary)] transition-all duration-200 hover:-translate-y-0.5"
+                      className="hidden xl:inline-flex items-center justify-center min-h-11 px-5 xl:px-6 py-2.5 text-xs xl:text-sm font-bold no-underline rounded-full whitespace-nowrap text-[var(--text-color)] border border-[var(--border-color)] bg-transparent hover:bg-[var(--bg-secondary)] transition-colors duration-200 touch-manipulation select-none"
                     >
                       Đăng ký
                     </Link>
                     <Link
                       to={paths.login}
-                      className="px-3 py-1.5 text-xs xl:text-sm xl:px-5 xl:py-2 font-extrabold no-underline rounded-full whitespace-nowrap bg-primary text-black border border-primary shadow-[0_2px_10px_rgba(204,255,0,0.2)] hover:bg-primary-hover hover:-translate-y-0.5 transition-all duration-200"
+                      className="inline-flex items-center justify-center min-h-11 px-5 xl:px-6 py-2.5 text-xs xl:text-sm font-extrabold no-underline rounded-full whitespace-nowrap bg-primary text-black border border-primary shadow-[0_2px_10px_rgba(204,255,0,0.2)] hover:bg-primary-hover sm:hover:-translate-y-0.5 transition-all duration-200 touch-manipulation select-none"
                     >
                       Đăng nhập
                     </Link>

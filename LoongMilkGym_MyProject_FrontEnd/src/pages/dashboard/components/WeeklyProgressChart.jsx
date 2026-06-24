@@ -8,7 +8,12 @@ function WeeklyProgressChart() {
   const weeklyWorkoutMinutes = apiStats?.weeklyWorkoutMinutesMap || [0, 0, 0, 0, 0, 0, 0];
   const weeklyWorkoutDays = apiStats?.weeklyWorkoutDaysMap || [0, 0, 0, 0, 0, 0, 0];
 
-  const todayIdx = (new Date().getDay() + 6) % 7; // Monday = 0, Sunday = 6
+  const vietnamWeekdayFormatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    weekday: "short",
+  });
+  const weekdayMap = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6 };
+  const todayIdx = weekdayMap[vietnamWeekdayFormatter.format(new Date())] ?? 0;
   const labels = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
   const items = labels.map((label, idx) => {

@@ -195,7 +195,7 @@ function Login() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-4 rounded-[30px] border-none bg-primary text-black text-base font-extrabold cursor-pointer transition-all duration-200 mt-2 shadow-[0_4px_12px_rgba(204,255,0,0.2)] hover:bg-primary-hover hover:-translate-y-0.5 active:bg-primary-active disabled:opacity-50"
+          className="w-full min-h-12 py-4 rounded-[30px] border-none bg-primary text-black text-base font-extrabold cursor-pointer transition-colors duration-200 mt-2 shadow-[0_4px_12px_rgba(204,255,0,0.2)] hover:bg-primary-hover sm:hover:-translate-y-0.5 active:bg-primary-active disabled:opacity-50 touch-manipulation select-none"
         >
           {isSubmitting ? "Đang xử lý..." : "Đăng nhập"}
         </button>
@@ -205,7 +205,7 @@ function Login() {
           <span className="text-[var(--text-muted)]">Chưa có tài khoản? </span>
           <Link 
             to="/register" 
-            className="text-[var(--text-color)] font-bold no-underline border-b-2 border-[var(--text-color)]"
+            className="inline-flex items-center justify-center min-h-10 px-3 py-2 text-[var(--text-color)] font-bold no-underline border-b-2 border-[var(--text-color)] touch-manipulation select-none"
           >
             Đăng ký
           </Link>

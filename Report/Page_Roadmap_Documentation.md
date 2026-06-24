@@ -99,3 +99,10 @@ Khi người dùng xóa toàn bộ bài tập trong một ngày tập, danh sác
 *   **Hiển thị có chọn lọc**: Nút "Khôi phục lịch gốc" đi kèm điều kiện chỉ hiển thị khi `metadata.customized === true`.
 *   **Xóa cờ sau khôi phục**: Khi kích hoạt modal xác nhận và đồng ý khôi phục, thuộc tính `customExercises` được gán về `null` và `customized` được đặt lại thành `false`, ẩn nút khôi phục trên UI ngay lập tức.
 
+---
+
+## 📏 7. Chuẩn Hóa 5 Bài Tập Mỗi Buổi (Admin ↔ Frontend Đồng Bộ)
+
+*   **Seed giáo án (`seed-roadmap.js`)**: Mỗi ngày tập (không phải ngày nghỉ) trong template Admin được chuẩn hóa **đúng 5 bài tập**.
+*   **Tạo lộ trình người dùng (`plan-setup.helper.js`)**: Bỏ logic random 4–6 bài; luôn lấy **5 bài** theo thứ tự `exerciseOrder` trong template, chỉ bổ sung từ thư viện khi template thiếu bài.
+*   **Cập nhật DB**: Chạy `node prisma/seed-roadmap.js` sau khi deploy để Admin hiển thị đúng số bài mới.

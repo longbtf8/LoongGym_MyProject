@@ -137,7 +137,7 @@ function WeeklyStatsPreview() {
           </p>
           <button 
             onClick={() => navigate(paths.login)} 
-            className="px-6 py-2.5 bg-primary text-black font-extrabold text-xs rounded-xl shadow-md shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer border-0"
+            className="inline-flex items-center justify-center min-h-11 px-8 py-3 bg-primary text-black font-extrabold text-sm rounded-xl shadow-md shadow-primary/20 active:scale-[0.98] sm:hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border-0 touch-manipulation select-none"
           >
             Đăng nhập ngay
           </button>

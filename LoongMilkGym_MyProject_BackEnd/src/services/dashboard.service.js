@@ -2,6 +2,48 @@ const { prisma } = require("@/lib/prisma");
 const AppError = require("@/utils/AppError");
 const { httpCodes } = require("@/config/constants");
 
+const VIETNAM_TZ = "Asia/Ho_Chi_Minh";
+
+const getVietnamDateParts = (dateInput = new Date()) => {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: VIETNAM_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const [year, month, day] = formatter.format(dateInput).split("-").map(Number);
+  return { year, month, day };
+};
+
+const getVietnamDayIndex = (dateInput = new Date()) => {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: VIETNAM_TZ,
+    weekday: "short",
+  });
+  const weekdayMap = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6 };
+  return weekdayMap[formatter.format(dateInput)] ?? 0;
+};
+
+const getVietnamWeekBounds = (referenceDate = new Date()) => {
+  const parts = getVietnamDateParts(referenceDate);
+  const dayIndex = getVietnamDayIndex(referenceDate);
+  const refUtc = Date.UTC(parts.year, parts.month - 1, parts.day);
+  const mondayUtc = refUtc - dayIndex * 24 * 60 * 60 * 1000;
+  const monday = new Date(mondayUtc - 7 * 60 * 60 * 1000);
+  const sunday = new Date(monday.getTime() + 7 * 24 * 60 * 60 * 1000 - 1);
+  return { monday, sunday };
+};
+
+const getVietnamTodayString = () => {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: VIETNAM_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return formatter.format(new Date());
+};
+
 /**
  * Lấy thông tin tóm tắt hiển thị trên Dashboard của người dùng
  * @param {string} userId - ID người dùng cần truy vấn
@@ -77,16 +119,8 @@ const getDashboardSummary = async (userId) => {
     // ignore
   }
 
-  // Compute Weekly Stats & Maps Dynamically
-  const now = new Date();
-  const dayOfWeek = now.getDay(); // 0 is Sunday, 1 is Monday, etc.
-  const diffToMonday = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-  const monday = new Date(now.setDate(diffToMonday));
-  monday.setHours(0, 0, 0, 0);
-
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  sunday.setHours(23, 59, 59, 999);
+  // Compute Weekly Stats & Maps Dynamically (theo múi giờ Việt Nam)
+  const { monday, sunday } = getVietnamWeekBounds();
 
   let completedWorkoutsThisWeek = 0;
   let totalWorkoutMinutesThisWeek = 0;
@@ -111,8 +145,8 @@ const getDashboardSummary = async (userId) => {
     });
 
     sessionsThisWeek.forEach((session) => {
-      const date = new Date(session.endedAt);
-      const dayIndex = (date.getDay() + 6) % 7; // Monday = 0, Sunday = 6
+      if (!session.endedAt) return;
+      const dayIndex = getVietnamDayIndex(session.endedAt);
       weeklyWorkoutDaysMap[dayIndex] = 1;
       const mins = Math.round((session.durationSeconds || 0) / 60);
       weeklyWorkoutMinutesMap[dayIndex] += mins;
@@ -136,8 +170,7 @@ const getDashboardSummary = async (userId) => {
     });
 
     recoveryLogsThisWeek.forEach((log) => {
-      const date = new Date(log.logDate);
-      const dayIndex = (date.getDay() + 6) % 7;
+      const dayIndex = getVietnamDayIndex(log.logDate);
       weeklySleepMap[dayIndex] = Number(log.sleepHours);
     });
 
@@ -163,15 +196,20 @@ const getDashboardSummary = async (userId) => {
         allCompletedSessions
           .map((s) => s.endedAt)
           .filter(Boolean)
-          .map((d) => new Date(d).toLocaleDateString("en-CA"))
+          .map((d) => new Date(d).toLocaleDateString("en-CA", { timeZone: VIETNAM_TZ }))
       )
     );
 
     if (uniqueDates.length > 0) {
-      const todayStr = new Date().toLocaleDateString("en-CA");
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toLocaleDateString("en-CA");
+      const todayStr = getVietnamTodayString();
+      const yesterdayRef = new Date();
+      yesterdayRef.setDate(yesterdayRef.getDate() - 1);
+      const yesterdayStr = new Intl.DateTimeFormat("en-CA", {
+        timeZone: VIETNAM_TZ,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(yesterdayRef);
 
       let searchDateStr = uniqueDates[0] === todayStr ? todayStr : (uniqueDates[0] === yesterdayStr ? yesterdayStr : null);
 
@@ -204,14 +242,7 @@ const getDashboardSummary = async (userId) => {
       },
     });
     if (activePlan) {
-      // Get today's YYYY-MM-DD in Asia/Ho_Chi_Minh timezone (Vietnam)
-      const formatter = new Intl.DateTimeFormat("en-CA", {
-        timeZone: "Asia/Ho_Chi_Minh",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      });
-      const todayStr = formatter.format(new Date());
+      const todayStr = getVietnamTodayString();
 
       const todayPlanDay = activePlan.days.find((day) => {
         const dayDateStr = new Date(day.scheduledDate).toISOString().split("T")[0];

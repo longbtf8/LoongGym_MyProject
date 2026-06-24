@@ -160,25 +160,25 @@ function MobileBottomSheet({
           {/* Nút Authentication chính */}
           {!isLoggedIn ? (
             <>
-              <Link 
+              <Link
                 to={paths.login}
                 onClick={onClose}
-                className="flex flex-col items-center justify-center p-2.5 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-2xl hover:border-primary/50 transition-all active:scale-95 duration-200 group no-underline"
+                className="flex flex-col items-center justify-center min-h-[88px] p-3.5 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-2xl hover:border-primary/50 transition-colors active:scale-[0.98] duration-200 group no-underline touch-manipulation select-none"
               >
-                <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-1.5 group-hover:bg-primary group-hover:text-black transition-colors">
-                  <LogIn className="w-4.5 h-4.5" />
+                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-2 group-hover:bg-primary group-hover:text-black transition-colors">
+                  <LogIn className="w-5 h-5" />
                 </div>
-                <span className="text-[9px] font-bold text-[var(--text-color)] text-center whitespace-nowrap">Đăng nhập</span>
+                <span className="text-[10px] font-bold text-[var(--text-color)] text-center whitespace-nowrap">Đăng nhập</span>
               </Link>
-              <Link 
+              <Link
                 to={paths.register}
                 onClick={onClose}
-                className="flex flex-col items-center justify-center p-2.5 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-2xl hover:border-primary/50 transition-all active:scale-95 duration-200 group no-underline col-span-2"
+                className="flex flex-col items-center justify-center min-h-[88px] p-3.5 bg-[var(--bg-color)] border border-[var(--border-color)] rounded-2xl hover:border-primary/50 transition-colors active:scale-[0.98] duration-200 group no-underline col-span-2 touch-manipulation select-none"
               >
-                <div className="w-9 h-9 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mb-1.5 group-hover:bg-amber-500 group-hover:text-black transition-colors">
-                  <UserPlus className="w-4.5 h-4.5" />
+                <div className="w-10 h-10 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mb-2 group-hover:bg-amber-500 group-hover:text-black transition-colors">
+                  <UserPlus className="w-5 h-5" />
                 </div>
-                <span className="text-[9px] font-bold text-[var(--text-color)] text-center whitespace-nowrap">Đăng ký tài khoản</span>
+                <span className="text-[10px] font-bold text-[var(--text-color)] text-center whitespace-nowrap">Đăng ký tài khoản</span>
               </Link>
             </>
           ) : (

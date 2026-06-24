@@ -4,6 +4,7 @@ const AppError = require("@/utils/AppError");
 
 const PLAN_GENERATION_WINDOW_DAYS = 30;
 const PLAN_GENERATION_THRESHOLD_DAYS = 7;
+const STANDARD_EXERCISES_PER_SESSION = 5;
 
 const buildPlanDays = (
   count,
@@ -32,10 +33,6 @@ const normalizeText = (value = "") => {
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
-};
-
-const getRandomInt = (min, max) => {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
 const shuffle = (items) => {
@@ -157,12 +154,12 @@ const buildRandomExercisesForProgramDay = (programDay, libraryExercises = []) =>
   if (!templateExercises.length) return [];
 
   const focusKeywords = getFocusKeywords(programDay.focusArea || programDay.title);
-  const randomizedTemplateExercises = shuffle(templateExercises);
-  const desiredCount = templateExercises.length >= 5
-    ? getRandomInt(Math.max(4, templateExercises.length - 1), templateExercises.length)
-    : Math.min(5, templateExercises.length + 2);
+  const sortedTemplateExercises = [...templateExercises].sort(
+    (a, b) => (a.exerciseOrder || 0) - (b.exerciseOrder || 0)
+  );
+  const desiredCount = STANDARD_EXERCISES_PER_SESSION;
 
-  const picked = randomizedTemplateExercises.slice(0, desiredCount).map(mapTemplateExerciseToCustom);
+  const picked = sortedTemplateExercises.slice(0, desiredCount).map(mapTemplateExerciseToCustom);
   const pickedIds = new Set(picked.map((exercise) => exercise.exerciseId));
 
   if (picked.length < desiredCount) {
@@ -173,7 +170,7 @@ const buildRandomExercisesForProgramDay = (programDay, libraryExercises = []) =>
     );
 
     relatedLibraryExercises.slice(0, desiredCount - picked.length).forEach((exercise) => {
-      const referenceExercise = templateExercises.find((item) => item.sets || item.repsMin || item.repsMax);
+      const referenceExercise = sortedTemplateExercises.find((item) => item.sets || item.repsMin || item.repsMax);
       picked.push(mapLibraryExerciseToCustom(exercise, referenceExercise));
       pickedIds.add(exercise.id);
     });
@@ -348,7 +345,7 @@ const buildProgramPlanDays = ({ program, startDate, count, startOffset = 0, dayM
       return {
         customExercises,
         originalExercises: customExercises.map(ex => ({ ...ex })),
-        generatedFrom: "workout-program-randomizer",
+        generatedFrom: "workout-program-template",
         focusArea: programDay?.focusArea || null,
         muscleMapUrl: programDay?.muscleMapUrl || null,
         programDayId: programDay?.id || null,

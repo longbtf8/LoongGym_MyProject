@@ -1,6 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "../baseQuery";
 import { dashboardApi } from "../dashboard/dashboardApi";
+import { authApi } from "../auth/authApi";
 
 export const roadmapApi = createApi({
   reducerPath: "roadmapApi",
@@ -111,6 +112,13 @@ export const roadmapApi = createApi({
         try {
           await queryFulfilled;
           dispatch(dashboardApi.util.invalidateTags(["Dashboard"]));
+          dispatch(
+            dashboardApi.endpoints.getDashboardSummary.initiate(undefined, {
+              subscribe: false,
+              forceRefetch: true,
+            })
+          );
+          dispatch(authApi.util.invalidateTags(["WorkoutHistory"]));
         } catch {}
       }
     }),

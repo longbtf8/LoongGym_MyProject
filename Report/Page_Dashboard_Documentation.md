@@ -87,6 +87,12 @@ Trang Dashboard đã được triển khai đầy đủ tại đường dẫn `/
 
 ---
 
+## 📈 IV. BIỂU ĐỒ TIẾN ĐỘ TUẦN & CẬP NHẬT SAU HOÀN THÀNH BUỔI TẬP
+
+*   **Nguồn dữ liệu**: `stats.weeklyWorkoutDaysMap` và `stats.weeklyWorkoutMinutesMap` đếm từ `workoutSession` có `status = completed` trong tuần hiện tại.
+*   **Múi giờ**: Backend và Frontend đồng bộ theo `Asia/Ho_Chi_Minh` khi tính ranh giới tuần (T2–CN) và chỉ số ngày hiện tại.
+*   **Sau hoàn thành buổi tập**: Mutation `completeSession` và `completeDay` invalidate tag `Dashboard` và ép refetch `GET /dashboard/summary` để biểu đồ cập nhật ngay không cần F5.
+
 ## 🛡️ III. CÁC GIÁ TRỊ MẶC ĐỊNH & THUỘC TÍNH TÀI NGUYÊN
 
 1.  **Dữ liệu hồ sơ mặc định**:

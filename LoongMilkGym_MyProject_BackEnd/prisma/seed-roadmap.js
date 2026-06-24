@@ -140,7 +140,6 @@ const pushExercises = [
   ex("dumbbell-flyes", 3, 3, 12, 15, 10, 60, "Mở biên độ vừa đủ, không khoá khuỷu tay."),
   ex("shoulder-press", 4, 3, 10, 12, 14, 75, "Giữ core chắc và đẩy thẳng qua đầu."),
   ex("lateral-raise", 5, 3, 12, 15, 6, 60, "Nâng bằng vai, tránh dùng đà."),
-  ex("tricep-rope-pushdown", 6, 3, 12, 15, 15, 60, "Ép tay sau ở cuối biên độ."),
 ];
 
 const pullExercises = [
@@ -149,7 +148,14 @@ const pullExercises = [
   ex("dumbbell-row", 3, 3, 10, 12, 18, 75, "Ép bả vai khi kéo tạ lên."),
   ex("seated-cable-row", 4, 3, 12, 15, 35, 60, "Giữ thân người thẳng và kéo có kiểm soát."),
   ex("barbell-bicep-curl", 5, 3, 10, 12, 15, 60, "Không vung lưng, giữ khuỷu tay ổn định."),
-  ex("hammer-curl", 6, 3, 10, 12, 12, 60, "Giữ cổ tay trung lập trong từng rep."),
+];
+
+const pullCoreExercises = [
+  ex("lat-pulldown", 1, 3, 10, 12, 40, 75, "Kéo khuỷu tay xuống, cảm nhận cơ xô."),
+  ex("dumbbell-row", 2, 3, 10, 12, 18, 75, "Ép bả vai khi kéo tạ lên."),
+  ex("seated-cable-row", 3, 3, 12, 15, 35, 60, "Giữ thân người thẳng và kéo có kiểm soát."),
+  ex("barbell-bicep-curl", 4, 3, 10, 12, 15, 60, "Không vung lưng, giữ khuỷu tay ổn định."),
+  ex("plank", 5, 3, 45, 60, 0, 45, "Giữ core chắc, thân người thẳng."),
 ];
 
 const legsExercises = [
@@ -166,7 +172,6 @@ const upperExercises = [
   ex("shoulder-press", 3, 3, 10, 12, 14, 75),
   ex("dumbbell-row", 4, 3, 10, 12, 18, 75),
   ex("barbell-bicep-curl", 5, 3, 10, 12, 15, 60),
-  ex("tricep-rope-pushdown", 6, 3, 12, 15, 15, 60),
 ];
 
 const lowerExercises = [
@@ -183,7 +188,6 @@ const fullBodyExercises = [
   ex("lat-pulldown", 3, 3, 10, 12, 40, 75),
   ex("shoulder-press", 4, 3, 10, 12, 14, 75),
   ex("plank", 5, 3, 45, 60, 0, 45),
-  ex("mountain-climber", 6, 3, 30, 30, 0, 45),
 ];
 
 const chestExercises = [
@@ -191,6 +195,7 @@ const chestExercises = [
   ex("incline-dumbbell-press", 2, 3, 10, 12, 16, 75),
   ex("dumbbell-flyes", 3, 3, 12, 15, 10, 60),
   ex("tricep-rope-pushdown", 4, 3, 12, 15, 15, 60),
+  ex("push-up", 5, 3, 12, 15, 0, 60, "Giữ core chắc, hạ ngực gần sàn."),
 ];
 
 const backExercises = [
@@ -205,6 +210,8 @@ const shoulderExercises = [
   ex("shoulder-press", 1, 4, 10, 12, 14, 75),
   ex("lateral-raise", 2, 4, 12, 15, 6, 60),
   ex("overhead-dumbbell-extension", 3, 3, 10, 12, 12, 60),
+  ex("front-dumbbell-raise", 4, 3, 12, 15, 6, 60),
+  ex("face-pull", 5, 3, 12, 15, 15, 60),
 ];
 
 const armsExercises = [
@@ -213,7 +220,6 @@ const armsExercises = [
   ex("incline-dumbbell-curl", 3, 3, 10, 12, 10, 60),
   ex("tricep-rope-pushdown", 4, 4, 12, 15, 15, 60),
   ex("skull-crushers", 5, 3, 10, 12, 15, 75),
-  ex("overhead-dumbbell-extension", 6, 3, 10, 12, 12, 60),
 ];
 
 const programsConfig = [
@@ -230,7 +236,7 @@ const programsConfig = [
       { cycleDay: 3, title: "Nghỉ ngơi", focusArea: "Toàn thân", isRest: true },
       { cycleDay: 4, title: "Chân", focusArea: "Đùi trước, Đùi sau, Mông, Bắp chân", muscleMapUrl: muscleMapUrls.legs, exercises: legsExercises },
       { cycleDay: 5, title: "Đẩy", focusArea: "Ngực, Vai, Tay sau", muscleMapUrl: muscleMapUrls.push, exercises: pushExercises },
-      { cycleDay: 6, title: "Kéo và Core", focusArea: "Lưng, Tay trước, Core", muscleMapUrl: muscleMapUrls.pull, exercises: [...pullExercises, ex("plank", 7, 3, 45, 60, 0, 45)] },
+      { cycleDay: 6, title: "Kéo và Core", focusArea: "Lưng, Tay trước, Core", muscleMapUrl: muscleMapUrls.pull, exercises: pullCoreExercises },
       { cycleDay: 7, title: "Nghỉ ngơi", focusArea: "Toàn thân", isRest: true },
     ],
   },
