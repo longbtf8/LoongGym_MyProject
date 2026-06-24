@@ -2,7 +2,7 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 COPY . .
 
 # Định nghĩa các build arguments cho Vite
@@ -12,18 +12,18 @@ ARG VITE_PUSHER_HOST
 ARG VITE_PUSHER_PORT
 ARG VITE_PUSHER_FORCE_TLS
 
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-ENV VITE_PUSHER_APP_KEY=$VITE_PUSHER_APP_KEY
-ENV VITE_PUSHER_HOST=$VITE_PUSHER_HOST
-ENV VITE_PUSHER_PORT=$VITE_PUSHER_PORT
-ENV VITE_PUSHER_FORCE_TLS=$VITE_PUSHER_FORCE_TLS
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL \
+    VITE_PUSHER_APP_KEY=$VITE_PUSHER_APP_KEY \
+    VITE_PUSHER_HOST=$VITE_PUSHER_HOST \
+    VITE_PUSHER_PORT=$VITE_PUSHER_PORT \
+    VITE_PUSHER_FORCE_TLS=$VITE_PUSHER_FORCE_TLS
 
 RUN npm run build
 
-# Stage 2: Serve assets with Nginx
+# Stage 2: Serve assets with Nginx (image cuối chỉ ~25MB)
 FROM nginx:alpine
-RUN rm -rf /etc/nginx/conf.d/*
-RUN echo 'server { \
+RUN rm -rf /etc/nginx/conf.d/* \
+    && echo 'server { \
     listen 80; \
     location / { \
         root /usr/share/nginx/html; \
