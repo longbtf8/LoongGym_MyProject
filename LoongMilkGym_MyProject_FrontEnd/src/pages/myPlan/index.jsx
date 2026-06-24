@@ -443,7 +443,7 @@ export default function MyPlan() {
           dayId2: todayDay.id
         }).unwrap();
         showToast("🔄 Đã chuyển ngày tập thành công về hôm nay!");
-        setSelectedDayId(selectedDayId); // Refresh selected day view
+        setSelectedDayId(todayDay.id);
       } catch {
         showToast("Lỗi khi hoán đổi ngày tập.");
       }

@@ -10,45 +10,47 @@ function WeeklyStatsPreview() {
   const { isLoggedIn } = useAuth();
 
   // Fetch dashboard stats if logged in
-  const { data: responseData } = useGetDashboardSummaryQuery(undefined, {
+  const { data: responseData, isLoading } = useGetDashboardSummaryQuery(undefined, {
     skip: !isLoggedIn,
+    refetchOnMountOrArgChange: true,
   });
 
   const apiStats = responseData?.data?.stats;
+  const statsReady = isLoggedIn && apiStats && !isLoading;
 
   // Compute stats dynamically or fallback to mock data
   const stats = [
     {
       title: "Tổng số phút tập luyện",
-      value: apiStats ? `${apiStats.totalWorkoutMinutesThisWeek} phút` : "180 phút",
+      value: statsReady ? `${apiStats.totalWorkoutMinutesThisWeek} phút` : (isLoggedIn ? "..." : "180 phút"),
       icon: Clock,
       color: "bg-primary text-primary",
-      bars: apiStats?.weeklyWorkoutMinutesMap || [30, 45, 60, 20, 0, 50, 40], // Mon-Sun
-      label: isLoggedIn ? "Tuần này" : "Dữ liệu mẫu",
+      bars: statsReady ? apiStats.weeklyWorkoutMinutesMap : (isLoggedIn ? [0, 0, 0, 0, 0, 0, 0] : [30, 45, 60, 20, 0, 50, 40]), // Mon-Sun
+      label: statsReady ? "Tuần này" : (isLoggedIn ? "Đang tải..." : "Dữ liệu mẫu"),
     },
     {
       title: "Lượng Calo đã đốt",
-      value: apiStats ? `${apiStats.caloriesBurnedThisWeek.toLocaleString()} Kcal` : "12,450 Kcal",
+      value: statsReady ? `${apiStats.caloriesBurnedThisWeek.toLocaleString()} Kcal` : (isLoggedIn ? "..." : "12,450 Kcal"),
       icon: Flame,
       color: "bg-orange-500 text-orange-500",
-      bars: apiStats?.weeklyCaloriesMap || [200, 350, 450, 150, 0, 400, 300], // Mon-Sun
-      label: isLoggedIn ? `Tiêu hao tuần này` : "Đạt 92% mục tiêu",
+      bars: statsReady ? apiStats.weeklyCaloriesMap : (isLoggedIn ? [0, 0, 0, 0, 0, 0, 0] : [200, 350, 450, 150, 0, 400, 300]), // Mon-Sun
+      label: statsReady ? `Tiêu hao tuần này` : (isLoggedIn ? "Đang tải..." : "Đạt 92% mục tiêu"),
     },
     {
       title: "Số buổi đã hoàn thành",
-      value: apiStats ? `${apiStats.completedWorkoutsThisWeek} buổi` : "4 buổi",
+      value: statsReady ? `${apiStats.completedWorkoutsThisWeek} buổi` : (isLoggedIn ? "..." : "4 buổi"),
       icon: Award,
       color: "bg-indigo-500 text-indigo-500",
-      bars: apiStats?.weeklyWorkoutDaysMap || [1, 1, 1, 0, 0, 1, 0], // Mon-Sun
-      label: isLoggedIn ? "Hoàn thành tuần này" : "Đều đặn",
+      bars: statsReady ? apiStats.weeklyWorkoutDaysMap : (isLoggedIn ? [0, 0, 0, 0, 0, 0, 0] : [1, 1, 1, 0, 0, 1, 0]), // Mon-Sun
+      label: statsReady ? "Hoàn thành tuần này" : (isLoggedIn ? "Đang tải..." : "Đều đặn"),
     },
     {
       title: "Thời gian ngủ trung bình",
-      value: apiStats ? `${apiStats.averageSleepHours} giờ/ngày` : "7.2 giờ/ngày",
+      value: statsReady ? `${apiStats.averageSleepHours} giờ/ngày` : (isLoggedIn ? "..." : "7.2 giờ/ngày"),
       icon: ShieldAlert,
       color: "bg-green-500 text-green-500",
-      bars: apiStats?.weeklySleepMap || [7, 6.5, 8, 7, 7.5, 6.8, 8.2], // Mon-Sun
-      label: isLoggedIn ? "Phục hồi trung bình" : "Chất lượng tốt",
+      bars: statsReady ? apiStats.weeklySleepMap : (isLoggedIn ? [0, 0, 0, 0, 0, 0, 0] : [7, 6.5, 8, 7, 7.5, 6.8, 8.2]), // Mon-Sun
+      label: statsReady ? "Phục hồi trung bình" : (isLoggedIn ? "Đang tải..." : "Chất lượng tốt"),
     },
   ];
 
@@ -137,7 +139,7 @@ function WeeklyStatsPreview() {
           </p>
           <button 
             onClick={() => navigate(paths.login)} 
-            className="inline-flex items-center justify-center min-h-11 px-8 py-3 bg-primary text-black font-extrabold text-sm rounded-xl shadow-md shadow-primary/20 active:scale-[0.98] sm:hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border-0 touch-manipulation select-none"
+            className="tap-stable inline-flex items-center justify-center min-h-11 px-8 py-3 bg-primary text-black font-extrabold text-sm rounded-xl shadow-md shadow-primary/20 active:opacity-90 cursor-pointer border-0 select-none"
           >
             Đăng nhập ngay
           </button>

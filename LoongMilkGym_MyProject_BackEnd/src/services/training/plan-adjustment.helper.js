@@ -164,11 +164,16 @@ const updateDayDetails = async (userId, dayId, updateData) => {
  */
 const completeDay = async (userId, dayId, notes) => {
   const currentDay = await prisma.userTrainingPlanDay.findUnique({
-    where: { id: dayId }
+    where: { id: dayId },
+    include: { plan: true },
   });
 
   if (!currentDay) {
     throw new AppError("Không tìm thấy ngày tập.", httpCodes.notFound);
+  }
+
+  if (currentDay.plan.userId !== userId) {
+    throw new AppError("Bạn không có quyền hoàn tất ngày tập này.", httpCodes.forbidden);
   }
 
   if (currentDay.status === "completed") {
@@ -181,6 +186,10 @@ const completeDay = async (userId, dayId, notes) => {
     return { day: updatedDay, caloriesBurned: 0 };
   }
 
+  if (currentDay.status === "rest") {
+    throw new AppError("Không thể hoàn tất ngày nghỉ.", httpCodes.badRequest);
+  }
+
   const dayDetails = await getDayDetails(userId, dayId);
   const exercises = dayDetails.exercises || [];
 
@@ -191,43 +200,101 @@ const completeDay = async (userId, dayId, notes) => {
 
   const totalSets = exercises.reduce((acc, ex) => acc + (ex.sets || 3), 0);
   const durationMinutes = Math.max(totalSets * 2.5, 30);
-
+  const durationSeconds = Math.round(durationMinutes * 60);
   const caloriesBurned = Math.round(6.0 * 3.5 * weightKg / 200 * durationMinutes);
 
-  const updatedDay = await prisma.userTrainingPlanDay.update({
-    where: { id: dayId },
-    data: {
-      status: "completed",
-      notes: notes || null
-    }
-  });
+  const endedAt = new Date();
+  const startedAt = new Date(endedAt.getTime() - durationSeconds * 1000);
 
-  await prisma.userProfile.update({
-    where: { userId },
-    data: {
-      totalWorkoutDays: { increment: 1 },
-      totalCaloriesBurned: { increment: caloriesBurned }
-    }
-  });
+  const result = await prisma.$transaction(async (tx) => {
+    const updatedDay = await tx.userTrainingPlanDay.update({
+      where: { id: dayId },
+      data: {
+        status: "completed",
+        notes: notes || null
+      }
+    });
 
-  const cutoffDate = getDateOnly(new Date());
-  cutoffDate.setDate(cutoffDate.getDate() - 30);
-  await prisma.userTrainingPlanDay.deleteMany({
-    where: {
-      plan: { userId },
-      scheduledDate: { lt: cutoffDate },
-      status: { in: ["completed", "skipped", "rest"] }
+    const session = await tx.workoutSession.create({
+      data: {
+        userId,
+        planDayId: dayId,
+        title: currentDay.title,
+        startedAt,
+        endedAt,
+        durationSeconds,
+        status: "completed",
+        notes: notes || null,
+      },
+    });
+
+    if (exercises.length > 0) {
+      await tx.workoutSessionExercise.createMany({
+        data: exercises.map((ex, index) => ({
+          workoutSessionId: session.id,
+          exerciseId: ex.exerciseId,
+          exerciseOrder: ex.exerciseOrder || index + 1,
+          status: "completed",
+          notes: ex.note || null,
+        })),
+      });
     }
+
+    await tx.userProfile.update({
+      where: { userId },
+      data: {
+        totalWorkoutDays: { increment: 1 },
+        totalCaloriesBurned: { increment: caloriesBurned }
+      }
+    });
+
+    const cutoffDate = getDateOnly(new Date());
+    cutoffDate.setDate(cutoffDate.getDate() - 30);
+    await tx.userTrainingPlanDay.deleteMany({
+      where: {
+        plan: { userId },
+        scheduledDate: { lt: cutoffDate },
+        status: { in: ["completed", "skipped", "rest"] }
+      }
+    });
+
+    return { day: updatedDay, sessionId: session.id };
   });
 
   return {
-    day: updatedDay,
+    day: result.day,
     caloriesBurned
   };
 };
 
+const REST_DAY_TITLE = "Nghỉ phục hồi";
+
+const buildSwapPayloadFromDay = (sourceDay) => {
+  const metadata = { ...(sourceDay.metadata || {}) };
+
+  if (sourceDay.status === "rest") {
+    return {
+      title: sourceDay.title || REST_DAY_TITLE,
+      notes: sourceDay.notes,
+      status: "rest",
+      metadata: {
+        ...metadata,
+        customExercises: [],
+        customized: false,
+      },
+    };
+  }
+
+  return {
+    title: sourceDay.title,
+    notes: sourceDay.notes,
+    status: sourceDay.status,
+    metadata,
+  };
+};
+
 /**
- * Hoán đổi lịch 2 ngày tập
+ * Hoán đổi nội dung + trạng thái giữa 2 ngày tập (REST ↔ buổi tập)
  */
 const swapDaysDates = async (userId, dayId1, dayId2) => {
   const day1 = await prisma.userTrainingPlanDay.findUnique({
@@ -251,23 +318,18 @@ const swapDaysDates = async (userId, dayId1, dayId2) => {
     throw new AppError("Không thể hoán đổi ngày tập đã hoàn thành.", httpCodes.badRequest);
   }
 
+  const day1Payload = buildSwapPayloadFromDay(day2);
+  const day2Payload = buildSwapPayloadFromDay(day1);
+
   return prisma.$transaction(async (tx) => {
     const updatedDay1 = await tx.userTrainingPlanDay.update({
       where: { id: dayId1 },
-      data: {
-        title: day2.title,
-        notes: day2.notes,
-        metadata: day2.metadata || {},
-      },
+      data: day1Payload,
     });
 
     const updatedDay2 = await tx.userTrainingPlanDay.update({
       where: { id: dayId2 },
-      data: {
-        title: day1.title,
-        notes: day1.notes,
-        metadata: day1.metadata || {},
-      },
+      data: day2Payload,
     });
 
     return [updatedDay1, updatedDay2];

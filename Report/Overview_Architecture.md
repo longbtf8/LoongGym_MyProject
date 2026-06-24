@@ -64,7 +64,7 @@ src/
 ├── middlewares/          # Các tầng trung gian (xử lý lỗi exceptionHandler, rateLimiter, xác thực authRequire)
 ├── resources/            # Tài nguyên tĩnh và mẫu email (mail templates)
 ├── routes/               # Định nghĩa các tuyến đường API RESTful (auth, users, community, cart,...)
-├── schedulers/           # Tác vụ định kỳ (cleanupExpiredTokens, cleanupProcessedJobs)
+├── schedulers/           # Tác vụ định kỳ (cleanupExpiredTokens, cleanupProcessedJobs, backupDB)
 ├── services/             # Tầng chứa logic nghiệp vụ chính (auth, users, community, cart,...)
 ├── utils/                # Hàm tiện ích hệ thống (unitConverter, upload, jwt,...)
 ├── validations/          # Tầng kiểm tra ràng buộc đầu vào bằng Zod Schema (user, exercise, cart,...)

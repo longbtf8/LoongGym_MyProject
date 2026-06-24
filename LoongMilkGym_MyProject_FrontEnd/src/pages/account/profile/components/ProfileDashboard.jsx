@@ -34,7 +34,8 @@ import {
   useUpdateAvatarPhotoMutation,
   useUpdateCoverPhotoMutation,
   useFollowUserMutation,
-  useUnfollowUserMutation 
+  useUnfollowUserMutation,
+  useGetWorkoutHistoryQuery,
 } from "@/services/auth/authApi";
 import { 
   useGetPostsQuery,
@@ -52,6 +53,7 @@ import DeletePostModal from "@/pages/community/components/DeletePostModal";
 import AvatarPhotoModal from "./AvatarPhotoModal";
 import CoverPhotoModal from "./CoverPhotoModal";
 import PostFeed from "@/pages/community/components/PostFeed";
+import Pagination from "@/pages/exercises/components/Pagination";
 
 const DEFAULT_COVER = "/default-bg.png";
 const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=150&auto=format&fit=crop&q=60";
@@ -60,6 +62,7 @@ export default function ProfileDashboard({ profile, isOwnProfile }) {
   const { userInfo } = useAuth();
   const { requireAuth } = useRequireAuth();
   const [activeTab, setActiveTab] = useState("posts");
+  const [historyPage, setHistoryPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [avatarModalMode, setAvatarModalMode] = useState(null);
   const [coverModalMode, setCoverModalMode] = useState(null);
@@ -87,6 +90,18 @@ export default function ProfileDashboard({ profile, isOwnProfile }) {
     limit: 100
   });
   const posts = postsResponse?.data || [];
+
+  const { data: workoutHistoryRes, isLoading: isLoadingHistory } = useGetWorkoutHistoryQuery(
+    {
+      userId: isOwnProfile ? null : profile?.userId,
+      page: historyPage,
+      limit: 10,
+    },
+    { skip: activeTab !== "history" || !profile?.userId }
+  );
+  const workoutHistory = workoutHistoryRes?.data?.data || [];
+  const historyPagination = workoutHistoryRes?.data?.pagination;
+  const historyTotalPages = historyPagination?.totalPages || 1;
   
   // Toast state and helper
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
@@ -946,45 +961,61 @@ export default function ProfileDashboard({ profile, isOwnProfile }) {
           <div className="flex flex-col gap-4 animate-fade-in">
             <div className="flex items-center justify-between px-1">
               <h3 className="text-base font-black text-[var(--text-color)] m-0 uppercase tracking-wider">Lịch sử tập luyện</h3>
+              {historyPagination?.total > 0 && (
+                <span className="text-[10px] font-bold text-[var(--text-muted)]">
+                  {historyPagination.total} buổi
+                </span>
+              )}
             </div>
-            {profile?.completedWorkouts && profile.completedWorkouts.length > 0 ? (
-              <div className="flex flex-col gap-4">
-                {profile.completedWorkouts.map((workout) => (
-                  <div key={workout.id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-5 shadow-sm">
-                    <div className="flex justify-between items-start gap-4">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                            <Dumbbell className="w-4.5 h-4.5" />
+            {isLoadingHistory ? (
+              <div className="text-center py-12 text-[var(--text-muted)] text-sm font-semibold">
+                Đang tải lịch sử...
+              </div>
+            ) : workoutHistory.length > 0 ? (
+              <>
+                <div className="flex flex-col gap-4">
+                  {workoutHistory.map((workout) => (
+                    <div key={workout.id} className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-5 shadow-sm">
+                      <div className="flex justify-between items-start gap-4">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                              <Dumbbell className="w-4.5 h-4.5" />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-black text-[var(--text-color)]">{workout.title}</h4>
+                              <span className="text-[10px] text-[var(--text-muted)] font-bold block mt-0.5">
+                                {new Date(workout.endedAt || workout.createdAt).toLocaleDateString("vi-VN", { day: "numeric", month: "long", year: "numeric" })}
+                              </span>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="text-sm font-black text-[var(--text-color)]">{workout.title}</h4>
-                            <span className="text-[10px] text-[var(--text-muted)] font-bold block mt-0.5">
-                              {new Date(workout.createdAt).toLocaleDateString("vi-VN", { day: "numeric", month: "long" })}
-                            </span>
-                          </div>
+                          {workout.notes && (
+                            <p className="text-xs text-[var(--text-muted)] mt-3 italic">
+                              "{workout.notes}"
+                            </p>
+                          )}
                         </div>
-                        {workout.notes && (
-                          <p className="text-xs text-[var(--text-muted)] mt-3 italic">
-                            "{workout.notes}"
-                          </p>
-                        )}
-                      </div>
-                      
-                      <div className="text-right flex flex-col gap-1.5 shrink-0">
-                        <span className="text-xs font-black text-primary uppercase">
-                          {formatDuration(workout.durationSeconds)}
-                        </span>
-                        {workout.perceivedEffort && (
-                          <span className="text-[9px] font-black uppercase text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md">
-                            RPE {workout.perceivedEffort}/10
+                        
+                        <div className="text-right flex flex-col gap-1.5 shrink-0">
+                          <span className="text-xs font-black text-primary uppercase">
+                            {formatDuration(workout.durationSeconds)}
                           </span>
-                        )}
+                          {workout.perceivedEffort && (
+                            <span className="text-[9px] font-black uppercase text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md">
+                              RPE {workout.perceivedEffort}/10
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+                <Pagination
+                  page={historyPage}
+                  setPage={setHistoryPage}
+                  totalPages={historyTotalPages}
+                />
+              </>
             ) : (
               <div className="text-center py-12 border border-dashed border-[var(--border-color)] rounded-3xl text-[var(--text-muted)] text-sm font-semibold">
                 Chưa hoàn thành buổi tập nào.

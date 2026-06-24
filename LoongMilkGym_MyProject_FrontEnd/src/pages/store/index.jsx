@@ -3,6 +3,7 @@ import { Search, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { useGetProductsQuery } from "@/services/store/storeApi";
 import FilterSidebar from "./components/FilterSidebar";
 import ProductCard from "./components/ProductCard";
+import Pagination from "@/pages/exercises/components/Pagination";
 
 const SORT_OPTIONS = [
   { value: "newest", label: "Sắp xếp: Mới nhất" },
@@ -303,40 +304,11 @@ function Store() {
                 </div>
 
                 {/* Pagination Controls */}
-                {totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-1.5 pt-6 border-t border-[var(--border-color)]/40">
-                    <button
-                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                      className="px-3 py-1.5 rounded-xl border border-[var(--border-color)]/60 text-xs font-bold transition hover:bg-black/10 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-[var(--text-color)]"
-                    >
-                      Trước
-                    </button>
-                    {Array.from({ length: totalPages }).map((_, i) => {
-                      const pageNum = i + 1;
-                      return (
-                        <button
-                          key={pageNum}
-                          onClick={() => setCurrentPage(pageNum)}
-                          className={`w-8 h-8 rounded-xl text-xs font-bold transition cursor-pointer ${
-                            currentPage === pageNum
-                              ? "bg-emerald-500 text-black font-black"
-                              : "border border-[var(--border-color)]/60 text-[var(--text-color)] hover:bg-black/10"
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    })}
-                    <button
-                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages}
-                      className="px-3 py-1.5 rounded-xl border border-[var(--border-color)]/60 text-xs font-bold transition hover:bg-black/10 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-[var(--text-color)]"
-                    >
-                      Sau
-                    </button>
-                  </div>
-                )}
+                <Pagination
+                  page={currentPage}
+                  setPage={setCurrentPage}
+                  totalPages={totalPages}
+                />
               </div>
             )}
           </div>

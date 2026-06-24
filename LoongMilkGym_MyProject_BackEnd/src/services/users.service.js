@@ -47,20 +47,6 @@ const getProfile = async (userId) => {
     orderBy: { takenAt: "desc" }
   });
 
-  const completedWorkouts = await prisma.workoutSession.findMany({
-    where: { userId, status: "completed" },
-    orderBy: { createdAt: "desc" },
-    include: {
-      exercises: {
-        include: {
-          exercise: true,
-          sets: true
-        }
-      }
-    },
-    take: 10
-  });
-
   return {
     ...profile,
     displayHeight,
@@ -69,7 +55,6 @@ const getProfile = async (userId) => {
     followingCount,
     workoutsCount,
     progressPhotos,
-    completedWorkouts
   };
 };
 
@@ -360,20 +345,6 @@ const getUserProfileById = async (userId, currentUserId) => {
     orderBy: { takenAt: "desc" }
   });
 
-  const completedWorkouts = await prisma.workoutSession.findMany({
-    where: { userId, status: "completed" },
-    orderBy: { createdAt: "desc" },
-    include: {
-      exercises: {
-        include: {
-          exercise: true,
-          sets: true
-        }
-      }
-    },
-    take: 10
-  });
-
   return {
     ...profile,
     displayHeight,
@@ -383,7 +354,44 @@ const getUserProfileById = async (userId, currentUserId) => {
     workoutsCount,
     isFollowing,
     progressPhotos,
-    completedWorkouts
+  };
+};
+
+const WORKOUT_HISTORY_INCLUDE = {
+  exercises: {
+    include: {
+      exercise: true,
+      sets: true,
+    },
+  },
+};
+
+const getWorkoutHistory = async (userId, { page = 1, limit = 10 } = {}) => {
+  const safePage = Math.max(1, Number(page) || 1);
+  const safeLimit = Math.min(50, Math.max(1, Number(limit) || 10));
+  const skip = (safePage - 1) * safeLimit;
+
+  const where = { userId, status: "completed" };
+
+  const [total, workouts] = await Promise.all([
+    prisma.workoutSession.count({ where }),
+    prisma.workoutSession.findMany({
+      where,
+      orderBy: { endedAt: "desc" },
+      include: WORKOUT_HISTORY_INCLUDE,
+      skip,
+      take: safeLimit,
+    }),
+  ]);
+
+  return {
+    data: workouts,
+    pagination: {
+      page: safePage,
+      limit: safeLimit,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / safeLimit)),
+    },
   };
 };
 
@@ -395,4 +403,5 @@ module.exports = {
   updateAvatarPhoto,
   updateCoverPhoto,
   getUserProfileById,
+  getWorkoutHistory,
 };

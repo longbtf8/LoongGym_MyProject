@@ -32,7 +32,9 @@ router.post(
 
 router.patch("/me/avatar-photo", authRequire, usersController.updateAvatarPhoto);
 router.patch("/me/cover-photo", authRequire, usersController.updateCoverPhoto);
+router.get("/me/workout-history", authRequire, usersController.getMyWorkoutHistory);
 
 router.get("/:id", optionalAuth, usersController.getUserProfileById);
+router.get("/:id/workout-history", optionalAuth, usersController.getUserWorkoutHistory);
 
 module.exports = router;

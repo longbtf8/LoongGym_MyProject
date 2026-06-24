@@ -98,7 +98,7 @@ function Register() {
 
         <button
           onClick={() => navigate("/login")}
-          className="w-full py-4 rounded-[30px] border-none bg-primary text-black text-base font-extrabold cursor-pointer transition-all duration-200 mt-2 shadow-[0_4px_12px_rgba(204,255,0,0.2)] hover:bg-primary-hover hover:-translate-y-0.5 active:bg-primary-active"
+          className="tap-stable w-full min-h-12 py-4 rounded-[30px] border-none bg-primary text-black text-base font-extrabold cursor-pointer mt-2 shadow-[0_4px_12px_rgba(204,255,0,0.2)] hover:bg-primary-hover active:opacity-90 select-none"
         >
           Đi tới Đăng nhập
         </button>
@@ -207,7 +207,7 @@ function Register() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full min-h-12 py-4 rounded-[30px] border-none bg-primary text-black text-base font-extrabold cursor-pointer transition-colors duration-200 mt-2 shadow-[0_4px_12px_rgba(204,255,0,0.2)] hover:bg-primary-hover sm:hover:-translate-y-0.5 active:bg-primary-active disabled:opacity-50 touch-manipulation select-none"
+          className="tap-stable w-full min-h-12 py-4 rounded-[30px] border-none bg-primary text-black text-base font-extrabold cursor-pointer mt-2 shadow-[0_4px_12px_rgba(204,255,0,0.2)] hover:bg-primary-hover active:opacity-90 disabled:opacity-50 select-none"
         >
           {isSubmitting ? "Đang xử lý..." : "Đăng ký thành viên"}
         </button>
@@ -217,7 +217,7 @@ function Register() {
           <span className="text-[var(--text-muted)]">Đã có tài khoản? </span>
           <Link 
             to="/login" 
-            className="inline-flex items-center justify-center min-h-10 px-3 py-2 text-[var(--text-color)] font-bold no-underline border-b-2 border-[var(--text-color)] touch-manipulation select-none"
+            className="tap-stable inline-flex items-center justify-center min-h-10 px-3 py-2 text-[var(--text-color)] font-bold no-underline border-b-2 border-[var(--text-color)] select-none active:opacity-80"
           >
             Đăng nhập
           </Link>

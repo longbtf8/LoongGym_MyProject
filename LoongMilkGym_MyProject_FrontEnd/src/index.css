@@ -43,6 +43,19 @@ body {
   transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, fill 0.4s ease, stroke 0.4s ease, box-shadow 0.4s ease;
 }
 
+/* Tránh chớp nháy khi chạm nút/link trên mobile (hover sticky + transition box-shadow) */
+a, button, [role="button"], .tap-stable {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease !important;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a, button, [role="button"] {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease !important;
+  }
+}
+
 @keyframes slideDown {
   from {
     opacity: 0;

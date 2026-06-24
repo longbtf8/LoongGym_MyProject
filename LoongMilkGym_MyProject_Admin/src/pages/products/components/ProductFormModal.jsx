@@ -511,7 +511,7 @@ export default function ProductFormModal({
                   type="text"
                   value={price}
                   onChange={(e) => setPrice(e.target.value.replace(/[^0-9]/g, ""))}
-                  placeholder="Ví dụ: 1250000"
+                  placeholder="Ví dụ: 1.250.000"
                   className={`w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] border text-xs font-bold focus:border-emerald-600 dark:focus:border-emerald-400 outline-none transition duration-200 ${
                     errors.price ? "border-rose-500/50" : "border-[var(--border-color)]/60"
                   }`}
@@ -526,7 +526,7 @@ export default function ProductFormModal({
                   type="text"
                   value={originalPrice}
                   onChange={(e) => setOriginalPrice(e.target.value.replace(/[^0-9]/g, ""))}
-                  placeholder="Không giảm giá thì bỏ trống"
+                  placeholder="Ví dụ: 1.500.000"
                   className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)]/60 text-xs font-bold focus:border-emerald-600 dark:focus:border-emerald-400 outline-none transition duration-200"
                 />
               </div>

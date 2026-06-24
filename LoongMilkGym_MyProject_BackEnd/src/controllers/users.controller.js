@@ -83,6 +83,28 @@ const getUserProfileById = async (req, res, next) => {
   }
 };
 
+const getMyWorkoutHistory = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { page, limit } = req.query;
+    const result = await usersService.getWorkoutHistory(userId, { page, limit });
+    return res.success(result, httpCodes.success, "Lấy lịch sử tập luyện thành công.");
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getUserWorkoutHistory = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { page, limit } = req.query;
+    const result = await usersService.getWorkoutHistory(id, { page, limit });
+    return res.success(result, httpCodes.success, "Lấy lịch sử tập luyện thành công.");
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -91,4 +113,6 @@ module.exports = {
   updateAvatarPhoto,
   updateCoverPhoto,
   getUserProfileById,
+  getMyWorkoutHistory,
+  getUserWorkoutHistory,
 };

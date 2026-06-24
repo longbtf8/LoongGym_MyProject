@@ -7,7 +7,7 @@ export const authApi = createApi({
   baseQuery: axiosBaseQuery({
     baseUrl: import.meta.env.VITE_API_BASE_URL,
   }),
-  tagTypes: ["User", "Devices", "UserProfile"],
+  tagTypes: ["User", "Devices", "UserProfile", "WorkoutHistory"],
 
   endpoints: (builder) => ({
     getUserInfo: builder.query({
@@ -144,6 +144,15 @@ export const authApi = createApi({
       }),
       providesTags: (result, error, id) => ["UserProfile", { type: "UserProfile", id }],
     }),
+    getWorkoutHistory: builder.query({
+      query: ({ userId, page = 1, limit = 10 }) => ({
+        url: userId ? `/users/${userId}/workout-history` : "/users/me/workout-history",
+        params: { page, limit },
+      }),
+      providesTags: (result, error, { userId }) => [
+        { type: "WorkoutHistory", id: userId || "me" },
+      ],
+    }),
     followUser: builder.mutation({
       query: (id) => ({
         url: `/community/users/${id}/follow`,
@@ -179,6 +188,7 @@ export const {
   useUpdateAvatarPhotoMutation,
   useUpdateCoverPhotoMutation,
   useGetUserProfileByIdQuery,
+  useGetWorkoutHistoryQuery,
   useFollowUserMutation,
   useUnfollowUserMutation,
 } = authApi;

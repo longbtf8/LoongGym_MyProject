@@ -1214,7 +1214,8 @@ const programsConfig = [
           { slug: "barbell-squat", order: 1, sets: 5, repsMin: 5, repsMax: 5, weight: 60, rest: 120, note: "Thực hiện gánh squat nặng an toàn chuẩn form." },
           { slug: "bench-press", order: 2, sets: 5, repsMin: 5, repsMax: 5, weight: 50, rest: 120, note: "Đẩy tạ đòn kiểm soát tốt bả vai cố định." },
           { slug: "arnold-press", order: 3, sets: 3, repsMin: 8, repsMax: 10, weight: 14, rest: 90, note: "Đẩy vai xoay cổ tay linh hoạt." },
-          { slug: "skull-crushers", order: 4, sets: 3, repsMin: 10, repsMax: 12, weight: 15, rest: 75, note: "Khóa cùi chỏ duỗi tay sau siết cơ." }
+          { slug: "skull-crushers", order: 4, sets: 3, repsMin: 10, repsMax: 12, weight: 15, rest: 75, note: "Khóa cùi chỏ duỗi tay sau siết cơ." },
+          { slug: "plank", order: 5, sets: 3, repsMin: 45, repsMax: 60, weight: 0, rest: 60, note: "Giữ core bụng thẳng." }
         ]
       },
       { cycleDay: 2, title: "Nghỉ ngơi hồi phục", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null },
@@ -1227,7 +1228,8 @@ const programsConfig = [
           { slug: "deadlift", order: 1, sets: 5, repsMin: 5, repsMax: 5, weight: 80, rest: 150, note: "Siết chặt bụng khoá thẳng thắt lưng nâng tạ." },
           { slug: "barbell-bent-over-row", order: 2, sets: 4, repsMin: 6, repsMax: 8, weight: 45, rest: 90, note: "Kéo thanh đòn sát bụng ép cơ xô bả vai." },
           { slug: "pull-up", order: 3, sets: 4, repsMin: 6, repsMax: 10, weight: 0, rest: 90, note: "Kéo cằm qua xà giãn rộng xô lưng." },
-          { slug: "barbell-bicep-curl", order: 4, sets: 3, repsMin: 8, repsMax: 12, weight: 15, rest: 75, note: "Cuốn tay trước tập trung cơ bắp tay." }
+          { slug: "barbell-bicep-curl", order: 4, sets: 3, repsMin: 8, repsMax: 12, weight: 15, rest: 75, note: "Cuốn tay trước tập trung cơ bắp tay." },
+          { slug: "hammer-curl", order: 5, sets: 3, repsMin: 10, repsMax: 12, weight: 12, rest: 60, note: "Cuốn tay trước tập trung cơ bắp tay." }
         ]
       },
       { cycleDay: 4, title: "Nghỉ ngơi hồi phục", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null },
@@ -1240,7 +1242,8 @@ const programsConfig = [
           { slug: "clean-and-press", order: 1, sets: 4, repsMin: 5, repsMax: 5, weight: 40, rest: 120, note: "Clean tạ lên vai đẩy mạnh qua đầu dứt khoát." },
           { slug: "farmers-walk", order: 2, sets: 3, repsMin: 30, repsMax: 30, weight: 24, rest: 90, note: "Xách tạ đi bộ bước nhỏ giữ vai cổ lưng thẳng." },
           { slug: "hanging-leg-raise", order: 3, sets: 3, repsMin: 12, repsMax: 15, weight: 0, rest: 60, note: "Đu xà nâng cao chân thẳng gồng bụng dưới." },
-          { slug: "russian-twist", order: 4, sets: 3, repsMin: 20, repsMax: 20, weight: 0, rest: 45, note: "Xoay người hai bên thắt chặt cơ liên sườn bụng." }
+          { slug: "russian-twist", order: 4, sets: 3, repsMin: 20, repsMax: 20, weight: 0, rest: 45, note: "Xoay người hai bên thắt chặt cơ liên sườn bụng." },
+          { slug: "plank", order: 5, sets: 3, repsMin: 45, repsMax: 60, weight: 0, rest: 60, note: "Giữ core bụng thẳng." }
         ]
       },
       { cycleDay: 6, title: "Nghỉ ngơi hồi phục", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null },
@@ -1264,7 +1267,8 @@ const programsConfig = [
           { slug: "burpee", order: 1, sets: 4, repsMin: 15, repsMax: 20, weight: 0, rest: 60, note: "Thực hiện liên tục bùng nổ tim mạch." },
           { slug: "jump-squat", order: 2, sets: 4, repsMin: 15, repsMax: 20, weight: 0, rest: 60, note: "Bật nhảy tiếp đất chùng gối an toàn gối chân." },
           { slug: "mountain-climber", order: 3, sets: 4, repsMin: 30, repsMax: 30, weight: 0, rest: 45, note: "Chạy leo núi chống tay siết bụng thở đều." },
-          { slug: "russian-twist", order: 4, sets: 3, repsMin: 20, repsMax: 25, weight: 0, rest: 45, note: "Xoay cơ liên sườn ép mỡ eo bụng." }
+          { slug: "russian-twist", order: 4, sets: 3, repsMin: 20, repsMax: 25, weight: 0, rest: 45, note: "Xoay cơ liên sườn ép mỡ eo bụng." },
+          { slug: "plank", order: 5, sets: 3, repsMin: 30, repsMax: 45, weight: 0, rest: 45, note: "Plank tĩnh siết chặt bụng." }
         ]
       },
       {
@@ -1276,7 +1280,8 @@ const programsConfig = [
           { slug: "push-up", order: 1, sets: 4, repsMin: 12, repsMax: 15, weight: 0, rest: 60, note: "Chống đẩy thẳng lưng hông đùi siết bụng." },
           { slug: "pull-up", order: 2, sets: 4, repsMin: 8, repsMax: 10, weight: 0, rest: 90, note: "Hít xà co xô lưng kéo người qua cằm." },
           { slug: "arnold-press", order: 3, sets: 3, repsMin: 10, repsMax: 12, weight: 12, rest: 75, note: "Đẩy vai tạ đơn xoay vai xoay tay mượt." },
-          { slug: "single-arm-dumbbell-row", order: 4, sets: 3, repsMin: 12, repsMax: 12, weight: 16, rest: 60, note: "Kéo tạ đơn sát sườn hông giữ lưng phẳng ghế." }
+          { slug: "single-arm-dumbbell-row", order: 4, sets: 3, repsMin: 12, repsMax: 12, weight: 16, rest: 60, note: "Kéo tạ đơn sát sườn hông giữ lưng phẳng ghế." },
+          { slug: "tricep-rope-pushdown", order: 5, sets: 3, repsMin: 12, repsMax: 15, weight: 15, rest: 60, note: "Khóa cùi chỏ duỗi tay sau siết lực." }
         ]
       },
       { cycleDay: 3, title: "Nghỉ ngơi phục hồi", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null },
@@ -1289,7 +1294,8 @@ const programsConfig = [
           { slug: "goblet-squat", order: 1, sets: 4, repsMin: 12, repsMax: 15, weight: 16, rest: 75, note: "Ôm tạ squat mở gối thẳng lưng thắt lưng." },
           { slug: "bulgarian-split-squat", order: 2, sets: 3, repsMin: 10, repsMax: 12, weight: 8, rest: 75, note: "Squat từng chân tựa ghế định hình vòng 3 săn chắc." },
           { slug: "glute-bridge", order: 3, sets: 3, repsMin: 15, repsMax: 20, weight: 0, rest: 60, note: "Nằm đẩy hông ép siết mông ở đỉnh nhịp cao." },
-          { slug: "step-up", order: 4, sets: 3, repsMin: 12, repsMax: 15, weight: 6, rest: 60, note: "Bước chân lên bục giữ vai và hông cân đối." }
+          { slug: "step-up", order: 4, sets: 3, repsMin: 12, repsMax: 15, weight: 6, rest: 60, note: "Bước chân lên bục giữ vai và hông cân đối." },
+          { slug: "calf-raise", order: 5, sets: 3, repsMin: 15, repsMax: 20, weight: 0, rest: 45, note: "Nhón bắp chân siết cơ." }
         ]
       },
       {
@@ -1301,7 +1307,8 @@ const programsConfig = [
           { slug: "battle-rope-slam", order: 1, sets: 4, repsMin: 30, repsMax: 30, weight: 0, rest: 60, note: "Quật dây thừng liên tục bùng nổ hết tốc lực." },
           { slug: "kettlebell-swing", order: 2, sets: 4, repsMin: 15, repsMax: 20, weight: 16, rest: 60, note: "Đẩy hông vung tạ ấm ngang tầm ngực siết cơ mông." },
           { slug: "ab-wheel-rollout", order: 3, sets: 3, repsMin: 10, repsMax: 12, weight: 0, rest: 60, note: "Lăn bánh xe tập bụng giữ thắt lưng thẳng cuộn core." },
-          { slug: "hanging-leg-raise", order: 4, sets: 3, repsMin: 12, repsMax: 15, weight: 0, rest: 60, note: "Đu xà nâng chân thẳng gồng bụng siết chặt bụng." }
+          { slug: "hanging-leg-raise", order: 4, sets: 3, repsMin: 12, repsMax: 15, weight: 0, rest: 60, note: "Đu xà nâng chân thẳng gồng bụng siết chặt bụng." },
+          { slug: "plank", order: 5, sets: 3, repsMin: 30, repsMax: 45, weight: 0, rest: 45, note: "Plank tĩnh siết chặt bụng." }
         ]
       },
       { cycleDay: 6, title: "Nghỉ ngơi hồi phục", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null },
@@ -1325,7 +1332,8 @@ const programsConfig = [
           { slug: "push-up", order: 1, sets: 3, repsMin: 10, repsMax: 12, weight: 0, rest: 60, note: "Chống đẩy siết bụng nhẹ nhàng đúng tư thế." },
           { slug: "single-arm-dumbbell-row", order: 2, sets: 3, repsMin: 10, repsMax: 12, weight: 14, rest: 60, note: "Kéo tạ đơn lưng xô chậm rãi cô lập." },
           { slug: "goblet-squat", order: 3, sets: 3, repsMin: 10, repsMax: 12, weight: 14, rest: 60, note: "Squat giữ lưng thẳng thắt bụng tự nhiên." },
-          { slug: "russian-twist", order: 4, sets: 3, repsMin: 15, repsMax: 20, weight: 0, rest: 45, note: "Xoay người liên sườn săn chắc cơ bụng liên sườn." }
+          { slug: "russian-twist", order: 4, sets: 3, repsMin: 15, repsMax: 20, weight: 0, rest: 45, note: "Xoay người liên sườn săn chắc cơ bụng liên sườn." },
+          { slug: "plank", order: 5, sets: 3, repsMin: 30, repsMax: 45, weight: 0, rest: 45, note: "Plank tĩnh siết bụng." }
         ]
       },
       { cycleDay: 2, title: "Nghỉ ngơi", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null },
@@ -1338,7 +1346,8 @@ const programsConfig = [
           { slug: "arnold-press", order: 1, sets: 3, repsMin: 10, repsMax: 12, weight: 10, rest: 75, note: "Xoay đẩy tạ tập cơ vai trước vai giữa." },
           { slug: "barbell-bicep-curl", order: 2, sets: 3, repsMin: 10, repsMax: 12, weight: 12, rest: 60, note: "Cuốn tay trước tập trung bắp tay săn chắc." },
           { slug: "skull-crushers", order: 3, sets: 3, repsMin: 12, repsMax: 15, weight: 12, rest: 60, note: "Nằm đẩy tay sau từ từ duỗi cơ tay sau tốt." },
-          { slug: "glute-bridge", order: 4, sets: 3, repsMin: 15, repsMax: 20, weight: 0, rest: 60, note: "Nằm nhấc hông mông săn chắc." }
+          { slug: "glute-bridge", order: 4, sets: 3, repsMin: 15, repsMax: 20, weight: 0, rest: 60, note: "Nằm nhấc hông mông săn chắc." },
+          { slug: "calf-raise", order: 5, sets: 3, repsMin: 12, repsMax: 15, weight: 0, rest: 45, note: "Nhón bắp chân nhẹ nhàng." }
         ]
       },
       { cycleDay: 4, title: "Nghỉ ngơi", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null },
@@ -1351,7 +1360,8 @@ const programsConfig = [
           { slug: "jump-squat", order: 1, sets: 3, repsMin: 12, repsMax: 15, weight: 0, rest: 60, note: "Nhảy lên tiếp đất nhẹ nhàng chùng gối." },
           { slug: "mountain-climber", order: 2, sets: 3, repsMin: 30, repsMax: 30, weight: 0, rest: 45, note: "Chạy leo núi siết cơ bụng core thở đều." },
           { slug: "hanging-leg-raise", order: 3, sets: 3, repsMin: 10, repsMax: 12, weight: 0, rest: 60, note: "Đu xà nâng chân siết cơ bụng dưới săn gọn." },
-          { slug: "farmers-walk", order: 4, sets: 3, repsMin: 30, repsMax: 30, weight: 16, rest: 60, note: "Xách tạ đi bộ siết bụng nâng vai thẳng lưng." }
+          { slug: "farmers-walk", order: 4, sets: 3, repsMin: 30, repsMax: 30, weight: 16, rest: 60, note: "Xách tạ đi bộ siết bụng nâng vai thẳng lưng." },
+          { slug: "plank", order: 5, sets: 3, repsMin: 30, repsMax: 45, weight: 0, rest: 45, note: "Plank tĩnh siết bụng." }
         ]
       },
       { cycleDay: 6, title: "Nghỉ ngơi", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null },
@@ -1375,7 +1385,8 @@ const programsConfig = [
           { slug: "barbell-hip-thrust", order: 1, sets: 4, repsMin: 10, repsMax: 12, weight: 30, rest: 90, note: "Tập trung đẩy hông siết mông thật sâu ở đỉnh." },
           { slug: "bulgarian-split-squat", order: 2, sets: 3, repsMin: 10, repsMax: 12, weight: 6, rest: 75, note: "Squat từng chân tập cơ mông đùi trước mông săn tròn." },
           { slug: "cable-glute-kickback", order: 3, sets: 3, repsMin: 12, repsMax: 15, weight: 10, rest: 60, note: "Đá cáp cơ mông xô ngang vai chân sau thẳng." },
-          { slug: "glute-bridge", order: 4, sets: 3, repsMin: 15, repsMax: 20, weight: 0, rest: 60, note: "Nhấn gót đẩy hông siết mông đỉnh nhịp cao." }
+          { slug: "glute-bridge", order: 4, sets: 3, repsMin: 15, repsMax: 20, weight: 0, rest: 60, note: "Nhấn gót đẩy hông siết mông đỉnh nhịp cao." },
+          { slug: "calf-raise", order: 5, sets: 3, repsMin: 12, repsMax: 15, weight: 0, rest: 45, note: "Nhón chân giữ mông đùi." }
         ]
       },
       {
@@ -1384,10 +1395,11 @@ const programsConfig = [
         focusArea: "Lưng xô, Vai liên sườn, Bụng core",
         muscleMapUrl: muscleMapUrls.push,
         exercises: [
-          { slug: "pull-up", order: 1, sets: 3, repsMin: 5, repsMax: 8, weight: 0, rest: 90, note: "Nếu chưa hít xà đơn tự do được, hãy dùng chun trợ lực." },
+          { slug: "pull-up", order: 1, sets: 3, repsMin: 5, repsMax: 8, weight: 0, rest: 90, note: "If not able to pull up yet, use resistance band." },
           { slug: "face-pull", order: 2, sets: 3, repsMin: 12, repsMax: 15, weight: 10, rest: 60, note: "Kéo cáp ngang trán mở vai bả vai ra sau giữ bả vai." },
           { slug: "russian-twist", order: 3, sets: 3, repsMin: 20, repsMax: 20, weight: 0, rest: 45, note: "Xoay người thon gọn eo liên sườn bụng." },
-          { slug: "hanging-leg-raise", order: 4, sets: 3, repsMin: 10, repsMax: 12, weight: 0, rest: 60, note: "Đu xà nâng chân co gối nhẹ nâng cao bụng dưới." }
+          { slug: "hanging-leg-raise", order: 4, sets: 3, repsMin: 10, repsMax: 12, weight: 0, rest: 60, note: "Đu xà nâng chân co gối nhẹ nâng cao bụng dưới." },
+          { slug: "plank", order: 5, sets: 3, repsMin: 30, repsMax: 45, weight: 0, rest: 45, note: "Giữ core bụng thẳng." }
         ]
       },
       { cycleDay: 3, title: "Nghỉ ngơi phục hồi cơ mông", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null },
@@ -1400,7 +1412,8 @@ const programsConfig = [
           { slug: "sumo-deadlift", order: 1, sets: 4, repsMin: 8, repsMax: 10, weight: 40, rest: 90, note: "Deadlift chân rất rộng mũi chân 45 độ tập trung cơ mông hông." },
           { slug: "goblet-squat", order: 2, sets: 3, repsMin: 12, repsMax: 12, weight: 12, rest: 75, note: "Squat giữ ngực cao giữ tạ trước ngực chắc chắn." },
           { slug: "step-up", order: 3, sets: 3, repsMin: 12, repsMax: 12, weight: 6, rest: 60, note: "Bước chân lên bục siết chặt mông đẩy thẳng đùi gối." },
-          { slug: "lying-leg-curl", order: 4, sets: 3, repsMin: 12, repsMax: 15, weight: 15, rest: 60, note: "Nằm cuốn đùi sau máy giúp săn chắc đùi sau." }
+          { slug: "lying-leg-curl", order: 4, sets: 3, repsMin: 12, repsMax: 15, weight: 15, rest: 60, note: "Nằm cuốn đùi sau máy giúp săn chắc đùi sau." },
+          { slug: "calf-raise", order: 5, sets: 3, repsMin: 12, repsMax: 15, weight: 0, rest: 45, note: "Nhón chân giữ mông đùi." }
         ]
       },
       { cycleDay: 5, title: "Nghỉ ngơi hoàn toàn", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null },
@@ -1425,7 +1438,8 @@ const programsConfig = [
           { slug: "burpee", order: 1, sets: 3, repsMin: 12, repsMax: 15, weight: 0, rest: 60, note: "Burpee nhảy cao dứt khoát đốt mỡ tim mạch." },
           { slug: "jump-squat", order: 2, sets: 3, repsMin: 15, repsMax: 15, weight: 0, rest: 60, note: "Squat nhảy êm chân tiếp đất nhẹ mũi chân." },
           { slug: "mountain-climber", order: 3, sets: 3, repsMin: 30, repsMax: 30, weight: 0, rest: 45, note: "Chạy bụng plank siết bụng đùi." },
-          { slug: "russian-twist", order: 4, sets: 3, repsMin: 20, repsMax: 20, weight: 0, rest: 45, note: "Xoay eo thon cơ liên sườn." }
+          { slug: "russian-twist", order: 4, sets: 3, repsMin: 20, repsMax: 20, weight: 0, rest: 45, note: "Xoay eo thon cơ liên sườn." },
+          { slug: "plank", order: 5, sets: 3, repsMin: 30, repsMax: 45, weight: 0, rest: 45, note: "Plank tĩnh siết bụng." }
         ]
       },
       { cycleDay: 2, title: "Nghỉ ngơi chủ động", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null },
@@ -1438,7 +1452,8 @@ const programsConfig = [
           { slug: "push-up", order: 1, sets: 3, repsMin: 10, repsMax: 12, weight: 0, rest: 60, note: "Chống đẩy nhẹ nhàng đúng form vai thẳng." },
           { slug: "single-arm-dumbbell-row", order: 2, sets: 3, repsMin: 10, repsMax: 12, weight: 10, rest: 60, note: "Kéo tạ đơn xô chậm giãn lưng." },
           { slug: "front-dumbbell-raise", order: 3, sets: 3, repsMin: 12, repsMax: 12, weight: 4, rest: 60, note: "Nâng vai trước thon gọn vai cánh tay." },
-          { slug: "ab-wheel-rollout", order: 4, sets: 3, repsMin: 8, repsMax: 10, weight: 0, rest: 60, note: "Lăn bánh xe bụng giữ thắt lưng chắc gồng bụng." }
+          { slug: "ab-wheel-rollout", order: 4, sets: 3, repsMin: 8, repsMax: 10, weight: 0, rest: 60, note: "Lăn bánh xe bụng giữ thắt lưng chắc gồng bụng." },
+          { slug: "tricep-rope-pushdown", order: 5, sets: 3, repsMin: 12, repsMax: 15, weight: 8, rest: 60, note: "Khóa cùi chỏ duỗi tay sau." }
         ]
       },
       { cycleDay: 4, title: "Nghỉ ngơi chủ động", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null },
@@ -1451,7 +1466,8 @@ const programsConfig = [
           { slug: "glute-bridge", order: 1, sets: 3, repsMin: 15, repsMax: 20, weight: 0, rest: 60, note: "Đẩy hông siết mông căng ở đỉnh 2 giây." },
           { slug: "bulgarian-split-squat", order: 2, sets: 3, repsMin: 10, repsMax: 10, weight: 4, rest: 75, note: "Squat một chân săn chắc cơ mông đùi sau." },
           { slug: "step-up", order: 3, sets: 3, repsMin: 12, repsMax: 12, weight: 4, rest: 60, note: "Bước bục săn chân thon thả dáng đi." },
-          { slug: "kettlebell-swing", order: 4, sets: 3, repsMin: 15, repsMax: 15, weight: 12, rest: 60, note: "Vung tạ ấm đẩy mông đùi sau bùng nổ." }
+          { slug: "kettlebell-swing", order: 4, sets: 3, repsMin: 15, repsMax: 15, weight: 12, rest: 60, note: "Vung tạ ấm đẩy mông đùi sau bùng nổ." },
+          { slug: "calf-raise", order: 5, sets: 3, repsMin: 12, repsMax: 15, weight: 0, rest: 45, note: "Nhón bắp chân săn chắc." }
         ]
       },
       { cycleDay: 6, title: "Nghỉ ngơi hoàn toàn", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null },
@@ -1475,7 +1491,8 @@ const programsConfig = [
           { slug: "decline-bench-press", order: 1, sets: 4, repsMin: 6, repsMax: 8, weight: 60, rest: 120, note: "Đẩy ngực dưới đòn nặng chuẩn form khóa bả vai." },
           { slug: "barbell-bent-over-row", order: 2, sets: 4, repsMin: 6, repsMax: 8, weight: 50, rest: 90, note: "Kéo tạ đòn gập người nặng giữ thẳng thắt lưng." },
           { slug: "cable-crossover", order: 3, sets: 3, repsMin: 10, repsMax: 12, weight: 20, rest: 75, note: "Ép cáp siết rãnh ngực căng giãn tối đa cơ ngực." },
-          { slug: "t-bar-row", order: 4, sets: 3, repsMin: 8, repsMax: 10, weight: 35, rest: 90, note: "Kéo tạ chữ T dày lưng bả vai ép mạnh sau lưng." }
+          { slug: "t-bar-row", order: 4, sets: 3, repsMin: 8, repsMax: 10, weight: 35, rest: 90, note: "Kéo tạ chữ T dày lưng bả vai ép mạnh sau lưng." },
+          { slug: "push-up", order: 5, sets: 3, repsMin: 12, repsMax: 15, weight: 0, rest: 60, note: "Chống đẩy siết ngực bốc lửa." }
         ]
       },
       {
@@ -1487,7 +1504,8 @@ const programsConfig = [
           { slug: "sumo-deadlift", order: 1, sets: 4, repsMin: 5, repsMax: 6, weight: 100, rest: 150, note: "Sumo Deadlift nặng nhấn mạnh gót chân siết mông thẳng cột sống." },
           { slug: "goblet-squat", order: 2, sets: 4, repsMin: 8, repsMax: 10, weight: 24, rest: 90, note: "Squat tạ ấm tạ đơn nặng giữ thẳng ngực bả vai." },
           { slug: "bulgarian-split-squat", order: 3, sets: 3, repsMin: 8, repsMax: 10, weight: 16, rest: 90, note: "BSS gập gối chân sau ghế tập siết đùi gối." },
-          { slug: "hanging-leg-raise", order: 4, sets: 3, repsMin: 12, repsMax: 15, weight: 0, rest: 60, note: "Đu xà nâng chân thẳng siết cơ bụng múi." }
+          { slug: "hanging-leg-raise", order: 4, sets: 3, repsMin: 12, repsMax: 15, weight: 0, rest: 60, note: "Đu xà nâng chân thẳng siết cơ bụng múi." },
+          { slug: "calf-raise", order: 5, sets: 3, repsMin: 15, repsMax: 20, weight: 0, rest: 45, note: "Nhón bắp chân căng cứng." }
         ]
       },
       { cycleDay: 3, title: "Nghỉ ngơi tái tạo cơ bắp", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null },
@@ -1500,7 +1518,8 @@ const programsConfig = [
           { slug: "arnold-press", order: 1, sets: 4, repsMin: 6, repsMax: 8, weight: 16, rest: 90, note: "Đẩy vai Arnold xoay vai bùng nổ cơ vai vai tròn." },
           { slug: "face-pull", order: 2, sets: 3, repsMin: 10, repsMax: 12, weight: 15, rest: 60, note: "Kéo cáp ngang trán cơ vai sau lưng trên." },
           { slug: "barbell-bicep-curl", order: 3, sets: 3, repsMin: 8, repsMax: 10, weight: 20, rest: 75, note: "Cuốn tạ đòn tay trước giữ vững cùi chỏ." },
-          { slug: "skull-crushers", order: 4, sets: 3, repsMin: 8, repsMax: 10, weight: 20, rest: 75, note: "Skullcrushers tay sau khóa gối duỗi tay siết lực." }
+          { slug: "skull-crushers", order: 4, sets: 3, repsMin: 8, repsMax: 10, weight: 20, rest: 75, note: "Skullcrushers tay sau khóa gối duỗi tay siết lực." },
+          { slug: "hammer-curl", order: 5, sets: 3, repsMin: 10, repsMax: 12, weight: 12, rest: 60, note: "Cuốn tay trước tập bắp tay." }
         ]
       },
       {
@@ -1512,7 +1531,8 @@ const programsConfig = [
           { slug: "clean-and-press", order: 1, sets: 4, repsMin: 5, repsMax: 5, weight: 45, rest: 120, note: "Đẩy tạ đòn bùng nổ sức mạnh Clean press." },
           { slug: "farmers-walk", order: 2, sets: 3, repsMin: 40, repsMax: 40, weight: 28, rest: 90, note: "Farmer walk xách tạ nặng đi thẳng tiến." },
           { slug: "burpee", order: 3, sets: 3, repsMin: 15, repsMax: 15, weight: 0, rest: 60, note: "Burpee nhảy cao dứt khoát tăng nhịp tim đốt calo." },
-          { slug: "ab-wheel-rollout", order: 4, sets: 3, repsMin: 10, repsMax: 10, weight: 0, rest: 60, note: "Lăn bụng bánh xe giữ thắt lưng chắc cuộn core." }
+          { slug: "ab-wheel-rollout", order: 4, sets: 3, repsMin: 10, repsMax: 10, weight: 0, rest: 60, note: "Lăn bụng bánh xe giữ thắt lưng chắc cuộn core." },
+          { slug: "plank", order: 5, sets: 3, repsMin: 45, repsMax: 60, weight: 0, rest: 60, note: "Plank tĩnh siết core chắc." }
         ]
       },
       { cycleDay: 6, title: "Nghỉ ngơi hoàn phục cơ bắp", focusArea: "Toàn thân", isRest: true, muscleMapUrl: null },

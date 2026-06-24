@@ -29,6 +29,9 @@ Tệp tin `.env` của Backend được đặt ở thư mục gốc của phân 
 | **`CLOUDINARY_CLOUD_NAME`** | `dvlp6zqdo` | Tên tài khoản dịch vụ lưu trữ đám mây Cloudinary dùng để upload/lưu trữ ảnh. |
 | **`CLOUDINARY_API_KEY`** | `437941945764349` | Khóa công khai kết nối Cloudinary API. |
 | **`CLOUDINARY_API_SECRET`** | `********` | Khóa bảo mật (Secret Key) kết nối Cloudinary API. |
+| **`DB_BACKUP_LOCAL_DIR`** | `./src/storage/DBBackup` | Thư mục cục bộ tạm thời dùng để chứa file `.sql` xuất ra từ database. |
+| **`DB_BACKUP_REMOTE`** | `LoongMilkGymBackupDB` | Tên của rclone remote đã được cấu hình (ví dụ: Google Drive). |
+| **`DB_BACKUP_REMOTE_DIR`** | `DBLoongMilkGym` | Thư mục đích trên cloud lưu trữ các file backup CSDL. |
 
 ---
 

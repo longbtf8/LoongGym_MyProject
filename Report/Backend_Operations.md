@@ -158,3 +158,14 @@ Khi người dùng tải lên ảnh đại diện hoặc ảnh bìa mới, để
   - Hỗ trợ thêm sản phẩm, tự động cộng dồn số lượng nếu sản phẩm đã tồn tại, lưu lại đơn giá tại thời điểm thêm sản phẩm để đảm bảo không bị ảnh hưởng nếu sản phẩm thay đổi giá sau này.
   - Hỗ trợ cập nhật số lượng và xóa sản phẩm khỏi giỏ hàng nhanh chóng.
 - **Tạo Đơn Hàng & Thanh Toán (`Order`, `OrderItem`, `Payment`)**: Khi người dùng tiến hành thanh toán, hệ thống chốt thông tin giỏ hàng để tạo đơn hàng mới với mã số duy nhất (`orderNumber`), ghi nhận trạng thái thanh toán và lưu vết phản hồi từ cổng thanh toán đối tác (Stripe, VNPay, Momo).
+
+---
+
+## 💾 16. Hệ Thống Tự Động Sao Lưu Cơ Sở Dữ Liệu (MySQL Database Auto-Backup)
+Hệ thống tích hợp tiến trình tự động sao lưu định kỳ để bảo đảm an toàn dữ liệu:
+- **Tần suất**: Thiết lập chạy định kỳ mỗi 7 ngày một lần vào lúc 3:00 AM sáng Chủ nhật hàng tuần.
+- **Cơ chế sao lưu**:
+  1. Sử dụng tiện ích `mysqldump` để tạo file kết xuất CSDL MySQL `.sql` lưu trữ tạm thời tại thư mục cục bộ backend (`./src/storage/DBBackup/`).
+  2. Định dạng tên file tự động theo mốc thời gian: `MyGymProject_YYYYMMDD_HHmmss.sql`.
+  3. Sử dụng công cụ `rclone` để đẩy trực tiếp file backup lên thư mục lưu trữ chuyên biệt `DBLoongMilkGym` trên Google Drive thông qua cấu hình kết nối đám mây an toàn.
+

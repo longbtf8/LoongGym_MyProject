@@ -101,10 +101,10 @@ function FilterSidebar({
         {/* Quick price select chips */}
         <div className="flex flex-wrap gap-1.5 mt-3">
           {[
-            { label: "Dưới 500k", value: 500000 },
-            { label: "Dưới 1M", value: 1000000 },
-            { label: "Dưới 2M", value: 2000000 },
-            { label: "Dưới 5M", value: 5000000 },
+            { value: 500000 },
+            { value: 1000000 },
+            { value: 2000000 },
+            { value: 5000000 },
           ].map((chip) => {
             const isActive = isFilterActive && priceRange[1] === chip.value;
             return (
@@ -118,7 +118,7 @@ function FilterSidebar({
                     : "bg-[var(--bg-color)] border-[var(--border-color)]/60 text-[var(--text-muted)] hover:text-[var(--text-color)] hover:border-[var(--text-muted)]"
                 }`}
               >
-                {chip.label}
+                Dưới {formatVND(chip.value)}
               </button>
             );
           })}

@@ -53,7 +53,9 @@ function WeeklyProgressChart() {
             
             {/* Tooltip khi hover xem số phút cụ thể */}
             <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-black text-white text-[9px] font-black px-2 py-1 rounded-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50 shadow-md">
-              {item.mins > 0 ? `${item.mins} phút` : "Chưa tập"}
+              {item.isCompleted
+                ? (item.mins > 0 ? `${item.mins} phút` : "Đã tập")
+                : "Chưa tập"}
             </div>
 
             <span className={`text-[10px] font-bold ${item.active ? "text-primary font-black scale-105" : "text-[var(--text-muted)]"}`}>

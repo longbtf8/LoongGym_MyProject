@@ -61,7 +61,7 @@ const getDashboardSummary = async (userId) => {
   const profile = user.profile || {};
 
   // Fetch real today's nutrition totals & targets
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = getVietnamTodayString();
   let nutritionData = {
     protein: 0,
     proteinTarget: 160,
@@ -148,7 +148,7 @@ const getDashboardSummary = async (userId) => {
       if (!session.endedAt) return;
       const dayIndex = getVietnamDayIndex(session.endedAt);
       weeklyWorkoutDaysMap[dayIndex] = 1;
-      const mins = Math.round((session.durationSeconds || 0) / 60);
+      const mins = Math.max(1, Math.round((session.durationSeconds || 0) / 60));
       weeklyWorkoutMinutesMap[dayIndex] += mins;
       // Estimate 8 Kcal per minute of workout
       weeklyCaloriesMap[dayIndex] += mins * 8;
@@ -245,7 +245,12 @@ const getDashboardSummary = async (userId) => {
       const todayStr = getVietnamTodayString();
 
       const todayPlanDay = activePlan.days.find((day) => {
-        const dayDateStr = new Date(day.scheduledDate).toISOString().split("T")[0];
+        const dayDateStr = new Intl.DateTimeFormat("en-CA", {
+          timeZone: VIETNAM_TZ,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).format(new Date(day.scheduledDate));
         return dayDateStr === todayStr;
       });
 
