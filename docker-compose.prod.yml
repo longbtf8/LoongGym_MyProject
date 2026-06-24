@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  # =========================================================================
+  # 1. DATABASE SERVICE (MySQL 8.0)
+  # =========================================================================
+  db:
+    image: mysql:8.0
+    container_name: loonggym_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "Builong#2005"
+      MYSQL_DATABASE: "MyGymProject"
+    volumes:
+      - loonggym_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pBuilong#2005"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    networks:
+      - loonggym_network
+
+  # =========================================================================
+  # 2. WEBSOCKET SERVICE (Soketi)
+  # =========================================================================
+  soketi:
+    image: quay.io/soketi/soketi:1.6-16-alpine
+    container_name: loonggym_soketi
+    environment:
+      SOKETI_DEBUG: "1"
+      SOKETI_PORT: 6002
+      SOKETI_DEFAULT_APP_ID: "gym-chat-app"
+      SOKETI_DEFAULT_APP_KEY: "GYM_CHAT_APP"
+      SOKETI_DEFAULT_APP_SECRET: "Cw8QdrSGixa1RFagkGV6FZbfrfPHCwWGq7LvhaNDRDw="
+    ports:
+      - "127.0.0.1:6002:6002"
+    restart: always
+    networks:
+      - loonggym_network
+
+  # =========================================================================
+  # 3. BACKEND API SERVICE (Express.js, Queue Worker, Cron Scheduler)
+  # =========================================================================
+  backend:
+    build:
+      context: ./LoongMilkGym_MyProject_BackEnd
+      dockerfile: Dockerfile
+    container_name: loonggym_backend
+    command: sh -c "npx prisma migrate deploy && pm2-runtime ecosystem.config.js"
+    ports:
+      - "127.0.0.1:3009:3009"
+    env_file:
+      - ./LoongMilkGym_MyProject_BackEnd/.env.docker
+    depends_on:
+      db:
+        condition: service_healthy
+      soketi:
+        condition: service_started
+    restart: always
+    networks:
+      - loonggym_network
+
+  # =========================================================================
+  # 4. FRONTEND USER SERVICE (React, Vite, Serve with Nginx)
+  # =========================================================================
+  frontend:
+    build:
+      context: ./LoongMilkGym_MyProject_FrontEnd
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=https://api.loongmilk.id.vn/api
+        - VITE_PUSHER_APP_KEY=GYM_CHAT_APP
+        - VITE_PUSHER_HOST=ws.loongmilk.id.vn
+        - VITE_PUSHER_PORT=443
+        - VITE_PUSHER_FORCE_TLS=true
+    container_name: loonggym_frontend
+    ports:
+      - "127.0.0.1:8080:80"
+    restart: always
+    networks:
+      - loonggym_network
+
+  # =========================================================================
+  # 5. ADMIN PANEL SERVICE (React, Vite, Serve with Nginx)
+  # =========================================================================
+  admin:
+    build:
+      context: ./LoongMilkGym_MyProject_Admin
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=https://api.loongmilk.id.vn/api
+        - VITE_PUSHER_APP_KEY=GYM_CHAT_APP
+        - VITE_PUSHER_HOST=ws.loongmilk.id.vn
+        - VITE_PUSHER_PORT=443
+        - VITE_PUSHER_FORCE_TLS=true
+    container_name: loonggym_admin
+    ports:
+      - "127.0.0.1:8081:80"
+    restart: always
+    networks:
+      - loonggym_network
+
+volumes:
+  loonggym_db_data:
+
+networks:
+  loonggym_network:
+    driver: bridge
