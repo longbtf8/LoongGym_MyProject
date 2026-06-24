@@ -17,11 +17,7 @@ import PlanSelector from "./components/PlanSelector";
 import CalendarSlider from "./components/CalendarSlider";
 import ExerciseList from "./components/ExerciseList";
 import AnalysisSidebar from "./components/AnalysisSidebar";
-import CancelModal from "./components/CancelModal";
-import SwapModal from "./components/SwapModal";
-import AIModal from "./components/AIModal";
-import SchedulerModal from "./components/SchedulerModal";
-import RestoreModal from "./components/RestoreModal";
+import PlanModals from "./components/PlanModals";
 
 const toSavedExercise = (exercise, index) => ({
   id: exercise.id || exercise.exerciseId,
@@ -252,14 +248,11 @@ export default function MyPlan() {
           onSuccess={handlePlanSelectorSuccess}
         />
 
-        {selectedProgramId && (
-          <SchedulerModal
-            key={selectedProgramId}
-            programId={selectedProgramId}
-            onClose={() => setSelectedProgramId(null)}
-            onSuccess={handleSchedulerSuccess}
-          />
-        )}
+        <PlanModals
+          selectedProgramId={selectedProgramId}
+          setSelectedProgramId={setSelectedProgramId}
+          handleSchedulerSuccess={handleSchedulerSuccess}
+        />
 
         {toast.show && (
           <div className="fixed left-1/2 top-[72px] -translate-x-1/2 z-[999999] bg-[var(--bg-secondary)]/90 backdrop-blur-sm border border-primary/30 text-[var(--text-color)] rounded-2xl px-4 py-2.5 flex items-center gap-2 shadow-lg animate-slide-down">
@@ -447,6 +440,7 @@ export default function MyPlan() {
       } catch {
         showToast("Lỗi khi hoán đổi ngày tập.");
       }
+    }
   };
 
   // handleCancelPlanSuccess: Xử lý sau khi huỷ lộ trình thành công bên trong Modal
@@ -783,39 +777,22 @@ export default function MyPlan() {
         </div>
       )}
 
-      {/* MODAL HUỶ LỘ TRÌNH */}
-      <CancelModal
-        isOpen={showCancelModal}
-        onClose={() => setShowCancelModal(false)}
-        onSuccess={handleCancelPlanSuccess}
-      />
-
-      {/* MODAL KHÔI PHỤC LỊCH */}
-      <RestoreModal
-        isOpen={showRestoreModal}
-        onClose={() => setShowRestoreModal(false)}
-        onConfirm={handleRestoreOriginalExercises}
+      <PlanModals
+        showCancelModal={showCancelModal}
+        setShowCancelModal={setShowCancelModal}
+        handleCancelPlanSuccess={handleCancelPlanSuccess}
+        showRestoreModal={showRestoreModal}
+        setShowRestoreModal={setShowRestoreModal}
+        handleRestoreOriginalExercises={handleRestoreOriginalExercises}
         isPending={isPending}
-      />
-
-      {/* Modal AI Form Analysis */}
-      <AIModal
-        isOpen={showAIModal}
-        onClose={() => setShowAIModal(false)}
-        onDemoClick={() => {
-          setShowAIModal(false);
-          showToast("🚀 Tính năng đang được phát triển nâng cao!");
-        }}
-      />
-
-      {/* Modal Swap */}
-      <SwapModal
-        isOpen={showSwapModal}
-        onClose={() => setShowSwapModal(false)}
+        showAIModal={showAIModal}
+        setShowAIModal={setShowAIModal}
+        showToast={showToast}
+        showSwapModal={showSwapModal}
+        setShowSwapModal={setShowSwapModal}
         swapTargetIndex={swapTargetIndex}
         dayDetails={dayDetails}
-        onSelectExercise={handleSelectExercise}
-        isPending={isPending}
+        handleSelectExercise={handleSelectExercise}
       />
     </div>
   );
