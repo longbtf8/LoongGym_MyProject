@@ -54,12 +54,15 @@ function AICoach() {
   // Tự động cuộn xuống cuối khung chat khi có tin nhắn mới hoặc đổi hội thoại
   useEffect(() => {
     if (chatContainerRef.current) {
-      setTimeout(() => {
-        chatContainerRef.current.scrollTo({
-          top: chatContainerRef.current.scrollHeight,
-          behavior: "smooth"
-        });
+      const timer = setTimeout(() => {
+        if (chatContainerRef.current) {
+          chatContainerRef.current.scrollTo({
+            top: chatContainerRef.current.scrollHeight,
+            behavior: "smooth"
+          });
+        }
       }, 50);
+      return () => clearTimeout(timer);
     }
   }, [messages, isGenerating, activeConversationId]);
 
@@ -130,7 +133,7 @@ function AICoach() {
       )}
 
       {/* ═══ KHU VỰC KHUNG CHAT CHÍNH ═══ */}
-      <main className="flex-1 flex flex-col min-w-0 bg-[var(--bg-color)] h-full relative">
+      <main className="flex-1 flex flex-col min-w-0 min-h-0 bg-[var(--bg-color)] h-full relative">
         
         {/* Header khung chat */}
         <header className="h-16 px-4 border-b border-[var(--border-color)] flex items-center justify-between bg-[var(--bg-secondary)]/35 backdrop-blur-md sticky top-0 z-10">
