@@ -79,33 +79,44 @@ const buildAiPlanDays = async (tx, payload) => {
     });
   }
 
-  const exerciseIds = [
-    ...new Set(
-      weekDays
-        .flatMap((day) => Array.isArray(day.exercises) ? day.exercises : [])
-        .map((exercise) => exercise.exerciseId)
-        .filter(Boolean)
-    ),
-  ];
+  const dbExercises = await tx.exercise.findMany({
+    where: { isPublished: true },
+    select: { id: true, name: true }
+  });
 
-  const exercises = exerciseIds.length
-    ? await tx.exercise.findMany({
-        where: {
-          id: { in: exerciseIds },
-          isPublished: true,
-        },
-        select: {
-          id: true,
-          name: true,
-        },
+  const cleanAndNormalize = (str) => {
+    if (!str) return "";
+    return str
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/-uuid$/i, "")
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/[-]/g, " ")
+      .split(/\s+/)
+      .map(word => {
+        if (word === "flyes" || word === "flies") return "fly";
+        if (word === "triceps") return "tricep";
+        if (word === "biceps") return "bicep";
+        if (word === "squats") return "squat";
+        if (word === "lunges") return "lunge";
+        if (word === "raises") return "raise";
+        if (word === "curls") return "curl";
+        if (word === "rows") return "row";
+        if (word === "presses") return "press";
+        if (word === "pushups") return "pushup";
+        if (word === "pullups") return "pullup";
+        if (word === "deadlifts") return "deadlift";
+        if (word.endsWith("s") && word.length > 3) {
+          return word.slice(0, -1);
+        }
+        return word;
       })
-    : [];
-  const exerciseById = new Map(exercises.map((exercise) => [exercise.id, exercise]));
+      .join("");
+  };
 
-  const missingIds = exerciseIds.filter((id) => !exerciseById.has(id));
-  if (missingIds.length) {
-    throw new AppError("Một số bài tập AI chọn không tồn tại hoặc chưa được xuất bản.", httpCodes.badRequest);
-  }
+  const exerciseById = new Map(dbExercises.map((ex) => [ex.id, ex]));
+  const exerciseByNormalizedName = new Map(dbExercises.map((ex) => [cleanAndNormalize(ex.name), ex]));
 
   const seenDateKeys = new Set();
 
@@ -124,13 +135,23 @@ const buildAiPlanDays = async (tx, payload) => {
     const customExercises = status === "rest"
       ? []
       : rawExercises.map((item, index) => {
-          const exercise = exerciseById.get(item.exerciseId);
+          let exercise = exerciseById.get(item.exerciseId);
+          if (!exercise) {
+            const normProposed = cleanAndNormalize(item.exerciseId);
+            exercise = exerciseByNormalizedName.get(normProposed);
+          }
+
+          if (!exercise) {
+            throw new AppError(`Bài tập '${item.exerciseId}' không tồn tại hoặc chưa được xuất bản.`, httpCodes.badRequest);
+          }
+
+          const resolvedExerciseId = exercise.id;
           const repsMin = Math.round(clampNumber(item.repsMin, 1, 100, 8));
           const repsMax = Math.round(clampNumber(item.repsMax, repsMin, 100, Math.max(repsMin, 12)));
 
           return {
-            id: `${item.exerciseId}-${dayIndex + 1}-${index + 1}`,
-            exerciseId: item.exerciseId,
+            id: `${resolvedExerciseId}-${dayIndex + 1}-${index + 1}`,
+            exerciseId: resolvedExerciseId,
             exerciseName: exercise.name,
             exerciseOrder: index + 1,
             sets: Math.round(clampNumber(item.sets, 1, 8, 3)),

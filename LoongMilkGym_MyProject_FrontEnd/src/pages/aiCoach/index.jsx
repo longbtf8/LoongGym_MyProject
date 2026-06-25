@@ -92,7 +92,7 @@ function AICoach() {
   };
 
   return (
-    <div className="flex bg-[var(--bg-color)] text-[var(--text-color)] h-[calc(100vh-8.5rem)] rounded-3xl border border-[var(--border-color)] overflow-hidden relative shadow-sm">
+    <div className="flex bg-[var(--bg-color)] text-[var(--text-color)] h-[calc(100vh-9.5rem)] sm:h-[calc(100vh-8.5rem)] rounded-none sm:rounded-3xl border-x-0 sm:border border-[var(--border-color)] overflow-hidden relative shadow-sm">
       {toast.show && (
         <div className={`fixed left-1/2 top-[72px] -translate-x-1/2 z-[999999] flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-2xl border px-4 py-2.5 shadow-lg backdrop-blur-sm animate-slide-down ${
           toast.type === "error"

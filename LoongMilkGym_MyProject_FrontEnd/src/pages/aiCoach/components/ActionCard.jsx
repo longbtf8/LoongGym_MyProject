@@ -80,11 +80,20 @@ function ActionCard({
             <div className="bg-[var(--bg-color)] rounded-xl border border-[var(--border-color)] overflow-hidden">
               {previewDays.map((day, index) => {
                 const exerciseCount = Array.isArray(day.exercises) ? day.exercises.length : 0;
+                const formatShortDate = (dateStr) => {
+                  if (!dateStr) return "Chưa chọn ngày";
+                  const parts = dateStr.split("-");
+                  if (parts.length === 3) {
+                    return `${parts[2]}/${parts[1]}`;
+                  }
+                  return dateStr;
+                };
+
                 return (
                   <div key={`${day.date}-${index}`} className="px-3 py-2 border-b last:border-b-0 border-[var(--border-color)] flex items-center justify-between gap-3">
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <span className="block text-[11px] font-black text-[var(--text-color)] truncate">{day.title || "Buổi tập"}</span>
-                      <span className="block text-[10px] text-[var(--text-muted)]">{day.date || "Chưa chọn ngày"} {day.focusArea ? `• ${day.focusArea}` : ""}</span>
+                      <span className="block text-[10px] text-[var(--text-muted)]">{formatShortDate(day.date)} {day.focusArea ? `• ${day.focusArea}` : ""}</span>
                     </div>
                     <span className="shrink-0 text-[10px] font-bold text-primary">
                       {day.status === "rest" ? "Nghỉ" : `${exerciseCount} bài`}

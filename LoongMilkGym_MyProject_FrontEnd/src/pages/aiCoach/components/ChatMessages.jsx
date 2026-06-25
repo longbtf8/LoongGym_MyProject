@@ -120,7 +120,7 @@ function ChatMessages({
         return (
           <div 
             key={msg.id} 
-            className={`flex gap-3 max-w-[85%] sm:max-w-[75%] ${isAi ? "mr-auto" : "ml-auto flex-row-reverse"}`}
+            className={`flex gap-3 max-w-[92%] sm:max-w-[75%] ${isAi ? "mr-auto" : "ml-auto flex-row-reverse"}`}
           >
             <div className={`w-8.5 h-8.5 rounded-full shrink-0 flex items-center justify-center text-xs font-bold border overflow-hidden ${
               isAi 
