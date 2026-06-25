@@ -114,6 +114,7 @@ export default function MyPlan() {
       await updateDayDetails({
         dayId: selectedDayId,
         data: {
+          status: "pending",
           metadata: {
             customExercises: original,
             customized: false
@@ -503,8 +504,6 @@ export default function MyPlan() {
                  Array.isArray(dayDetails?.day?.metadata?.originalExercises) &&
                  dayDetails.day.metadata.originalExercises.length > 0 &&
                  dayDetails?.day?.status !== "completed" && 
-                 dayDetails?.day?.status !== "rest" &&
-                 dayDetails?.day?.status !== "skipped" &&
                  dayDetails?.day?.metadata?.customized === true && (
                   <button
                     onClick={() => setShowRestoreModal(true)}
