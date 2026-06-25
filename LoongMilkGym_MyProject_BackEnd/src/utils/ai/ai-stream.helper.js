@@ -143,10 +143,17 @@ const streamResponse = async (userId, conversationId, formattedMessages, finalSy
       cleanText = cleanText.replace(matchText, "").trim();
 
       try {
-        if (actionData?.type && actionData?.payload) {
-          const payload = ["generate_training_plan", "update_training_plan"].includes(actionData.type)
-            ? normalizeWeeklyPlanPayload(actionData.payload)
-            : actionData.payload;
+        let payload = actionData.payload;
+        if (!payload) {
+          // Fallback: nếu AI quên bọc trong trường "payload" mà viết ngang hàng ở root
+          const { type, title, ...rest } = actionData;
+          payload = rest;
+        }
+
+        if (actionData?.type && payload) {
+          const normalizedPayload = ["generate_training_plan", "update_training_plan"].includes(actionData.type)
+            ? normalizeWeeklyPlanPayload(payload)
+            : payload;
 
           parsedRecommendation = await prisma.aiRecommendation.create({
             data: {
@@ -154,7 +161,7 @@ const streamResponse = async (userId, conversationId, formattedMessages, finalSy
               conversationId,
               recommendationType: actionData.type,
               title: actionData.title || "Đề xuất thay đổi lịch tập",
-              payload,
+              payload: normalizedPayload,
               status: "pending",
             },
           });
@@ -162,6 +169,12 @@ const streamResponse = async (userId, conversationId, formattedMessages, finalSy
       } catch (err) {
         console.error("Lỗi phân tích cú pháp hoặc lưu JSON hành động:", err);
       }
+    }
+
+    // Hậu xử lý triệt để: loại bỏ bất kỳ đoạn JSON hành động thô hoặc bị cắt cụt nào còn sót lại trong văn bản
+    const jsonStartIdx = cleanText.search(/(!?\{[\s\S]*?"type"\s*:\s*"[^"]*"[\s\S]*)/i);
+    if (jsonStartIdx !== -1) {
+      cleanText = cleanText.slice(0, jsonStartIdx).trim();
     }
 
     // Loại bỏ bất kỳ thẻ ACTION nào còn sót lại

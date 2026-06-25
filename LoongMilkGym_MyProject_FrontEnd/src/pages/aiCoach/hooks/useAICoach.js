@@ -35,10 +35,15 @@ export function useAICoach(userInfo) {
     }, 3200);
   }, []);
 
-  // Loại bỏ khối ACTION JSON thô khỏi tin nhắn hiển thị
   const stripActionBlock = useCallback((text) => {
     if (!text) return "";
-    return text.replace(/---ACTION---[\s\S]*?(---END_ACTION---|$)/g, "").trim();
+    let clean = text.replace(/---ACTION---[\s\S]*?(---END_ACTION---|$)/g, "").trim();
+    // Loại bỏ bất kỳ chuỗi JSON hành động thô hoặc bị cắt cụt đang stream
+    const jsonStartIdx = clean.search(/(!?\{[\s\S]*?"type"\s*:\s*"[^"]*"[\s\S]*)/i);
+    if (jsonStartIdx !== -1) {
+      clean = clean.slice(0, jsonStartIdx).trim();
+    }
+    return clean;
   }, []);
 
   // Tải danh sách cuộc hội thoại từ backend
