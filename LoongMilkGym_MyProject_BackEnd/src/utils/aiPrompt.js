@@ -338,11 +338,10 @@ const buildTrainingPlanContext = ({ activePlan, upcomingPlanDays = [] }) => {
     const customExercises = Array.isArray(day.metadata?.customExercises)
       ? day.metadata.customExercises
       : [];
-    const exerciseNames = customExercises
-      .map((item) => item.exerciseName || item.name)
-      .filter(Boolean)
-      .join(", ");
-    context += `  + ${date}: ${day.title} (${day.status}${focusArea})${exerciseNames ? ` - ${exerciseNames}` : ""}\n`;
+    const exerciseLines = customExercises
+      .map((item) => `      * ${item.exerciseName || item.name} (exerciseId: ${item.exerciseId}, id: ${item.id || item.exerciseId})`)
+      .join("\n");
+    context += `  + ${date} (planDayId: ${day.id}): ${day.title} (${day.status}${focusArea})\n${exerciseLines ? exerciseLines + "\n" : ""}`;
   });
 
   return context;
