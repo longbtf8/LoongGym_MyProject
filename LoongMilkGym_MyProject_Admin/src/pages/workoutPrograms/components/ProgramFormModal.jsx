@@ -112,12 +112,11 @@ export default function ProgramFormModal({
                 ) : (
                   <ImageIcon className="w-8 h-8 text-[var(--text-muted)] opacity-40" />
                 )}
-              </div>
-
-              <div className="flex-1 w-full">
-                <label className="flex items-center justify-center gap-2 w-full h-11 px-4 border border-[var(--border-color)]/60 border-dashed rounded-xl cursor-pointer hover:bg-[var(--border-color)]/25 text-xs font-black transition-all">
-                  <Upload className="w-4 h-4 text-[var(--color-primary)]" />
-                  <span>Chọn tệp tải lên...</span>
+                <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[10px] font-black text-[var(--text-color)]">
+                    <Upload className="w-3.5 h-3.5 text-[var(--color-primary)]" />
+                    <span>Đổi ảnh</span>
+                  </div>
                   <input
                     type="file"
                     accept="image/*"
@@ -125,8 +124,11 @@ export default function ProgramFormModal({
                     className="hidden"
                   />
                 </label>
-                <p className="text-[10px] font-bold text-[var(--text-muted)] mt-2">
-                  Hỗ trợ định dạng JPG, PNG. Dung lượng tối đa 5MB.
+              </div>
+
+              <div className="flex-1 w-full">
+                <p className="text-[10px] font-bold text-[var(--text-muted)]">
+                  Hỗ trợ JPG, PNG. Tối đa 5MB. Di chuột vào ảnh để đổi.
                 </p>
               </div>
             </div>

@@ -138,17 +138,17 @@ export default function WorkoutTracker({
 
                       {/* Sets table */}
                       {sets.length === 0 ? (
-                        <span className="text-[10px] text-[var(--text-muted)] font-bold italic">
+                        <span className="text-[10px] sm:text-xs text-[var(--text-muted)] font-bold italic">
                           Chưa có set tập nào. Bấm nút "Add Set" để thêm.
                         </span>
                       ) : (
-                        <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-col gap-2">
                           {/* Table headers */}
-                          <div className="grid grid-cols-[0.5fr_1fr_1fr_1.1fr_0.5fr] gap-2 text-[9px] uppercase font-bold text-[var(--text-muted)] tracking-wider px-2">
+                          <div className="grid grid-cols-[0.4fr_1fr_1fr_1.2fr_0.4fr] gap-1.5 sm:gap-2.5 text-[8px] sm:text-[10px] lg:text-[11px] uppercase font-black text-[var(--text-muted)] tracking-wider px-1 sm:px-2">
                             <span>Set</span>
-                            <span>Khối lượng (kg)</span>
-                            <span>Số reps</span>
-                            <span>Độ khó (RPE)</span>
+                            <span className="text-center">Khối lượng (kg)</span>
+                            <span className="text-center">Số reps</span>
+                            <span className="text-center">Độ khó (RPE)</span>
                             <span className="text-center">Xong</span>
                           </div>
 
@@ -156,15 +156,15 @@ export default function WorkoutTracker({
                           {sets.map((set, idx) => (
                             <div
                               key={set.id}
-                              className={`grid grid-cols-[0.5fr_1fr_1fr_1.1fr_0.5fr] gap-2 items-center px-2 py-1.5 rounded-xl border transition-all ${
+                              className={`grid grid-cols-[0.4fr_1fr_1fr_1.2fr_0.4fr] gap-1.5 sm:gap-2.5 items-center px-1 sm:px-2 py-2 rounded-xl border transition-all ${
                                 set.isCompleted
                                   ? "bg-green-500/5 border-green-500/20 text-[var(--text-color)]"
                                   : "bg-[var(--bg-color)] border-[var(--border-color)]"
                               }`}
                             >
-                              <span className="text-xs font-black">
+                              <span className="text-xs sm:text-sm font-black">
                                 {idx + 1}
-                                <span className="text-[9px] text-[var(--text-muted)] ml-0.5 uppercase">
+                                <span className="text-[8px] sm:text-[10px] text-[var(--text-muted)] ml-0.5 uppercase">
                                   {set.setType === "working" ? "W" : "D"}
                                 </span>
                               </span>
@@ -173,14 +173,14 @@ export default function WorkoutTracker({
                                 type="number"
                                 value={set.weightKg ?? ""}
                                 onChange={(e) => onUpdateSet(set.id, "weightKg", e.target.value)}
-                                className="h-7 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] px-2 text-xs outline-none focus:border-primary text-center font-bold"
+                                className="h-8 sm:h-9 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] px-1.5 sm:px-2 text-xs sm:text-sm outline-none focus:border-primary text-center font-bold w-full"
                               />
 
                               <input
                                 type="number"
                                 value={set.reps ?? ""}
                                 onChange={(e) => onUpdateSet(set.id, "reps", e.target.value)}
-                                className="h-7 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] px-2 text-xs outline-none focus:border-primary text-center font-bold"
+                                className="h-8 sm:h-9 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] px-1.5 sm:px-2 text-xs sm:text-sm outline-none focus:border-primary text-center font-bold w-full"
                               />
 
                               <div className="relative">
@@ -188,12 +188,12 @@ export default function WorkoutTracker({
                                   onClick={() =>
                                     setOpenRpeDropdownSetId(openRpeDropdownSetId === set.id ? null : set.id)
                                   }
-                                  className="h-7 w-full rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] px-1 text-[11px] outline-none focus:border-primary text-center font-bold cursor-pointer hover:border-primary transition-colors flex items-center justify-between gap-0.5"
+                                  className="h-8 sm:h-9 w-full rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] px-1.5 sm:px-2 text-[10px] sm:text-xs outline-none focus:border-primary text-center font-bold cursor-pointer hover:border-primary transition-colors flex items-center justify-between gap-0.5"
                                 >
-                                  <span className="truncate">
+                                  <span className="truncate flex-1 text-left">
                                     {set.rpe ? `${set.rpe} RPE` : "RPE..."}
                                   </span>
-                                  <ChevronDown className="w-3 h-3 text-[var(--text-muted)] shrink-0" />
+                                  <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[var(--text-muted)] shrink-0" />
                                 </button>
 
                                 {openRpeDropdownSetId === set.id && (
@@ -203,13 +203,13 @@ export default function WorkoutTracker({
                                       onClick={() => setOpenRpeDropdownSetId(null)}
                                     />
 
-                                    <div className="absolute right-0 top-8 z-[160] w-64 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-2xl p-1.5 flex flex-col gap-0.5 max-h-60 overflow-y-auto animate-slide-down">
+                                    <div className="absolute right-0 top-10 z-[160] w-64 sm:w-72 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-2xl p-1.5 flex flex-col gap-0.5 max-h-60 overflow-y-auto animate-slide-down">
                                       <button
                                         onClick={() => {
                                           onUpdateSet(set.id, "rpe", null);
                                           setOpenRpeDropdownSetId(null);
                                         }}
-                                        className="w-full px-2 py-1 text-left text-[10px] font-bold rounded-lg hover:bg-[var(--bg-color)] border-0 bg-transparent text-[var(--text-muted)] transition cursor-pointer"
+                                        className="w-full px-2.5 py-1.5 text-left text-[10px] sm:text-xs font-bold rounded-lg hover:bg-[var(--bg-color)] border-0 bg-transparent text-[var(--text-muted)] transition cursor-pointer"
                                       >
                                         Bỏ chọn RPE
                                       </button>
@@ -231,7 +231,7 @@ export default function WorkoutTracker({
                                             onUpdateSet(set.id, "rpe", item.val);
                                             setOpenRpeDropdownSetId(null);
                                           }}
-                                          className={`w-full px-2 py-1.5 text-left text-[10px] rounded-lg transition border-0 cursor-pointer flex justify-between items-center ${
+                                          className={`w-full px-2.5 py-2 text-left text-[10px] sm:text-xs rounded-lg transition border-0 cursor-pointer flex justify-between items-center ${
                                             set.rpe === item.val
                                               ? "bg-primary text-black font-extrabold"
                                               : "bg-transparent text-[var(--text-color)] hover:bg-[var(--bg-color)]"
@@ -251,13 +251,13 @@ export default function WorkoutTracker({
                               <div className="flex justify-center">
                                 <button
                                   onClick={() => onUpdateSet(set.id, "isCompleted", !set.isCompleted)}
-                                  className={`w-6 h-6 rounded-lg flex items-center justify-center border transition-all cursor-pointer ${
+                                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center border transition-all cursor-pointer ${
                                     set.isCompleted
                                       ? "bg-green-500 border-green-500 text-black"
                                       : "border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-primary"
                                   }`}
                                 >
-                                  <Check className="w-3.5 h-3.5" />
+                                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                 </button>
                               </div>
                             </div>

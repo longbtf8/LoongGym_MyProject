@@ -126,12 +126,8 @@ export default function ExerciseFormModal({
                 ) : (
                   <ImageIcon className="w-6 h-6 text-[var(--text-muted)] opacity-40" />
                 )}
-              </div>
-
-              <div className="flex-1">
-                <label className="flex items-center justify-center gap-2 h-10 px-4 border border-[var(--border-color)]/60 border-dashed rounded-xl cursor-pointer hover:bg-[var(--border-color)]/25 text-xs font-black transition-all">
+                <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                   <Upload className="w-4 h-4 text-[var(--color-primary)]" />
-                  <span>Tải ảnh lên...</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -139,8 +135,11 @@ export default function ExerciseFormModal({
                     className="hidden"
                   />
                 </label>
-                <p className="text-[9px] font-bold text-[var(--text-muted)] mt-1.5">
-                  Định dạng JPG, PNG. Tối đa 5MB.
+              </div>
+
+              <div className="flex-1">
+                <p className="text-[9px] font-bold text-[var(--text-muted)]">
+                  JPG, PNG. Tối đa 5MB. Di chuột vào ảnh để đổi.
                 </p>
               </div>
             </div>

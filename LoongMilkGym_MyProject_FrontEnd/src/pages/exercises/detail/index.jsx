@@ -456,15 +456,25 @@ export default function ExerciseDetail() {
                     .map((day) => {
                       const date = new Date(day.scheduledDate);
                       const isSelected = selectedScheduleDayId === day.id;
+                      const isRest = day.status === "rest";
                       const originalIndex = scheduleDays.findIndex((d) => d.id === day.id);
                       return (
                         <button
                           key={day.id}
-                          onClick={() => setSelectedScheduleDayId(day.id)}
-                          className={`text-left rounded-xl border p-3 transition cursor-pointer ${
-                            isSelected
-                              ? "bg-[#ccff00] text-black border-[#ccff00]"
-                              : "bg-[var(--bg-color)] border-[var(--border-color)] text-[var(--text-color)] hover:border-[#ccff00]/50"
+                          onClick={() => {
+                            if (isRest) {
+                              setScheduleMessage("Ngày nghỉ, vui lòng thêm vào ngày khác.");
+                              setTimeout(() => setScheduleMessage(""), 2500);
+                              return;
+                            }
+                            setSelectedScheduleDayId(day.id);
+                          }}
+                          className={`text-left rounded-xl border p-3 transition ${
+                            isRest
+                              ? "bg-[var(--border-color)]/30 border-[var(--border-color)] text-[var(--text-muted)] opacity-60 cursor-not-allowed"
+                              : isSelected
+                                ? "bg-[#ccff00] text-black border-[#ccff00] cursor-pointer"
+                                : "bg-[var(--bg-color)] border-[var(--border-color)] text-[var(--text-color)] hover:border-[#ccff00]/50 cursor-pointer"
                           }`}
                         >
                           <span className="block text-[10px] font-black uppercase opacity-70">Ngày {originalIndex + 1}</span>
