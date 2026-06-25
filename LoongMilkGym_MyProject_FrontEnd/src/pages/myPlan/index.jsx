@@ -490,7 +490,11 @@ export default function MyPlan() {
                   {selectedWorkoutTitle}
                 </h2>
                 <span className="text-[10px] text-[var(--text-muted)] pl-5.5">
-                  {dayDetails?.day?.status === "rest" ? "Nghỉ ngơi phục hồi" : "Dự kiến: 65 phút"}
+                  {dayDetails?.day?.status === "rest" 
+                    ? "Nghỉ ngơi phục hồi" 
+                    : dayDetails?.day?.status === "skipped"
+                      ? "Đã bỏ qua (Ngày nghỉ/phục hồi)"
+                      : "Dự kiến: 65 phút"}
                 </span>
               </div>
               
@@ -500,6 +504,7 @@ export default function MyPlan() {
                  dayDetails.day.metadata.originalExercises.length > 0 &&
                  dayDetails?.day?.status !== "completed" && 
                  dayDetails?.day?.status !== "rest" &&
+                 dayDetails?.day?.status !== "skipped" &&
                  dayDetails?.day?.metadata?.customized === true && (
                   <button
                     onClick={() => setShowRestoreModal(true)}
@@ -654,7 +659,7 @@ export default function MyPlan() {
             {dayDetails?.day?.status !== "completed" && dayDetails?.day && (
               <>
                 {isSelectedDayToday ? (
-                  dayDetails?.day?.status !== "rest" && (
+                  dayDetails?.day?.status !== "rest" && dayDetails?.day?.status !== "skipped" && (
                     <button
                       onClick={() => navigate(`/today-workout?dayId=${selectedDayId}`)}
                       className="w-full h-11 bg-primary text-black rounded-xl text-xs font-black flex items-center justify-center gap-2 hover:bg-primary-hover active:scale-[0.99] transition cursor-pointer shadow-md shadow-primary/5 mb-3 border-0"
@@ -664,7 +669,11 @@ export default function MyPlan() {
                     </button>
                   )
                 ) : (
-                  !isTodayCompleted && !(todayDay?.status === "rest" && dayDetails?.day?.status === "rest") && (
+                  !isTodayCompleted && 
+                  !(
+                    (todayDay?.status === "rest" || todayDay?.status === "skipped") && 
+                    (dayDetails?.day?.status === "rest" || dayDetails?.day?.status === "skipped")
+                  ) && (
                     <button
                       onClick={handleSwapToToday}
                       disabled={isPending}
@@ -672,10 +681,12 @@ export default function MyPlan() {
                     >
                       <Activity className="w-3.5 h-3.5" />
                       {(() => {
-                        if (todayDay?.status === "rest" && dayDetails?.day?.status !== "rest") {
+                        const isTodayRestOrSkipped = todayDay?.status === "rest" || todayDay?.status === "skipped";
+                        const isSelectedRestOrSkipped = dayDetails?.day?.status === "rest" || dayDetails?.day?.status === "skipped";
+                        if (isTodayRestOrSkipped && !isSelectedRestOrSkipped) {
                           return "Bạn muốn tập hôm nay";
                         }
-                        if (todayDay?.status !== "rest" && dayDetails?.day?.status === "rest") {
+                        if (!isTodayRestOrSkipped && isSelectedRestOrSkipped) {
                           return "Thay thế hôm nay thành ngày nghỉ";
                         }
                         return "Tập buổi này hôm nay (Thay thế buổi tập hiện tại)";
@@ -713,7 +724,7 @@ export default function MyPlan() {
         </div>
 
         {/* Ghi chú buổi tập */}
-        {dayDetails?.day?.status !== "rest" && (
+        {dayDetails?.day?.status !== "rest" && dayDetails?.day?.status !== "skipped" && (
           <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-[20px] p-4 flex flex-col gap-3">
             <div className="flex justify-between items-center">
               <span className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-1.5">

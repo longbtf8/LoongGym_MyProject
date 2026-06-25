@@ -84,16 +84,19 @@ export default function ExerciseList({
     );
   }
 
-  if (dayDetails?.day?.status === "rest") {
+  if (dayDetails?.day?.status === "rest" || dayDetails?.day?.status === "skipped") {
+    const isSkipped = dayDetails?.day?.status === "skipped";
     return (
       <div 
         className="flex flex-col items-center justify-center bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] text-center px-4"
         style={{ padding: '48px 20px', minHeight: '200px' }}
       >
-        <Activity className="w-5 h-5 text-blue-400 mb-2" />
-        <h3 className="text-xs font-bold mb-1">Ngày Nghỉ</h3>
+        <Activity className={`w-5 h-5 mb-2 ${isSkipped ? "text-rose-400" : "text-blue-400"}`} />
+        <h3 className="text-xs font-bold mb-1">{isSkipped ? "Buổi tập đã bỏ qua (Skip)" : "Ngày Nghỉ"}</h3>
         <p className="text-[10px] text-[var(--text-muted)] max-w-xs leading-relaxed">
-          Cơ thể phục hồi trong lúc nghỉ ngơi. Hãy ngủ đủ giấc và ăn đủ chất nhé!
+          {isSkipped 
+            ? `Buổi tập này đã được bỏ qua bởi AI Coach. Lý do: "${dayDetails?.day?.skipReason || "Cần nghỉ ngơi hồi phục"}"` 
+            : "Cơ thể phục hồi trong lúc nghỉ ngơi. Hãy ngủ đủ giấc và ăn đủ chất nhé!"}
         </p>
       </div>
     );
