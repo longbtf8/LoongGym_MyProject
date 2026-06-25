@@ -113,6 +113,9 @@ function ChatMessages({
     );
   }
 
+  const lastMessage = messages[messages.length - 1];
+  const showLoaderBubble = isGenerating && (!lastMessage || lastMessage.role !== "assistant" || !lastMessage.content?.trim());
+
   return (
     <div ref={chatContainerRef} className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-6 space-y-6 bg-gradient-to-b from-transparent to-[var(--bg-secondary)]/5">
       {messages.map((msg) => {
@@ -148,10 +151,15 @@ function ChatMessages({
                   : "bg-primary/10 text-[var(--text-color)] border-primary/20 rounded-tr-none ml-auto"
                 }
               `}>
-                <div className="prose dark:prose-invert max-w-none text-xs sm:text-sm font-medium font-sans">
+                <div className="prose dark:prose-invert max-w-none text-xs sm:text-sm font-medium font-sans relative">
                   <ReactMarkdown components={markdownComponents}>
                     {enhanceMarkdownContent(msg.content)}
                   </ReactMarkdown>
+                  {isAi && isGenerating && msg.id === lastMessage?.id && (
+                    <span className="inline-flex items-center ml-1">
+                      <span className="w-1.5 h-3.5 bg-primary animate-pulse inline-block" style={{ verticalAlign: "middle" }} />
+                    </span>
+                  )}
                 </div>
 
                 {msg.metadata?.recommendation && (
@@ -168,15 +176,16 @@ function ChatMessages({
         );
       })}
 
-      {isGenerating && (
-        <div className="flex gap-3 max-w-[75%] mr-auto animate-pulse">
+      {showLoaderBubble && (
+        <div className="flex gap-3 max-w-[75%] mr-auto">
           <div className="w-8.5 h-8.5 rounded-full bg-neutral-800 border border-neutral-700 text-primary flex items-center justify-center">
             <Loader2 className="w-4.5 h-4.5 animate-spin" />
           </div>
           <div className="flex flex-col gap-1.5">
-            <span className="text-[9px] font-extrabold text-[var(--text-muted)]">AI Coach đang trả lời...</span>
-            <div className="px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl rounded-tl-none text-xs text-[var(--text-muted)] italic font-semibold">
-              Đang phân tích dữ liệu và soạn câu trả lời...
+            <span className="text-[9px] font-extrabold text-[var(--text-muted)]">AI Coach đang suy nghĩ...</span>
+            <div className="px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl rounded-tl-none text-xs text-[var(--text-muted)] italic font-semibold flex items-center gap-2">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-primary shrink-0" />
+              <span>Đang phân tích dữ liệu và lên phương án...</span>
             </div>
           </div>
         </div>
