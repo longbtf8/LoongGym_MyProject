@@ -318,8 +318,26 @@ const swapDaysDates = async (userId, dayId1, dayId2) => {
     throw new AppError("Không thể hoán đổi ngày tập đã hoàn thành.", httpCodes.badRequest);
   }
 
+  const day1Original = day1.metadata?.originalExercises || 
+    (Array.isArray(day1.metadata?.customExercises) ? day1.metadata.customExercises.map(ex => ({ ...ex })) : []);
+  const day2Original = day2.metadata?.originalExercises || 
+    (Array.isArray(day2.metadata?.customExercises) ? day2.metadata.customExercises.map(ex => ({ ...ex })) : []);
+
   const day1Payload = buildSwapPayloadFromDay(day2);
   const day2Payload = buildSwapPayloadFromDay(day1);
+
+  // Preserve slot-specific original exercises and mark customized: true
+  day1Payload.metadata = {
+    ...(day1Payload.metadata || {}),
+    originalExercises: day1Original,
+    customized: true,
+  };
+
+  day2Payload.metadata = {
+    ...(day2Payload.metadata || {}),
+    originalExercises: day2Original,
+    customized: true,
+  };
 
   return prisma.$transaction(async (tx) => {
     const updatedDay1 = await tx.userTrainingPlanDay.update({

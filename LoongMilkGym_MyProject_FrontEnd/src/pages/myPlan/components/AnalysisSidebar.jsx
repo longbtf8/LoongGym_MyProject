@@ -46,13 +46,15 @@ export default function AnalysisSidebar({
   const isPast = datePart && datePart < todayStr;
   const isFuture = datePart && datePart > todayStr;
 
-  const isCompletedOrPast = dayDetails?.day?.status === "completed" || isPast;
+  const isCompletedOrPast = dayDetails?.day?.status === "completed" || dayDetails?.day?.status === "skipped" || isPast;
   const isRest = dayDetails?.day?.status === "rest";
 
   const isButtonDisabled = isCompleting || isCompletedOrPast || isRest || isFuture || isPending;
 
   let buttonText = "Hoàn tất buổi tập";
-  if (isCompletedOrPast) {
+  if (dayDetails?.day?.status === "skipped") {
+    buttonText = "Đã bỏ qua";
+  } else if (dayDetails?.day?.status === "completed" || isPast) {
     buttonText = "Đã hoàn thành";
   } else if (isRest) {
     buttonText = "Ngày nghỉ";

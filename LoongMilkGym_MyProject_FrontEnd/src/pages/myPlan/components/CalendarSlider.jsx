@@ -50,12 +50,10 @@ export default function CalendarSlider({
           const isToday = dateKey === todayStr;
           const weekdayLabel = getWeekdayLabel(wd.scheduledDate);
           let statusDot = null;
-          if (wd.status === "completed") {
+          if (wd.status === "completed" || wd.status === "skipped") {
             statusDot = <Check className="w-2 h-2" />;
           } else if (wd.status === "rest") {
             statusDot = <span style={{ fontSize: "6px", fontWeight: "900" }}>R</span>;
-          } else if (wd.status === "skipped") {
-            statusDot = <span style={{ fontSize: "6px", fontWeight: "900" }} className="text-rose-400">S</span>;
           }
 
           return (
