@@ -75,7 +75,9 @@ export default function MyPlan() {
   const [showHistory, setShowHistory] = useState(false);
   const [todayStr, setTodayStr] = useState(() => getLocalDateString());
 
-  const { data: activePlanRes, isLoading: isLoadingPlan, isError: isPlanError, refetch: refetchActivePlan } = useGetActivePlanQuery();
+  const { data: activePlanRes, isLoading: isLoadingPlan, isError: isPlanError, refetch: refetchActivePlan } = useGetActivePlanQuery(undefined, {
+    refetchOnMountOrArgChange: true
+  });
   const { data: statsRes } = useGetStatsQuery();
 
   const activePlan = isPlanError ? null : activePlanRes?.data;
@@ -85,8 +87,9 @@ export default function MyPlan() {
   const selectedIndex = daysList.findIndex(d => d.id === selectedDayId);
   const weekIdx = selectedIndex !== -1 ? Math.floor(selectedIndex / 7) : 0;
 
-  const { data: dayDetailsRes, isLoading: isLoadingDetails, isFetching: isFetchingDetails } = useGetDayDetailsQuery(selectedDayId, {
-    skip: !selectedDayId
+  const { data: dayDetailsRes, isLoading: isLoadingDetails, isFetching: isFetchingDetails, refetch: refetchDayDetails } = useGetDayDetailsQuery(selectedDayId, {
+    skip: !selectedDayId,
+    refetchOnMountOrArgChange: true
   });
   const dayDetails = dayDetailsRes?.data;
   const exercises = dayDetails?.exercises || [];
@@ -215,6 +218,9 @@ export default function MyPlan() {
   useEffect(() => {
     const handleAiPlanUpdated = () => {
       refetchActivePlan();
+      if (refetchDayDetails) {
+        refetchDayDetails();
+      }
     };
 
     window.addEventListener("aiCoach:plan-updated", handleAiPlanUpdated);
@@ -224,7 +230,7 @@ export default function MyPlan() {
       window.removeEventListener("aiCoach:plan-updated", handleAiPlanUpdated);
       window.removeEventListener("storage", handleAiPlanUpdated);
     };
-  }, [refetchActivePlan]);
+  }, [refetchActivePlan, refetchDayDetails]);
 
   if (isLoadingPlan) {
     return <LoadingScreen message="Đang tải lộ trình tập luyện của bạn..." />;
