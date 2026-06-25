@@ -46,20 +46,58 @@ const autoLinkExerciseNames = (text = "", exerciseLinks = []) => {
   return normalizeExerciseLinks(linkedText);
 };
 
-const extractActionData = (text = "") => {
-  const actionMatch = text.match(/---ACTION---([\s\S]*?)---END_ACTION---/);
-  if (!actionMatch) return null;
-
-  let actionJsonStr = actionMatch[1].trim();
-  if (actionJsonStr.startsWith("```")) {
-    actionJsonStr = actionJsonStr
-      .replace(/^```json\s*/i, "")
-      .replace(/^```\s*/i, "")
-      .replace(/```$/i, "")
-      .trim();
+const extractActionDataRobust = (text = "") => {
+  // 1. Standard pattern
+  let actionMatch = text.match(/---ACTION---([\s\S]*?)---END_ACTION---/);
+  if (actionMatch) {
+    let actionJsonStr = actionMatch[1].trim();
+    if (actionJsonStr.startsWith("```")) {
+      actionJsonStr = actionJsonStr
+        .replace(/^```json\s*/i, "")
+        .replace(/^```\s*/i, "")
+        .replace(/```$/i, "")
+        .trim();
+    }
+    try {
+      return { data: JSON.parse(actionJsonStr), matchText: actionMatch[0] };
+    } catch (e) {
+      console.error("Error parsing standard action JSON:", e);
+    }
   }
 
-  return JSON.parse(actionJsonStr);
+  // 2. Look for ```json ... ``` block containing a type property
+  const markdownJsonMatches = [...text.matchAll(/```json\s*(\{[\s\S]*?\})\s*```/gi)];
+  for (const match of markdownJsonMatches) {
+    try {
+      const parsed = JSON.parse(match[1].trim());
+      if (parsed && typeof parsed === "object" && parsed.type) {
+        return { data: parsed, matchText: match[0] };
+      }
+    } catch (e) {
+      // Continue checking other blocks
+    }
+  }
+
+  // 3. Look for any JSON-like structure starting with {"type":
+  const typeIndex = text.indexOf('{"type":');
+  if (typeIndex !== -1) {
+    const jsonSubstr = text.slice(typeIndex).trim();
+    for (let i = jsonSubstr.length; i >= 10; i--) {
+      const candidate = jsonSubstr.slice(0, i).trim();
+      if (candidate.endsWith("}")) {
+        try {
+          const parsed = JSON.parse(candidate);
+          if (parsed && typeof parsed === "object" && parsed.type) {
+            return { data: parsed, matchText: text.slice(typeIndex, typeIndex + i) };
+          }
+        } catch (e) {
+          // Keep trying shorter segments
+        }
+      }
+    }
+  }
+
+  return null;
 };
 
 /**
@@ -94,13 +132,17 @@ const streamResponse = async (userId, conversationId, formattedMessages, finalSy
       });
     }
 
+    let cleanText = fullText;
+    const robustResult = extractActionDataRobust(fullText);
     let parsedRecommendation = null;
 
-    if (fullText.includes("---ACTION---")) {
-      try {
-        const actionData = extractActionData(fullText);
+    if (robustResult) {
+      const actionData = robustResult.data;
+      const matchText = robustResult.matchText;
+      
+      cleanText = cleanText.replace(matchText, "").trim();
 
-        // Tạo bản ghi đề xuất dạng pending trong DB
+      try {
         if (actionData?.type && actionData?.payload) {
           const payload = ["generate_training_plan", "update_training_plan"].includes(actionData.type)
             ? normalizeWeeklyPlanPayload(actionData.payload)
@@ -111,20 +153,20 @@ const streamResponse = async (userId, conversationId, formattedMessages, finalSy
               userId,
               conversationId,
               recommendationType: actionData.type,
-              title: actionData.title,
+              title: actionData.title || "Đề xuất thay đổi lịch tập",
               payload,
               status: "pending",
             },
           });
         }
       } catch (err) {
-        console.error("Lỗi phân tích cú pháp JSON hành động:", err);
+        console.error("Lỗi phân tích cú pháp hoặc lưu JSON hành động:", err);
       }
     }
 
-    // Loại bỏ khối ACTION khỏi nội dung lưu database để tránh hiển thị mã JSON thô
-    const cleanText = autoLinkExerciseNames(
-      fullText.replace(/---ACTION---[\s\S]*?(---END_ACTION---|$)/g, "").trim(),
+    // Loại bỏ bất kỳ thẻ ACTION nào còn sót lại
+    cleanText = autoLinkExerciseNames(
+      cleanText.replace(/---ACTION---[\s\S]*?(---END_ACTION---|$)/g, "").trim(),
       exerciseLinks
     );
 
