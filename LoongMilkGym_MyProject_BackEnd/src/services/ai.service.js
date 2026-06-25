@@ -24,7 +24,7 @@ const normalizeText = (value = "") => {
 
 const isConsentMessage = (content = "") => {
   const normalized = normalizeText(content);
-  return [
+  const keywords = [
     "dong y",
     "ok",
     "oke",
@@ -33,7 +33,14 @@ const isConsentMessage = (content = "") => {
     "tao cho toi",
     "tao lich",
     "chot",
-  ].some((keyword) => normalized === keyword || normalized.includes(keyword));
+  ];
+  return keywords.some((keyword) => {
+    if (normalized === keyword) return true;
+    if (normalized.length < 25 && (normalized.startsWith(keyword) || normalized.endsWith(keyword))) {
+      return true;
+    }
+    return false;
+  });
 };
 
 const parseExercisePrescription = (text = "") => {
@@ -196,13 +203,6 @@ const createRecommendationFromPreviousPlan = async ({ userId, conversationId, as
   await prisma.aiConversation.update({
     where: { id: conversationId },
     data: { updatedAt: new Date() },
-  });
-
-  await pusher.trigger(`private-ai.${userId}`, "ai.done", {
-    conversationId,
-    messageId: savedAssistantMsg.id,
-    content,
-    recommendation,
   });
 
   return {
@@ -484,10 +484,12 @@ const createMessageAndStream = async (userId, conversationId, content) => {
     });
   }
 
-  const formattedMessages = history.map(msg => ({
-    role: msg.role === "assistant" ? "assistant" : "user",
-    content: msg.content,
-  }));
+  const formattedMessages = history
+    .map(msg => ({
+      role: msg.role === "assistant" ? "assistant" : "user",
+      content: msg.content ? msg.content.trim() : "",
+    }))
+    .filter(msg => msg.content !== "");
 
   // Tạo ID tạm thời cho tin nhắn phản hồi của AI
   const assistantMessagePlaceholder = {

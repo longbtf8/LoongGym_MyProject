@@ -18,6 +18,11 @@ export function useAICoach(userInfo) {
   const isNewConversationRef = useRef(false);
   const sendingRef = useRef(false);
   const toastTimerRef = useRef(null);
+  const activeConversationIdRef = useRef(activeConversationId);
+
+  useEffect(() => {
+    activeConversationIdRef.current = activeConversationId;
+  }, [activeConversationId]);
 
   const showToast = useCallback((message, type = "info") => {
     if (toastTimerRef.current) {
@@ -158,10 +163,28 @@ export function useAICoach(userInfo) {
           const assistantMessage = res.data.assistantMessage;
           const recommendation = res.data.recommendation;
 
+          const userMsgExists = filtered.some((m) => m.id === res.data.userMessage.id);
+          const baseList = userMsgExists ? filtered : [...filtered, res.data.userMessage];
+
           if (assistantMessage) {
+            const assistantMsgExists = baseList.some((m) => m.id === assistantMessage.id);
+            if (assistantMsgExists) {
+              return baseList.map((m) =>
+                m.id === assistantMessage.id
+                  ? {
+                      ...m,
+                      ...assistantMessage,
+                      content: stripActionBlock(assistantMessage.content),
+                      metadata: recommendation
+                        ? { ...(assistantMessage.metadata || {}), recommendation }
+                        : assistantMessage.metadata || {},
+                    }
+                  : m
+              );
+            }
+
             return [
-              ...filtered,
-              res.data.userMessage,
+              ...baseList,
               {
                 ...assistantMessage,
                 content: stripActionBlock(assistantMessage.content),
@@ -172,9 +195,11 @@ export function useAICoach(userInfo) {
             ];
           }
 
+          const placeholderExists = baseList.some((m) => m.id === res.data.assistantMessageId);
+          if (placeholderExists) return baseList;
+
           return [
-            ...filtered,
-            res.data.userMessage,
+            ...baseList,
             {
               id: res.data.assistantMessageId,
               role: "assistant",
@@ -320,7 +345,7 @@ export function useAICoach(userInfo) {
 
   // Kết nối Pusher
   useEffect(() => {
-    if (!userInfo?.id || !activeConversationId || activeConversationId === "temp-new") return;
+    if (!userInfo?.id) return;
 
     const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
     const wsHost = import.meta.env.VITE_PUSHER_HOST || "127.0.0.1";
@@ -348,7 +373,7 @@ export function useAICoach(userInfo) {
     channelRef.current = channel;
 
     channel.bind("ai.chunk", (data) => {
-      if (data.conversationId !== activeConversationId) return;
+      if (data.conversationId !== activeConversationIdRef.current) return;
       
       setMessages((prev) => {
         const index = prev.findIndex((m) => m.id === data.messageId);
@@ -376,7 +401,7 @@ export function useAICoach(userInfo) {
     });
 
     channel.bind("ai.done", (data) => {
-      if (data.conversationId !== activeConversationId) return;
+      if (data.conversationId !== activeConversationIdRef.current) return;
       
       setMessages((prev) => {
         const index = prev.findIndex((m) => m.id === data.messageId);
@@ -407,7 +432,7 @@ export function useAICoach(userInfo) {
     });
 
     channel.bind("ai.error", (data) => {
-      if (data.conversationId !== activeConversationId) return;
+      if (data.conversationId !== activeConversationIdRef.current) return;
       
       setMessages((prev) => {
         const index = prev.findIndex((m) => m.id === data.messageId);
@@ -442,7 +467,7 @@ export function useAICoach(userInfo) {
         pusherRef.current.disconnect();
       }
     };
-  }, [userInfo?.id, activeConversationId, stripActionBlock]);
+  }, [userInfo?.id, stripActionBlock]);
 
   return {
     conversations,
