@@ -54,6 +54,7 @@ function ChatMessages({
   messages,
   loadingMessages,
   isGenerating,
+  isPlanning,
   userName,
   userInitial,
   userAvatar,
@@ -114,7 +115,7 @@ function ChatMessages({
   }
 
   const lastMessage = messages[messages.length - 1];
-  const showLoaderBubble = isGenerating && (!lastMessage || lastMessage.role !== "assistant" || !lastMessage.content?.trim());
+  const showLoaderBubble = (isGenerating && (!lastMessage || lastMessage.role !== "assistant" || !lastMessage.content?.trim())) || isPlanning;
 
   return (
     <div ref={chatContainerRef} className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-6 space-y-6 bg-gradient-to-b from-transparent to-[var(--bg-secondary)]/5">
@@ -155,7 +156,7 @@ function ChatMessages({
                   <ReactMarkdown components={markdownComponents}>
                     {enhanceMarkdownContent(msg.content)}
                   </ReactMarkdown>
-                  {isAi && isGenerating && msg.id === lastMessage?.id && (
+                  {isAi && isGenerating && !isPlanning && msg.id === lastMessage?.id && (
                     <span className="inline-flex items-center ml-1">
                       <span className="w-1.5 h-3.5 bg-primary animate-pulse inline-block" style={{ verticalAlign: "middle" }} />
                     </span>
@@ -182,10 +183,16 @@ function ChatMessages({
             <Loader2 className="w-4.5 h-4.5 animate-spin" />
           </div>
           <div className="flex flex-col gap-1.5">
-            <span className="text-[9px] font-extrabold text-[var(--text-muted)]">AI Coach đang suy nghĩ...</span>
+            <span className="text-[9px] font-extrabold text-[var(--text-muted)]">
+              {isPlanning ? "AI Coach đang lên kế hoạch..." : "AI Coach đang suy nghĩ..."}
+            </span>
             <div className="px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl rounded-tl-none text-xs text-[var(--text-muted)] italic font-semibold flex items-center gap-2">
               <Loader2 className="w-3.5 h-3.5 animate-spin text-primary shrink-0" />
-              <span>Đang phân tích dữ liệu và lên phương án...</span>
+              <span>
+                {isPlanning 
+                  ? "Đang thiết lập lịch tập và tối ưu hóa bài tập..." 
+                  : "Đang phân tích dữ liệu và lên phương án..."}
+              </span>
             </div>
           </div>
         </div>

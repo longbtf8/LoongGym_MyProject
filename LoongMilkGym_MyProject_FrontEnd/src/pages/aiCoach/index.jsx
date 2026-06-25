@@ -30,6 +30,7 @@ function AICoach() {
     setActiveConversationId,
     messages,
     isGenerating,
+    isPlanning,
     loadingConversations,
     loadingMessages,
     actionProcessingId,
@@ -164,6 +165,7 @@ function AICoach() {
           messages={messages}
           loadingMessages={loadingMessages}
           isGenerating={isGenerating}
+          isPlanning={isPlanning}
           userName={userName}
           userInitial={userInitial}
           userAvatar={userInfo?.profile?.avatarUrl}

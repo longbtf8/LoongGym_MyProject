@@ -8,6 +8,7 @@ export function useAICoach(userInfo) {
   const [activeConversationId, setActiveConversationId] = useState("temp-new");
   const [messages, setMessages] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isPlanning, setIsPlanning] = useState(false);
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [actionProcessingId, setActionProcessingId] = useState(null);
@@ -48,13 +49,35 @@ export function useAICoach(userInfo) {
 
   const stripActionBlock = useCallback((text) => {
     if (!text) return "";
-    let clean = text.replace(/---ACTION---[\s\S]*?(---END_ACTION---|$)/g, "").trim();
-    // Loại bỏ bất kỳ chuỗi JSON hành động thô hoặc bị cắt cụt đang stream
-    const jsonStartIdx = clean.search(/(!?\{[\s\S]*?"type"\s*:\s*"[^"]*"[\s\S]*)/i);
-    if (jsonStartIdx !== -1) {
-      clean = clean.slice(0, jsonStartIdx).trim();
+    let clean = text;
+
+    // 1. Loại bỏ ---ACTION--- đến cuối hoặc đến ---END_ACTION---
+    clean = clean.replace(/---ACTION---[\s\S]*?(---END_ACTION---|$)/g, "");
+
+    // 2. Loại bỏ ```action đến cuối hoặc đến ```
+    clean = clean.replace(/```action[\s\S]*?(```|$)/g, "");
+
+    // 3. Loại bỏ ```json chứa các từ khóa hành động đến cuối hoặc đến ```
+    clean = clean.replace(/```json[\s\S]*?(```|$)/g, (match) => {
+      if (/type|payload|days|exerciseId/i.test(match)) {
+        return "";
+      }
+      return match;
+    });
+
+    // 4. Loại bỏ các khối JSON thô dạng { ... } đang stream chứa từ khóa hành động
+    const rawJsonStart = clean.search(/\{[\s\S]*?(type|payload|days|exerciseId)/i);
+    if (rawJsonStart !== -1) {
+      const suffix = clean.slice(rawJsonStart);
+      if (/type|payload|days|exerciseId/i.test(suffix)) {
+        clean = clean.slice(0, rawJsonStart).trim();
+      }
     }
-    return clean;
+
+    // 5. Làm sạch code block bị cắt cụt cuối chuỗi
+    clean = clean.replace(/```\s*$/g, "");
+
+    return clean.trim();
   }, []);
 
   // Tải danh sách cuộc hội thoại từ backend
@@ -134,6 +157,7 @@ export function useAICoach(userInfo) {
 
     let currentConvId = activeConversationId;
     setIsGenerating(true);
+    setIsPlanning(false);
     resetSafetyTimeout();
 
     const tempUserMsgId = Math.random().toString();
@@ -233,6 +257,7 @@ export function useAICoach(userInfo) {
       if (safetyTimeoutRef.current) {
         clearTimeout(safetyTimeoutRef.current);
       }
+      setIsPlanning(false);
       showToast("Thao tác thất bại, vui lòng báo cáo admin.", "error");
       setMessages((prev) => [
         ...prev,
@@ -407,6 +432,9 @@ export function useAICoach(userInfo) {
       resetSafetyTimeout();
       
       streamingContentRef.current += data.chunk;
+      const rawText = streamingContentRef.current;
+      const hasActionStarted = /---ACTION---|```action|```json[\s\S]*?(type|payload|days|exerciseId)|\{[\s\S]*?(type|payload|days|exerciseId)/i.test(rawText);
+      setIsPlanning(hasActionStarted);
       
       setMessages((prev) => {
         const index = prev.findIndex((m) => m.id === data.messageId);
@@ -438,6 +466,7 @@ export function useAICoach(userInfo) {
       if (safetyTimeoutRef.current) {
         clearTimeout(safetyTimeoutRef.current);
       }
+      setIsPlanning(false);
       
       setMessages((prev) => {
         const index = prev.findIndex((m) => m.id === data.messageId);
@@ -472,6 +501,7 @@ export function useAICoach(userInfo) {
       if (safetyTimeoutRef.current) {
         clearTimeout(safetyTimeoutRef.current);
       }
+      setIsPlanning(false);
       
       setMessages((prev) => {
         const index = prev.findIndex((m) => m.id === data.messageId);
@@ -517,6 +547,7 @@ export function useAICoach(userInfo) {
     setActiveConversationId,
     messages,
     isGenerating,
+    isPlanning,
     loadingConversations,
     loadingMessages,
     actionProcessingId,
