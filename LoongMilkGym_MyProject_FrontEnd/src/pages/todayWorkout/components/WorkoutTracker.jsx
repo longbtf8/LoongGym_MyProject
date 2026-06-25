@@ -145,7 +145,7 @@ export default function WorkoutTracker({
                         <div className="flex flex-col gap-2">
                           {/* Table headers */}
                           <div className="grid grid-cols-[0.4fr_1fr_1fr_1.2fr_0.4fr] gap-1.5 sm:gap-2.5 text-[8px] sm:text-[10px] lg:text-[11px] uppercase font-black text-[var(--text-muted)] tracking-wider px-1 sm:px-2">
-                            <span>Set</span>
+                            <span className="text-center">Set</span>
                             <span className="text-center">Khối lượng (kg)</span>
                             <span className="text-center">Số reps</span>
                             <span className="text-center">Độ khó (RPE)</span>
