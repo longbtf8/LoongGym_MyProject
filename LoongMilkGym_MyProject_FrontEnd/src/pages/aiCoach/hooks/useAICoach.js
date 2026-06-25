@@ -20,6 +20,16 @@ export function useAICoach(userInfo) {
   const toastTimerRef = useRef(null);
   const activeConversationIdRef = useRef(activeConversationId);
   const streamingContentRef = useRef("");
+  const safetyTimeoutRef = useRef(null);
+
+  const resetSafetyTimeout = useCallback(() => {
+    if (safetyTimeoutRef.current) {
+      clearTimeout(safetyTimeoutRef.current);
+    }
+    safetyTimeoutRef.current = setTimeout(() => {
+      setIsGenerating(false);
+    }, 15000); // 15 seconds safety timeout
+  }, []);
 
   useEffect(() => {
     activeConversationIdRef.current = activeConversationId;
@@ -124,6 +134,7 @@ export function useAICoach(userInfo) {
 
     let currentConvId = activeConversationId;
     setIsGenerating(true);
+    resetSafetyTimeout();
 
     const tempUserMsgId = Math.random().toString();
     setMessages((prev) => [
@@ -149,6 +160,7 @@ export function useAICoach(userInfo) {
           const newConv = convRes.data;
           setConversations((prev) => [newConv, ...prev]);
           setActiveConversationId(newConv.id);
+          activeConversationIdRef.current = newConv.id;
           currentConvId = newConv.id;
         } else {
           isNewConversationRef.current = false;
@@ -218,6 +230,9 @@ export function useAICoach(userInfo) {
       }
     } catch (err) {
       console.error("Lỗi khi gửi tin nhắn hoặc tạo cuộc hội thoại:", err);
+      if (safetyTimeoutRef.current) {
+        clearTimeout(safetyTimeoutRef.current);
+      }
       showToast("Thao tác thất bại, vui lòng báo cáo admin.", "error");
       setMessages((prev) => [
         ...prev,
@@ -389,6 +404,7 @@ export function useAICoach(userInfo) {
 
     channel.bind("ai.chunk", (data) => {
       if (data.conversationId !== activeConversationIdRef.current) return;
+      resetSafetyTimeout();
       
       streamingContentRef.current += data.chunk;
       
@@ -419,6 +435,9 @@ export function useAICoach(userInfo) {
 
     channel.bind("ai.done", (data) => {
       if (data.conversationId !== activeConversationIdRef.current) return;
+      if (safetyTimeoutRef.current) {
+        clearTimeout(safetyTimeoutRef.current);
+      }
       
       setMessages((prev) => {
         const index = prev.findIndex((m) => m.id === data.messageId);
@@ -450,6 +469,9 @@ export function useAICoach(userInfo) {
 
     channel.bind("ai.error", (data) => {
       if (data.conversationId !== activeConversationIdRef.current) return;
+      if (safetyTimeoutRef.current) {
+        clearTimeout(safetyTimeoutRef.current);
+      }
       
       setMessages((prev) => {
         const index = prev.findIndex((m) => m.id === data.messageId);
@@ -476,6 +498,9 @@ export function useAICoach(userInfo) {
     });
 
     return () => {
+      if (safetyTimeoutRef.current) {
+        clearTimeout(safetyTimeoutRef.current);
+      }
       if (channelRef.current) {
         channelRef.current.unbind_all();
         pusherRef.current.unsubscribe(channelName);
@@ -484,7 +509,7 @@ export function useAICoach(userInfo) {
         pusherRef.current.disconnect();
       }
     };
-  }, [userInfo?.id, stripActionBlock]);
+  }, [userInfo?.id, stripActionBlock, resetSafetyTimeout]);
 
   return {
     conversations,
