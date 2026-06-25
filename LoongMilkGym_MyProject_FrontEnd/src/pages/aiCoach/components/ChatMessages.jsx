@@ -75,7 +75,7 @@ function ChatMessages({
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center py-6 px-4">
+      <div className="flex-1 overflow-y-auto min-h-0 flex flex-col items-center justify-center py-6 px-4">
         <div className="max-w-lg w-full text-center flex flex-col items-center gap-6 animate-slide-down">
           <div className="w-16 h-16 rounded-full bg-primary/15 border border-primary/35 text-primary flex items-center justify-center animate-bounce shadow-lg shadow-primary/10">
             <Sparkles className="w-8 h-8" />
@@ -114,7 +114,7 @@ function ChatMessages({
   }
 
   return (
-    <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-gradient-to-b from-transparent to-[var(--bg-secondary)]/5">
+    <div ref={chatContainerRef} className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-6 space-y-6 bg-gradient-to-b from-transparent to-[var(--bg-secondary)]/5">
       {messages.map((msg) => {
         const isAi = msg.role === "assistant";
         return (

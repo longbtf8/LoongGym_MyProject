@@ -331,6 +331,10 @@ const execute = async (userId, id) => {
     throw new AppError("Không tìm thấy đề xuất.", httpCodes.notFound);
   }
 
+  if (recommendation.status === "applied") {
+    return recommendation;
+  }
+
   if (recommendation.status !== "pending") {
     throw new AppError("Đề xuất này đã được xử lý trước đó.", httpCodes.badRequest);
   }
@@ -504,6 +508,10 @@ const reject = async (userId, id) => {
 
   if (!recommendation) {
     throw new AppError("Không tìm thấy đề xuất.", httpCodes.notFound);
+  }
+
+  if (recommendation.status === "rejected") {
+    return recommendation;
   }
 
   if (recommendation.status !== "pending") {
