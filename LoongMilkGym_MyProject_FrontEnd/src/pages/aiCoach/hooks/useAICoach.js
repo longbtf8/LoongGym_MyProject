@@ -242,7 +242,15 @@ export function useAICoach(userInfo) {
       const currentRecommendation = messages.find((msg) => msg.metadata?.recommendation?.id === recommendationId)?.metadata?.recommendation;
       const res = await httpRequest.post(`/ai/recommendations/${recommendationId}/execute`);
       if (res.success) {
-        const isTrainingPlanAction = ["generate_training_plan", "update_training_plan"].includes(currentRecommendation?.recommendationType);
+        const isTrainingPlanAction = [
+          "generate_training_plan",
+          "update_training_plan",
+          "skip_day",
+          "swap_exercise",
+          "adjust_volume",
+          "deload",
+          "reschedule"
+        ].includes(currentRecommendation?.recommendationType);
         setMessages((prev) =>
           prev.map((msg) => {
             if (msg.metadata?.recommendation?.id === recommendationId) {

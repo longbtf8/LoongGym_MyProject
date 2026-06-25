@@ -438,6 +438,8 @@ export default function MyPlan() {
         }).unwrap();
         showToast("🔄 Đã chuyển ngày tập thành công về hôm nay!");
         setSelectedDayId(todayDay.id);
+        refetchActivePlan();
+        refetchDayDetails();
       } catch {
         showToast("Lỗi khi hoán đổi ngày tập.");
       }
