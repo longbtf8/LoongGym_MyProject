@@ -353,12 +353,18 @@ const execute = async (userId, id) => {
       });
     } else if (recommendationType === "skip_day") {
       const { planDayId, reason } = payload;
-      await assertPlanDayOwnership(tx, userId, planDayId);
+      const day = await assertPlanDayOwnership(tx, userId, planDayId);
+      const metadata = { ...(day.metadata || {}) };
+      metadata.customized = true;
+      if (!metadata.originalExercises && Array.isArray(metadata.customExercises)) {
+        metadata.originalExercises = metadata.customExercises.map(ex => ({ ...ex }));
+      }
       await tx.userTrainingPlanDay.update({
         where: { id: planDayId },
         data: {
           status: "skipped",
           skipReason: reason || "Huỷ bởi AI Coach",
+          metadata,
         },
       });
     } else if (recommendationType === "swap_exercise") {
@@ -367,6 +373,10 @@ const execute = async (userId, id) => {
       await assertPublishedExercise(tx, newExerciseId);
       if (day && day.metadata) {
         const metadata = { ...day.metadata };
+        metadata.customized = true;
+        if (!metadata.originalExercises && Array.isArray(metadata.customExercises)) {
+          metadata.originalExercises = metadata.customExercises.map(ex => ({ ...ex }));
+        }
         if (Array.isArray(metadata.customExercises)) {
           metadata.customExercises = metadata.customExercises.map((ex) => {
             if (ex.id === sessionExerciseId || ex.exerciseId === sessionExerciseId) {
@@ -385,6 +395,10 @@ const execute = async (userId, id) => {
       const day = await assertPlanDayOwnership(tx, userId, planDayId);
       if (day && day.metadata) {
         const metadata = { ...day.metadata };
+        metadata.customized = true;
+        if (!metadata.originalExercises && Array.isArray(metadata.customExercises)) {
+          metadata.originalExercises = metadata.customExercises.map(ex => ({ ...ex }));
+        }
         if (Array.isArray(metadata.customExercises)) {
           metadata.customExercises = metadata.customExercises.map((ex) => {
             if (ex.id === sessionExerciseId || ex.exerciseId === sessionExerciseId) {
