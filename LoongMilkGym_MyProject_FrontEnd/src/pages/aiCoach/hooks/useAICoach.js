@@ -19,6 +19,7 @@ export function useAICoach(userInfo) {
   const sendingRef = useRef(false);
   const toastTimerRef = useRef(null);
   const activeConversationIdRef = useRef(activeConversationId);
+  const streamingContentRef = useRef("");
 
   useEffect(() => {
     activeConversationIdRef.current = activeConversationId;
@@ -119,6 +120,7 @@ export function useAICoach(userInfo) {
   const handleSendMessage = async (text) => {
     if (!text.trim() || isGenerating || sendingRef.current) return;
     sendingRef.current = true;
+    streamingContentRef.current = "";
 
     let currentConvId = activeConversationId;
     setIsGenerating(true);
@@ -380,24 +382,26 @@ export function useAICoach(userInfo) {
     channel.bind("ai.chunk", (data) => {
       if (data.conversationId !== activeConversationIdRef.current) return;
       
+      streamingContentRef.current += data.chunk;
+      
       setMessages((prev) => {
         const index = prev.findIndex((m) => m.id === data.messageId);
+        const cleanContent = stripActionBlock(streamingContentRef.current);
         if (index === -1) {
           return [
             ...prev,
             {
               id: data.messageId,
               role: "assistant",
-              content: stripActionBlock(data.chunk),
+              content: cleanContent,
               createdAt: new Date(),
             },
           ];
         } else {
           const updated = [...prev];
-          const rawContent = updated[index].content + data.chunk;
           updated[index] = {
             ...updated[index],
-            content: stripActionBlock(rawContent),
+            content: cleanContent,
           };
           return updated;
         }
