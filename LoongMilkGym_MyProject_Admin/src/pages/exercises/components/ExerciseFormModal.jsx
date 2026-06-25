@@ -119,15 +119,18 @@ export default function ExerciseFormModal({
             <label className="text-xs font-black uppercase tracking-wider text-[var(--text-muted)]">
               Hình ảnh bài tập
             </label>
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-xl border border-[var(--border-color)]/60 bg-[var(--bg-color)] flex items-center justify-center overflow-hidden relative group shrink-0">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="w-full sm:w-48 aspect-video rounded-xl border border-[var(--border-color)]/60 bg-[var(--bg-color)] flex items-center justify-center overflow-hidden relative group shrink-0">
                 {previewUrl ? (
                   <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
                 ) : (
-                  <ImageIcon className="w-6 h-6 text-[var(--text-muted)] opacity-40" />
+                  <ImageIcon className="w-8 h-8 text-[var(--text-muted)] opacity-40" />
                 )}
                 <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                  <Upload className="w-4 h-4 text-[var(--color-primary)]" />
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[10px] font-black text-[var(--text-color)]">
+                    <Upload className="w-3.5 h-3.5 text-[var(--color-primary)]" />
+                    <span>Đổi ảnh</span>
+                  </div>
                   <input
                     type="file"
                     accept="image/*"
@@ -137,9 +140,9 @@ export default function ExerciseFormModal({
                 </label>
               </div>
 
-              <div className="flex-1">
-                <p className="text-[9px] font-bold text-[var(--text-muted)]">
-                  JPG, PNG. Tối đa 5MB. Di chuột vào ảnh để đổi.
+              <div className="flex-1 w-full">
+                <p className="text-[10px] font-bold text-[var(--text-muted)]">
+                  Hỗ trợ JPG, PNG. Tối đa 5MB. Di chuột vào ảnh để đổi.
                 </p>
               </div>
             </div>

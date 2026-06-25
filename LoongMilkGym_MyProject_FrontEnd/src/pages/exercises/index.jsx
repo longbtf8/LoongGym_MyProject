@@ -13,7 +13,7 @@ import {
   useToggleFavoriteExerciseMutation 
 } from "@/services/exercise/exerciseApi";
 import { useGetActivePlanQuery, useLazyGetDayDetailsQuery, useUpdateDayDetailsMutation } from "@/services/roadmap/roadmapApi";
-import { CalendarPlus, Check, Info, RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
+import { CalendarPlus, Check, Info, RotateCcw, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 
@@ -48,6 +48,14 @@ export default function Exercises() {
   const [selectedScheduleDayId, setSelectedScheduleDayId] = useState("");
   const [scheduleMessage, setScheduleMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  const showToast = (message) => {
+    setToastMessage(message);
+    setTimeout(() => {
+      setToastMessage("");
+    }, 3000);
+  };
 
   const {
     searchTerm,
@@ -516,8 +524,7 @@ export default function Exercises() {
                           key={day.id}
                           onClick={() => {
                             if (isRest) {
-                              setScheduleMessage("Ngày nghỉ, vui lòng thêm vào ngày khác.");
-                              setTimeout(() => setScheduleMessage(""), 2500);
+                              showToast("Ngày nghỉ, vui lòng thêm vào ngày khác.");
                               return;
                             }
                             setSelectedScheduleDayId(day.id);
@@ -555,6 +562,14 @@ export default function Exercises() {
               {isAddingToSchedule || isFetchingDayDetails || isSubmitting ? "Đang thêm..." : "Thêm bài tập"}
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Toast Alert */}
+      {toastMessage && (
+        <div className="fixed left-1/2 top-[72px] -translate-x-1/2 z-[999999] bg-[var(--bg-secondary)]/90 backdrop-blur-sm border border-primary/30 text-[var(--text-color)] rounded-2xl px-4 py-2.5 flex items-center gap-2 shadow-lg animate-slide-down">
+          <Sparkles size={14} className="text-primary shrink-0" />
+          <span className="text-xs font-bold leading-none">{toastMessage}</span>
         </div>
       )}
     </div>

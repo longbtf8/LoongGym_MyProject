@@ -106,7 +106,7 @@ export default function ProgramFormModal({
               Ảnh bìa giáo án
             </label>
             <div className="flex flex-col sm:flex-row items-center gap-4">
-              <div className="w-full sm:w-48 aspect-[16/9] rounded-xl border border-[var(--border-color)]/60 bg-[var(--bg-color)] flex items-center justify-center overflow-hidden relative group">
+              <div className="w-full sm:w-64 aspect-[16/9] rounded-xl border border-[var(--border-color)]/60 bg-[var(--bg-color)] flex items-center justify-center overflow-hidden relative group">
                 {previewUrl ? (
                    <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
                 ) : (

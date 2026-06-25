@@ -463,8 +463,7 @@ export default function ExerciseDetail() {
                           key={day.id}
                           onClick={() => {
                             if (isRest) {
-                              setScheduleMessage("Ngày nghỉ, vui lòng thêm vào ngày khác.");
-                              setTimeout(() => setScheduleMessage(""), 2500);
+                              showToast("Ngày nghỉ, vui lòng thêm vào ngày khác.");
                               return;
                             }
                             setSelectedScheduleDayId(day.id);

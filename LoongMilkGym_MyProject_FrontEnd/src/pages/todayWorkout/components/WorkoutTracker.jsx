@@ -162,11 +162,8 @@ export default function WorkoutTracker({
                                   : "bg-[var(--bg-color)] border-[var(--border-color)]"
                               }`}
                             >
-                              <span className="text-xs sm:text-sm font-black">
+                              <span className="text-xs sm:text-sm font-black text-center">
                                 {idx + 1}
-                                <span className="text-[8px] sm:text-[10px] text-[var(--text-muted)] ml-0.5 uppercase">
-                                  {set.setType === "working" ? "W" : "D"}
-                                </span>
                               </span>
 
                               <input
