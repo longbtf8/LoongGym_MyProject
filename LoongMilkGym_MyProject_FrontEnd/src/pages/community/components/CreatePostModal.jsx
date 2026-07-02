@@ -22,7 +22,7 @@ export default function CreatePostModal({
       return typeof postToEdit.metadata === "string"
         ? JSON.parse(postToEdit.metadata)
         : postToEdit.metadata;
-    } catch (e) {
+    } catch {
       return null;
     }
   }, [postToEdit]);
@@ -260,7 +260,10 @@ export default function CreatePostModal({
       onRequestSuccess?.(postToEdit ? "Cập nhật bài viết thành công." : "Đăng bài viết thành công.");
     } catch (err) {
       console.error("Lỗi gửi bài viết:", err);
-      onRequestError?.(`${actionLabel} thất bại, hãy liên hệ admin để được giúp đỡ.`);
+      const uploadMessage = err?.status === 413
+        ? "Ảnh tải lên quá lớn. Vui lòng nén ảnh hoặc chọn ít ảnh hơn rồi thử lại."
+        : err?.data?.message;
+      onRequestError?.(uploadMessage || `${actionLabel} thất bại, hãy liên hệ admin để được giúp đỡ.`);
     }
   };
 

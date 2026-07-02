@@ -18,11 +18,20 @@ const cors = require("cors");
 const allowedOrigins = [
   process.env.FRONTEND_URL || "http://localhost:5173",
   process.env.ADMIN_URL || "http://localhost:5174",
+  ...(process.env.CORS_ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
 ];
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "x-refresh-token", "x-session-id"],

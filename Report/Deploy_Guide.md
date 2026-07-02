@@ -127,6 +127,8 @@ ADMIN_URL=https://admin.loongmilk.id.vn
 CLOUDINARY_CLOUD_NAME=<your_cloudinary_cloud_name>
 CLOUDINARY_API_KEY=<your_cloudinary_api_key>
 CLOUDINARY_API_SECRET=<your_cloudinary_api_secret>
+FILE_UPLOAD_MAX_SIZE_MB=10
+FILE_UPLOAD_MAX_FILES=10
 
 # WEBSOCKET (Kết nối trực tiếp sang container "loonggym_soketi" qua mạng nội bộ Docker)
 PUSHER_APP_ID=<pusher_app_id>
@@ -275,9 +277,12 @@ server {
 server {
     listen 80;
     server_name api.loongmilk.id.vn;
+    client_max_body_size 120M;
 
     location / {
         proxy_pass http://127.0.0.1:3009;
+        proxy_read_timeout 180s;
+        proxy_send_timeout 180s;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -318,6 +323,8 @@ sudo nginx -t
 # Khởi động lại Nginx
 sudo systemctl restart nginx
 ```
+
+> Nếu đăng bài kèm ảnh trên production bị `413 Content Too Large`, hãy kiểm tra block `api.loongmilk.id.vn` sau khi Certbot tạo HTTPS. Dòng `client_max_body_size 120M;` phải nằm trong cả server block HTTP/HTTPS thực tế, đặc biệt block `listen 443 ssl`.
 
 ### 4. Cài đặt Certbot và tự động cấp chứng chỉ SSL bảo mật HTTPS
 ```bash

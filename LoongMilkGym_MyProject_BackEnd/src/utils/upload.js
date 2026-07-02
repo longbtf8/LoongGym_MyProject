@@ -3,6 +3,9 @@ const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const multer = require("multer");
 require("dotenv").config();
 
+const maxFileSizeMb = Number(process.env.FILE_UPLOAD_MAX_SIZE_MB || 10);
+const maxFiles = Number(process.env.FILE_UPLOAD_MAX_FILES || 10);
+
 // 1. Cấu hình tài khoản Cloudinary của bạn
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -20,6 +23,12 @@ const storage = new CloudinaryStorage({
 });
 
 // 3. Khởi tạo middleware upload từ cấu hình storage trên
-const uploadCloud = multer({ storage: storage });
+const uploadCloud = multer({
+  storage,
+  limits: {
+    fileSize: maxFileSizeMb * 1024 * 1024,
+    files: maxFiles,
+  },
+});
 
 module.exports = uploadCloud;
