@@ -45,7 +45,7 @@ const createWorkoutProgramSchema = z.object({
         if (typeof val === "boolean") return val;
         return val === "true";
       })
-      .default(false),
+      .default(true),
   }),
 });
 

@@ -55,6 +55,7 @@ function ChatMessages({
   loadingMessages,
   isGenerating,
   isPlanning,
+  planningStatus,
   userName,
   userInitial,
   userAvatar,
@@ -184,14 +185,14 @@ function ChatMessages({
           </div>
           <div className="flex flex-col gap-1.5">
             <span className="text-[9px] font-extrabold text-[var(--text-muted)]">
-              {isPlanning ? "AI Coach đang lên kế hoạch..." : "AI Coach đang suy nghĩ..."}
+              {planningStatus?.title || (isPlanning ? "AI Coach đang lên kế hoạch..." : "AI Coach đang suy nghĩ...")}
             </span>
             <div className="px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl rounded-tl-none text-xs text-[var(--text-muted)] italic font-semibold flex items-center gap-2">
               <Loader2 className="w-3.5 h-3.5 animate-spin text-primary shrink-0" />
               <span>
-                {isPlanning 
-                  ? "Đang thiết lập lịch tập và tối ưu hóa bài tập..." 
-                  : "Đang phân tích dữ liệu và lên phương án..."}
+                {planningStatus?.detail || (isPlanning
+                  ? "Đang thiết lập lịch tập và tối ưu hóa bài tập..."
+                  : "Đang phân tích dữ liệu và lên phương án...")}
               </span>
             </div>
           </div>

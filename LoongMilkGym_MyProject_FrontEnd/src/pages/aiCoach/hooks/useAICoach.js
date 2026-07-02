@@ -9,6 +9,7 @@ export function useAICoach(userInfo) {
   const [messages, setMessages] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPlanning, setIsPlanning] = useState(false);
+  const [planningStatus, setPlanningStatus] = useState(null);
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [actionProcessingId, setActionProcessingId] = useState(null);
@@ -29,7 +30,75 @@ export function useAICoach(userInfo) {
     }
     safetyTimeoutRef.current = setTimeout(() => {
       setIsGenerating(false);
-    }, 15000); // 15 seconds safety timeout
+      setIsPlanning(false);
+      setPlanningStatus(null);
+    }, 60000);
+  }, []);
+
+  const getPlanningStatus = useCallback((typeOrText = "") => {
+    const normalized = typeOrText
+      .toString()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
+    if (normalized.includes("generate_training_plan") || normalized.includes("tao mau lich") || normalized.includes("tao lich")) {
+      return {
+        title: "AI Coach đang tạo lịch tập...",
+        detail: "Đang dựng mẫu tuần, chọn bài tập và chuẩn bị đề xuất để bạn bấm Đồng ý.",
+      };
+    }
+
+    if (normalized.includes("update_training_plan") || normalized.includes("reschedule") || normalized.includes("sap xep")) {
+      return {
+        title: "AI Coach đang sắp xếp lại lịch...",
+        detail: "Đang kiểm tra các buổi hiện tại và tạo phương án đổi lịch phù hợp.",
+      };
+    }
+
+    if (normalized.includes("swap_exercise") || normalized.includes("thay the") || normalized.includes("dau vai") || normalized.includes("chan thuong")) {
+      return {
+        title: "AI Coach đang tìm bài thay thế...",
+        detail: "Đang rà soát vùng đau, nhóm cơ liên quan và chọn bài tập an toàn hơn.",
+      };
+    }
+
+    if (normalized.includes("adjust_volume")) {
+      return {
+        title: "AI Coach đang chỉnh khối lượng tập...",
+        detail: "Đang cân lại sets, reps và mức tạ theo tình trạng hiện tại của bạn.",
+      };
+    }
+
+    if (normalized.includes("deload") || normalized.includes("met moi") || normalized.includes("kiet suc")) {
+      return {
+        title: "AI Coach đang tạo phương án hồi phục...",
+        detail: "Đang đánh giá mức mệt và đề xuất nghỉ, giảm tải hoặc đổi buổi tập.",
+      };
+    }
+
+    if (normalized.includes("skip_day")) {
+      return {
+        title: "AI Coach đang chuẩn bị ngày nghỉ...",
+        detail: "Đang ghi nhận lý do và cập nhật lịch để ưu tiên phục hồi.",
+      };
+    }
+
+    if (normalized.includes("nutrition_adjust") || normalized.includes("calories") || normalized.includes("dinh duong") || normalized.includes("giam mo") || normalized.includes("tang co")) {
+      return {
+        title: "AI Coach đang tính dinh dưỡng...",
+        detail: "Đang ước tính calories, macro và gợi ý điều chỉnh theo mục tiêu.",
+      };
+    }
+
+    return {
+      title: "AI Coach đang suy nghĩ...",
+      detail: "Đang phân tích dữ liệu và lên phương án phù hợp.",
+    };
+  }, []);
+
+  const getActionTypeFromText = useCallback((text = "") => {
+    return text.match(/["']?type["']?\s*:\s*["']([^"']+)["']/i)?.[1] || "";
   }, []);
 
   useEffect(() => {
@@ -158,6 +227,7 @@ export function useAICoach(userInfo) {
     let currentConvId = activeConversationId;
     setIsGenerating(true);
     setIsPlanning(false);
+    setPlanningStatus(getPlanningStatus(text));
     resetSafetyTimeout();
 
     const tempUserMsgId = Math.random().toString();
@@ -197,8 +267,20 @@ export function useAICoach(userInfo) {
       });
 
       if (res.success && res.data) {
+        if (res.data.streamed) {
+          [4000, 10000, 18000].forEach((delay) => {
+            setTimeout(() => {
+              if (activeConversationIdRef.current === currentConvId) {
+                fetchMessages(currentConvId);
+              }
+            }, delay);
+          });
+        }
+
         if (res.data.assistantMessage) {
           setIsGenerating(false);
+          setIsPlanning(false);
+          setPlanningStatus(null);
         }
 
         setMessages((prev) => {
@@ -258,6 +340,7 @@ export function useAICoach(userInfo) {
         clearTimeout(safetyTimeoutRef.current);
       }
       setIsPlanning(false);
+      setPlanningStatus(null);
       showToast("Thao tác thất bại, vui lòng báo cáo admin.", "error");
       setMessages((prev) => [
         ...prev,
@@ -435,6 +518,10 @@ export function useAICoach(userInfo) {
       const rawText = streamingContentRef.current;
       const hasActionStarted = /---ACTION---|```action|```json[\s\S]*?(type|payload|days|exerciseId)|\{[\s\S]*?(type|payload|days|exerciseId)/i.test(rawText);
       setIsPlanning(hasActionStarted);
+      const actionType = getActionTypeFromText(rawText);
+      if (actionType) {
+        setPlanningStatus(getPlanningStatus(actionType));
+      }
       
       setMessages((prev) => {
         const index = prev.findIndex((m) => m.id === data.messageId);
@@ -467,6 +554,7 @@ export function useAICoach(userInfo) {
         clearTimeout(safetyTimeoutRef.current);
       }
       setIsPlanning(false);
+      setPlanningStatus(null);
       
       setMessages((prev) => {
         const index = prev.findIndex((m) => m.id === data.messageId);
@@ -502,6 +590,7 @@ export function useAICoach(userInfo) {
         clearTimeout(safetyTimeoutRef.current);
       }
       setIsPlanning(false);
+      setPlanningStatus(null);
       
       setMessages((prev) => {
         const index = prev.findIndex((m) => m.id === data.messageId);
@@ -539,7 +628,7 @@ export function useAICoach(userInfo) {
         pusherRef.current.disconnect();
       }
     };
-  }, [userInfo?.id, stripActionBlock, resetSafetyTimeout]);
+  }, [userInfo?.id, stripActionBlock, resetSafetyTimeout, getActionTypeFromText, getPlanningStatus]);
 
   return {
     conversations,
@@ -548,6 +637,7 @@ export function useAICoach(userInfo) {
     messages,
     isGenerating,
     isPlanning,
+    planningStatus,
     loadingConversations,
     loadingMessages,
     actionProcessingId,

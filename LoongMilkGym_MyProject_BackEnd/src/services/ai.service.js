@@ -61,6 +61,16 @@ const parseExercisePrescription = (text = "") => {
   };
 };
 
+const extractExerciseNameFromLine = (line = "") => {
+  const markdownMatch = line.match(/\[([^\]]+)\]\((?:https?:\/\/[^/)\s]+)?\/exercises\/([^)#\s]+)(#[^)]+)?\)/i);
+  if (markdownMatch) return markdownMatch[1].trim();
+
+  const nameMatch = line.match(/^[-*]?\s*([^:]+):/);
+  if (!nameMatch) return "";
+
+  return nameMatch[1].replace(/^\d+\.\s*/, "").trim();
+};
+
 const buildExerciseLookup = (dbExercises = []) => {
   const bySlug = new Map();
   const byName = new Map();
@@ -79,10 +89,9 @@ const findExerciseFromLine = (line = "", lookup) => {
     return lookup.bySlug.get(markdownMatch[2]);
   }
 
-  const nameMatch = line.match(/^[-*]?\s*([^:]+):/);
-  if (!nameMatch) return null;
+  const rawName = extractExerciseNameFromLine(line);
+  if (!rawName) return null;
 
-  const rawName = nameMatch[1].replace(/^\d+\.\s*/, "").trim();
   const normalizedName = normalizeText(rawName);
 
   if (lookup.byName.has(normalizedName)) {
@@ -132,10 +141,13 @@ const buildPlanPayloadFromAssistantText = (assistantText = "", dbExercises = [])
     if (!currentDay || currentDay.status === "rest") return;
 
     const exercise = findExerciseFromLine(line, lookup);
-    if (!exercise || currentDay.exercises.some((item) => item.exerciseId === exercise.id)) return;
+    const exerciseName = extractExerciseNameFromLine(line);
+    const exerciseKey = exercise?.id || normalizeText(exerciseName);
+    if (!exerciseKey || currentDay.exercises.some((item) => item.exerciseId === exerciseKey || normalizeText(item.exerciseName) === exerciseKey)) return;
 
     currentDay.exercises.push({
-      exerciseId: exercise.id,
+      exerciseId: exercise?.id || exerciseName,
+      exerciseName: exercise?.name || exerciseName,
       ...parseExercisePrescription(line),
     });
   });
@@ -569,7 +581,14 @@ const authorizeChannel = (userId, socketId, channelName) => {
 // Gợi ý món ăn từ AI dựa trên lượng calo và dinh dưỡng còn thiếu trong ngày
 const getNutritionSuggestions = async (userId) => {
   const nutritionService = require("./nutrition.service");
-  const todayStr = new Date().toISOString().split("T")[0];
+  const { generateText, gateway } = require("ai");
+  const aiConfig = require("@/config/ai.config");
+  const todayStr = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
   const nutrition = await nutritionService.getTodayNutrition(userId, todayStr);
   
   const targetCal = nutrition.target.caloriesTarget ?? 2000;
@@ -639,8 +658,6 @@ Yêu cầu trả về kết quả dạng JSON thuần túy (không bọc trong t
 ]`;
 
   try {
-    const { generateText } = require("ai");
-    const aiConfig = require("@/config/ai.config");
     const result = await generateText({
       model: gateway(aiConfig.modelName),
       prompt: prompt,

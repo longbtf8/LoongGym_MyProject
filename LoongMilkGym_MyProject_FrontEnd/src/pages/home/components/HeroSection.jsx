@@ -30,14 +30,14 @@ function HeroSection() {
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
           <button 
             onClick={() => navigate(paths.dashboard)}
-            className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 bg-primary text-black font-extrabold text-base rounded-2xl hover:bg-primary-hover hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shadow-lg shadow-primary/20 cursor-pointer border-0"
+            className="hover-stable-action flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 bg-primary text-black font-extrabold text-base rounded-2xl hover:bg-primary-hover active:scale-95 transition-all duration-200 shadow-lg shadow-primary/20 cursor-pointer border-0"
           >
             Khám phá ngay
           </button>
           
           <button 
             onClick={() => navigate(paths.exercises)}
-            className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-color)] font-extrabold text-base rounded-2xl hover:border-primary/40 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shadow-sm cursor-pointer"
+            className="hover-stable-action flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-color)] font-extrabold text-base rounded-2xl hover:border-primary/40 active:scale-95 transition-all duration-200 shadow-sm cursor-pointer"
           >
             <Play className="w-4 h-4 fill-current text-[var(--text-primary)]" />
             Xem demo

@@ -42,10 +42,30 @@ export const parseApiError = (err, fallbackMsg = "Đã xảy ra lỗi, vui lòng
 
   // 2. Kiểm tra lỗi Validation trả về từ Backend (dạng object errors)
   if (err?.data?.errors) {
-    const firstErrorKey = Object.keys(err.data.errors)[0];
-    const errorMsg = err.data.errors[firstErrorKey][0];
+    const fieldLabels = {
+      fullName: "Họ và tên",
+      phone: "Số điện thoại",
+      birthDate: "Ngày sinh",
+      gender: "Giới tính",
+      address: "Địa chỉ",
+      height: "Chiều cao",
+      weight: "Cân nặng",
+      heightUnit: "Đơn vị chiều cao",
+      weightUnit: "Đơn vị cân nặng",
+      calorieGoal: "Mục tiêu Calo",
+      fitnessLevel: "Trình độ thể chất",
+      goal: "Mục tiêu tập luyện",
+      bio: "Tiểu sử",
+    };
+
+    const messages = Object.entries(err.data.errors).flatMap(([field, errors]) => {
+      const label = fieldLabels[field] || field;
+      const fieldErrors = Array.isArray(errors) ? errors : [errors];
+      return fieldErrors.filter(Boolean).map((message) => `${label}: ${message}`);
+    });
+
     return {
-      message: errorMsg || "Dữ liệu không hợp lệ.",
+      message: messages.join("\n") || "Dữ liệu không hợp lệ.",
       isSystemError: false,
     };
   }

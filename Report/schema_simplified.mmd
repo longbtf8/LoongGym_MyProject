@@ -1,0 +1,85 @@
+erDiagram
+    %% ==========================================
+    %% 9 BẢNG CỐT LÕI CỦA HỆ THỐNG LOONGGYM
+    %% ==========================================
+    
+    users {
+        string id PK "Mã định danh (UUID)"
+        string email "Email tài khoản"
+        string role "Vai trò (USER, ADMIN)"
+        string status "Trạng thái (ACTIVE, SUSPENDED)"
+    }
+
+    user_profile {
+        string id PK "UUID"
+        string userId FK "Liên kết Users (1-1)"
+        string fullName "Họ và tên học viên"
+        float heightCm "Chiều cao (cm)"
+        float weightKg "Cân nặng (kg)"
+        int calorieGoal "Calo mục tiêu hàng ngày"
+    }
+
+    exercises {
+        string id PK "UUID"
+        string name "Tên bài tập (Bench Press...)"
+        string difficulty "Độ khó (beginner...)"
+        string exerciseType "Phân loại (strength...)"
+    }
+
+    workout_programs {
+        string id PK "UUID"
+        string title "Tên chương trình tập mẫu"
+        decimal price "Giá mua chương trình"
+        string goal "Mục tiêu (Tăng cơ, giảm mỡ)"
+    }
+
+    workout_sessions {
+        string id PK "UUID"
+        string userId FK "Học viên tập (1-N)"
+        string title "Tên buổi tập thực tế"
+        datetime startedAt "Giờ bắt đầu"
+        datetime endedAt "Giờ kết thúc"
+        string status "Trạng thái (completed...)"
+    }
+
+    meal_logs {
+        string id PK "UUID"
+        string userId FK "Người ghi nhật ký"
+        datetime mealDate "Ngày ăn uống"
+        string mealType "Bữa ăn (Sáng, Trưa, Tối...)"
+    }
+
+    products {
+        string id PK "UUID"
+        string title "Tên sản phẩm cửa hàng"
+        string productType "Loại (ebook, program...)"
+        decimal price "Giá bán sản phẩm"
+    }
+
+    orders {
+        string id PK "UUID"
+        string userId FK "Khách hàng mua"
+        string orderNumber "Mã số đơn hàng"
+        string status "Trạng thái đơn hàng"
+        decimal total "Tổng tiền đơn hàng"
+    }
+
+    community_posts {
+        string id PK "UUID"
+        string userId FK "Người đăng bài"
+        string content "Nội dung bài viết"
+        string postType "Loại bài viết (workout_share...)"
+        string relatedWorkoutSessionId FK "Buổi tập đính kèm (nếu có)"
+    }
+
+    %% ==========================================
+    %% MỐI QUAN HỆ CHÍNH
+    %% ==========================================
+    users ||--o| user_profile : "có thông tin hồ sơ"
+    users ||--o{ workout_sessions : "thực hiện các buổi tập"
+    users ||--o{ meal_logs : "ghi chép nhật ký ăn uống"
+    users ||--o{ orders : "thực hiện mua hàng"
+    users ||--o{ community_posts : "chia sẻ bài đăng"
+    
+    community_posts }o--o| workout_sessions : "đính kèm kết quả tập"
+    orders }o--o{ products : "chứa sản phẩm mua"

@@ -212,7 +212,7 @@ function RecommendedPrograms() {
                   window.scrollTo({ top: 0, behavior: "smooth" });
                   navigate(paths.myPlan);
                 }}
-                className="flex items-center gap-1.5 px-6 py-3 bg-primary text-black font-extrabold text-xs rounded-xl shadow-lg shadow-primary/15 hover:bg-primary-hover hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer border-0"
+                className="hover-stable-action flex items-center gap-1.5 px-6 py-3 bg-primary text-black font-extrabold text-xs rounded-xl shadow-lg shadow-primary/15 hover:bg-primary-hover active:scale-95 transition-all duration-200 cursor-pointer border-0"
               >
                 Tiếp tục tập luyện
                 <ArrowRight className="w-4 h-4" />
@@ -257,7 +257,7 @@ function RecommendedPrograms() {
           {visiblePrograms.map((program) => (
             <div 
               key={program.id}
-              className="flex flex-col p-6 rounded-3xl border border-indigo-500/20 dark:border-indigo-500/30 bg-[var(--bg-secondary)] shadow-sm hover:border-indigo-500 dark:hover:border-indigo-400 hover:shadow-lg hover:shadow-indigo-500/5 hover:-translate-y-1.5 transition-all duration-300 min-h-[280px]"
+              className="hover-stable-card flex flex-col p-6 rounded-3xl border border-indigo-500/20 dark:border-indigo-500/30 bg-[var(--bg-secondary)] shadow-sm hover:border-indigo-500 dark:hover:border-indigo-400 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300 min-h-[280px]"
             >
               {/* Badge/Tags */}
               <div className="flex items-center justify-between mb-4">

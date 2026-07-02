@@ -8,6 +8,8 @@ import { STORAGE_KEYS } from "@/services/api";
 import PasswordInput from "@/components/PasswordInput";
 import { useState } from "react";
 import { parseApiError } from "@/utils/errorParser";
+import { useDispatch } from "react-redux";
+import { resetUserScopedApiCaches } from "@/services/cacheUtils";
 
 // Khai báo schema validate với Zod bằng tiếng Việt
 const loginSchema = z.object({
@@ -24,6 +26,7 @@ const loginSchema = z.object({
 
 function Login() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [loginUser] = useLoginMutation();
   const [resendVerification, { isLoading: isResending }] = useResendVerificationMutation();
 
@@ -60,6 +63,7 @@ function Login() {
         const { access_token, refresh_token } = response.data;
         localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, access_token);
         localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refresh_token);
+        resetUserScopedApiCaches(dispatch);
 
         setTimeout(() => {
           navigate("/");

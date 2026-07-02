@@ -6,6 +6,7 @@ export default function AnalysisSidebar({
   dayDetails,
   weekDays,
   selectedDayId,
+  todayStr,
   exercises,
   isCompleting,
   isPending,
@@ -41,7 +42,6 @@ export default function AnalysisSidebar({
   const maxVolume = Math.max(...volumeData.map(v => v.volume), 1);
 
   const scheduledDateStr = dayDetails?.day?.scheduledDate;
-  const todayStr = new Date().toISOString().split("T")[0];
   const datePart = scheduledDateStr ? scheduledDateStr.split("T")[0] : "";
   const isPast = datePart && datePart < todayStr;
   const isFuture = datePart && datePart > todayStr;
@@ -51,7 +51,7 @@ export default function AnalysisSidebar({
 
   const isButtonDisabled = isCompleting || isCompletedOrPast || isRest || isFuture || isPending;
 
-  let buttonText = "Hoàn tất buổi tập";
+  let buttonText = "Hoàn thành buổi tập";
   if (dayDetails?.day?.status === "skipped") {
     buttonText = "Đã bỏ qua";
   } else if (dayDetails?.day?.status === "completed" || isPast) {

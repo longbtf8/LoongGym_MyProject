@@ -95,8 +95,8 @@ const getDashboardSummary = async (userId) => {
   };
 
   try {
-    const today = new Date();
-    const utcToday = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+    const todayParts = getVietnamDateParts();
+    const utcToday = new Date(Date.UTC(todayParts.year, todayParts.month - 1, todayParts.day));
     const todayRecovery = await prisma.recoveryLog.findUnique({
       where: {
         userId_logDate: {

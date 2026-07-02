@@ -250,7 +250,7 @@ const createProgram = async (req, res, next) => {
         goal: goal || null,
         difficulty: difficulty || null,
         price,
-        isPublished: false, // Default to false, status action will update it
+        isPublished,
         coverImageUrl,
         metadata: {
           cycleLength: 0,

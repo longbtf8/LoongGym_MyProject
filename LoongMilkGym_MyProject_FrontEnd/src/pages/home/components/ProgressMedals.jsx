@@ -383,7 +383,7 @@ function ProgressMedals() {
 
           <button
             onClick={handleNavigateDashboard}
-            className="w-full py-3 bg-[var(--bg-color)] border border-[var(--border-color)] hover:border-primary/45 text-[var(--text-color)] font-extrabold text-xs rounded-xl hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shadow-sm cursor-pointer"
+            className="hover-stable-action w-full py-3 bg-[var(--bg-color)] border border-[var(--border-color)] hover:border-primary/45 text-[var(--text-color)] font-extrabold text-xs rounded-xl active:scale-95 transition-all duration-200 shadow-sm cursor-pointer"
           >
             {isLoggedIn ? "Xem bảng điều khiển" : "Đăng nhập để bắt đầu"}
           </button>

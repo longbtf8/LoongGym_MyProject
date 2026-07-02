@@ -1,0 +1,409 @@
+erDiagram
+    %% ==========================================
+    %% KHỐI 1: HỆ THỐNG NGƯỜI DÙNG (USER SYSTEM)
+    %% ==========================================
+    users {
+        string id PK "UUID"
+        string email "Tài khoản đăng nhập (Unique)"
+        string passwordHash "Mật khẩu đã mã hóa"
+        string role "Vai trò (USER, ADMIN,...)"
+        string status "Trạng thái (ACTIVE, SUSPENDED)"
+        boolean isSuperAdmin "Quyền tối cao"
+        datetime lastLoginAt "Đăng nhập cuối"
+        datetime suspendedUntil "Tạm khóa đến"
+        datetime createdAt "Ngày tạo"
+        datetime updatedAt "Ngày cập nhật"
+    }
+
+    user_profile {
+        string id PK "UUID"
+        string userId FK "Liên kết sang users (1-1)"
+        string fullName "Họ và tên"
+        string avatarUrl "Ảnh đại diện"
+        string gender "Giới tính"
+        datetime birthDate "Ngày sinh"
+        float heightCm "Chiều cao"
+        float weightKg "Cân nặng"
+        string fitnessLevel "Trình độ thể chất"
+        string goal "Mục tiêu thể hình"
+        string bio "Giới thiệu ngắn"
+        int calorieGoal "Calo mục tiêu/ngày"
+        float totalCaloriesBurned "Tổng calo đã đốt"
+        int totalWorkoutDays "Tổng số ngày tập"
+        string coverPhotoUrl "Ảnh bìa"
+    }
+
+    user_settings {
+        string id PK "UUID"
+        string userId FK "Liên kết sang users (1-1)"
+        string language "Ngôn ngữ sử dụng"
+        string unitSystem "Hệ đo lường (metric/imperial)"
+        string theme "Giao diện (light/dark)"
+    }
+
+    users ||--o| user_profile : "1-1 Profile"
+    users ||--o| user_settings : "1-1 Settings"
+
+
+    %% ==========================================
+    %% KHỐI 2: THƯ VIỆN BÀI TẬP (EXERCISE LIBRARY)
+    %% ==========================================
+    exercises {
+        string id PK "UUID"
+        string name "Tên bài tập"
+        string slug "Đường dẫn bài tập (Unique)"
+        string description "Mô tả kỹ thuật"
+        string difficulty "Độ khó (beginner, intermediate, advanced)"
+        string exerciseType "Loại (strength, cardio, mobility, hiit)"
+        string primaryEquipmentId FK "Thiết bị chính sử dụng"
+        float estimatedCalories "Calo tiêu hao định mức"
+        int durationSeconds "Thời gian ước tính"
+        string thumbnailUrl "Ảnh đại diện bài tập"
+        string videoUrl "Video hướng dẫn"
+    }
+
+    muscle_groups {
+        string id PK "UUID"
+        string name "Tên nhóm cơ (Ngực, Lưng...)"
+        string slug "Đường dẫn nhóm cơ (Unique)"
+        string parentId FK "Nhóm cơ cha (cấu trúc hình cây)"
+        string imageUrl "Bản đồ cơ bắp"
+    }
+
+    equipment {
+        string id PK "UUID"
+        string name "Tên thiết bị (Tạ đòn, Máy...)"
+        string slug "Đường dẫn thiết bị (Unique)"
+    }
+
+    exercise_muscles {
+        string exerciseId PK "Mã bài tập (FK)"
+        string muscleGroupId PK "Mã nhóm cơ (FK)"
+        string role PK "Vai trò (primary: chính, secondary: phụ)"
+    }
+
+    exercises }o--o| equipment : "uses"
+    exercise_muscles }o--|| exercises : "belongs to"
+    exercise_muscles }o--|| muscle_groups : "targets"
+    muscle_groups ||--o| muscle_groups : "parent-child hierarchy"
+
+
+    %% ==========================================
+    %% KHỐI 3: GIÁO ÁN MẪU & LỊCH TRÌNH CÁ NHÂN (PROGRAMS & PLANS)
+    %% ==========================================
+    workout_programs {
+        string id PK "UUID"
+        string title "Tên chương trình (PPL, 4 ngày...)"
+        string slug "Đường dẫn chương trình (Unique)"
+        string description "Mô tả giáo án"
+        string goal "Mục tiêu giáo án"
+        string difficulty "Mức độ phù hợp"
+        string coverImageUrl "Ảnh bìa giáo án"
+        decimal price "Giá bán (nếu có)"
+    }
+
+    workout_program_days {
+        string id PK "UUID"
+        string programId FK "Chương trình cha"
+        string title "Tên ngày tập (Day 1: Chest...)"
+        string focusArea "Nhóm cơ tập trung"
+        int cycleDay "Thứ tự ngày trong chu kỳ"
+    }
+
+    workout_templates {
+        string id PK "UUID"
+        string programDayId FK "Liên kết ngày tập của chương trình"
+        string title "Tên mẫu tập luyện"
+        string description "Ghi chú mẫu"
+        int estimatedDurationMinutes "Thời gian dự kiến (phút)"
+    }
+
+    workout_template_exercises {
+        string id PK "UUID"
+        string workoutTemplateId FK "Liên kết mẫu tập"
+        string exerciseId FK "Liên kết bài tập"
+        int exerciseOrder "Thứ tự bài tập trong ngày"
+        int sets "Số set mặc định"
+        int repsMin "Số rep tối thiểu"
+        int repsMax "Số rep tối đa"
+        decimal weightKg "Mức tạ đề xuất"
+        int restSeconds "Thời gian nghỉ giữa set"
+    }
+
+    user_training_plans {
+        string id PK "UUID"
+        string userId FK "Người đăng ký tập"
+        string programId FK "Chương trình mẫu được áp dụng"
+        string title "Tên lịch tập cá nhân"
+        datetime startDate "Ngày bắt đầu lịch tập"
+        string status "Trạng thái (active, completed)"
+    }
+
+    user_training_plan_days {
+        string id PK "UUID"
+        string userTrainingPlanId FK "Lịch tập tổng"
+        datetime scheduledDate "Ngày thực tế cần tập"
+        string title "Tên ngày tập cá nhân"
+        string status "Trạng thái (pending, completed, skipped)"
+    }
+
+    workout_program_days }o--|| workout_programs : "belongs to"
+    workout_templates }o--o| workout_program_days : "belongs to"
+    workout_template_exercises }o--|| workout_templates : "contains"
+    workout_template_exercises }o--|| exercises : "references"
+    user_training_plans }o--|| users : "belongs to"
+    user_training_plans }o--o| workout_programs : "instantiates"
+    user_training_plan_days }o--|| user_training_plans : "contains"
+
+
+    %% ==========================================
+    %% KHỐI 4: KẾT QUẢ TẬP LUYỆN THỰC TẾ (WORKOUT LOGS)
+    %% ==========================================
+    workout_sessions {
+        string id PK "UUID"
+        string userId FK "Người tập"
+        string planDayId FK "Lịch tập ngày (nếu theo plan)"
+        string title "Tên buổi tập"
+        datetime startedAt "Thời điểm bắt đầu"
+        datetime endedAt "Thời điểm kết thúc"
+        int durationSeconds "Thời gian tập thực tế (giây)"
+        string status "Trạng thái (in_progress, completed)"
+        int perceivedEffort "Độ mệt cảm nhận (1-10)"
+        string notes "Ghi chú của người tập"
+    }
+
+    workout_session_exercises {
+        string id PK "UUID"
+        string workoutSessionId FK "Buổi tập cha"
+        string exerciseId FK "Bài tập thực hiện"
+        int exerciseOrder "Thứ tự thực hiện"
+        string status "Trạng thái (completed, active)"
+    }
+
+    workout_sets {
+        string id PK "UUID"
+        string sessionExerciseId FK "Bài tập trong buổi"
+        int setNumber "Set thứ mấy"
+        string setType "Loại set (working, warm_up, drop_set)"
+        int reps "Số rep thực tế thực hiện"
+        decimal weightKg "Mức tạ thực tế (kg)"
+        int durationSeconds "Thời gian tập set (giây)"
+        boolean isCompleted "Đã hoàn thành set"
+        datetime completedAt "Giờ hoàn thành"
+    }
+
+    workout_sessions }o--|| users : "belongs to"
+    workout_sessions }o--o| user_training_plan_days : "logs"
+    workout_session_exercises }o--|| workout_sessions : "contains"
+    workout_session_exercises }o--|| exercises : "references"
+    workout_sets }o--|| workout_session_exercises : "has sets"
+
+
+    %% ==========================================
+    %% KHỐI 5: DINH DƯỠNG & SỨC KHỎE (NUTRITION & HEALTH)
+    %% ==========================================
+    nutrition_targets {
+        string id PK "UUID"
+        string userId FK "Người dùng"
+        datetime targetDate "Ngày đặt mục tiêu (Unique)"
+        int caloriesTarget "Mục tiêu Calo (kcal)"
+        decimal proteinGTarget "Mục tiêu Đạm (g)"
+        decimal carbsGTarget "Mục tiêu Tinh bột (g)"
+        decimal fatGTarget "Mục tiêu Chất béo (g)"
+        int waterMlTarget "Mục tiêu Nước (ml)"
+    }
+
+    food_items {
+        string id PK "UUID"
+        string name "Tên thực phẩm (Trứng, Ức gà...)"
+        string brand "Thương hiệu sản xuất"
+        decimal servingSizeG "Định lượng chuẩn (g)"
+        int calories "Calo định mức"
+        decimal proteinG "Đạm"
+        decimal carbsG "Tinh bột"
+        decimal fatG "Chất béo"
+    }
+
+    meal_logs {
+        string id PK "UUID"
+        string userId FK "Người dùng ghi nhật ký"
+        datetime mealDate "Ngày ăn"
+        string mealType "Bữa ăn (Sáng, Trưa, Tối, Phụ)"
+        string note "Ghi chú bữa ăn"
+    }
+
+    meal_log_items {
+        string id PK "UUID"
+        string mealLogId FK "Nhật ký bữa ăn cha"
+        string foodItemId FK "Thực phẩm chuẩn trong thư viện"
+        string customFoodName "Tên món tự nhập (nếu không có sẵn)"
+        decimal quantityG "Khối lượng ăn thực tế (g)"
+        int calories "Calo tính toán thực tế"
+        decimal proteinG "Đạm thực tế"
+        decimal carbsG "Tinh bột thực tế"
+        decimal fatG "Chất béo thực tế"
+    }
+
+    body_metrics {
+        string id PK "UUID"
+        string userId FK "Người dùng"
+        datetime measuredAt "Ngày đo chỉ số"
+        float weightKg "Cân nặng đo được"
+        float bodyFatPercent "Tỷ lệ mỡ (%)"
+        float muscleMassKg "Khối lượng cơ (kg)"
+        float waistCm "Vòng eo (cm)"
+        float chestCm "Vòng ngực (cm)"
+        float armCm "Vòng bắp tay (cm)"
+        float thighCm "Vòng đùi (cm)"
+    }
+
+    nutrition_targets }o--|| users : "belongs to"
+    meal_logs }o--|| users : "belongs to"
+    meal_log_items }o--|| meal_logs : "contains"
+    meal_log_items }o--o| food_items : "references"
+    body_metrics }o--|| users : "belongs to"
+
+
+    %% ==========================================
+    %% KHỐI 6: CỬA HÀNG SẢN PHẨM SỐ (DIGITAL STORE)
+    %% ==========================================
+    products {
+        string id PK "UUID"
+        string categoryId FK "Nhóm sản phẩm"
+        string title "Tên sản phẩm (Ebook, Giáo án đặc biệt...)"
+        string slug "Đường dẫn sản phẩm (Unique)"
+        string productType "Loại sản phẩm (ebook, meal_plan, program)"
+        decimal price "Giá tiền"
+        string status "Trạng thái (draft, active, archived)"
+    }
+
+    product_categories {
+        string id PK "UUID"
+        string name "Tên danh mục (Dinh dưỡng, Tập luyện...)"
+        string slug "Đường dẫn danh mục (Unique)"
+    }
+
+    carts {
+        string id PK "UUID"
+        string userId FK "Chủ giỏ hàng (1-1)"
+        string status "Trạng thái (active, abandoned)"
+    }
+
+    cart_items {
+        string id PK "UUID"
+        string cartId FK "Thuộc giỏ hàng nào"
+        string productId FK "Sản phẩm chọn mua"
+        int quantity "Số lượng mua"
+        decimal unitPrice "Đơn giá lúc bỏ giỏ"
+    }
+
+    orders {
+        string id PK "UUID"
+        string userId FK "Khách hàng mua"
+        string orderNumber "Mã hóa đơn duy nhất (Unique)"
+        string status "Trạng thái (pending, paid, failed, refunded)"
+        decimal subtotal "Tiền hàng tạm tính"
+        decimal total "Tổng tiền phải trả"
+    }
+
+    order_items {
+        string id PK "UUID"
+        string orderId FK "Đơn hàng cha"
+        string productId FK "Sản phẩm trong đơn"
+        string productTitle "Tiêu đề lưu vết thời điểm mua"
+        int quantity "Số lượng mua"
+        decimal unitPrice "Đơn giá thời điểm mua"
+        decimal totalPrice "Thành tiền sản phẩm"
+    }
+
+    payments {
+        string id PK "UUID"
+        string orderId FK "Đơn hàng cần thanh toán"
+        string provider "Cổng thanh toán (momo, zalopay, stripe...)"
+        decimal amount "Số tiền thanh toán"
+        string status "Trạng thái thanh toán"
+    }
+
+    products }o--o| product_categories : "belongs to"
+    carts ||--o| users : "belongs to"
+    cart_items }o--|| carts : "contains"
+    cart_items }o--|| products : "references"
+    orders }o--|| users : "belongs to"
+    order_items }o--|| orders : "contains"
+    order_items }o--|| products : "references"
+    payments }o--|| orders : "pays for"
+
+
+    %% ==========================================
+    %% KHỐI 7: TƯƠNG TÁC CỘNG ĐỒNG (COMMUNITY)
+    %% ==========================================
+    community_posts {
+        string id PK "UUID"
+        string userId FK "Người đăng bài"
+        string content "Nội dung bài viết"
+        string postType "Phân loại (general, workout_share)"
+        string visibility "Chế độ xem (public, followers, private)"
+        string relatedWorkoutSessionId FK "Buổi tập thực tế liên kết (nếu có)"
+        string moderationStatus "Kiểm duyệt (VISIBLE, HIDDEN)"
+    }
+
+    post_comments {
+        string id PK "UUID"
+        string postId FK "Bài viết được bình luận"
+        string userId FK "Người bình luận"
+        string parentCommentId FK "Bình luận cha (hỗ trợ reply lồng nhau)"
+        string content "Nội dung bình luận"
+    }
+
+    post_reactions {
+        string id PK "UUID"
+        string postId FK "Bài viết được thả tim"
+        string userId FK "Người thả tim"
+        string reactionType "Loại cảm xúc (like, love...)"
+    }
+
+    user_follows {
+        string followerId PK "Người theo dõi (FK)"
+        string followingId PK "Người được theo dõi (FK)"
+    }
+
+    community_posts }o--|| users : "posted by"
+    community_posts }o--o| workout_sessions : "shares"
+    post_comments }o--|| community_posts : "belongs to"
+    post_comments }o--|| users : "commented by"
+    post_comments }o--o| post_comments : "nested reply"
+    post_reactions }o--|| community_posts : "reacts to"
+    post_reactions }o--|| users : "reacted by"
+    user_follows }o--|| users : "follower"
+    user_follows }o--|| users : "following"
+
+
+    %% ==========================================
+    %% KHỐI 8: HỆ THỐNG TRỢ LÝ AI (AI COACH SYSTEM)
+    %% ==========================================
+    ai_conversations {
+        string id PK "UUID"
+        string userId FK "Người dùng chat"
+        string title "Tiêu đề hội thoại"
+        string contextType "Bối cảnh hội thoại (nutrition, workout)"
+    }
+
+    ai_messages {
+        string id PK "UUID"
+        string conversationId FK "Hội thoại chứa tin nhắn"
+        string role "Vai trò gửi (user, assistant)"
+        string content "Nội dung tin nhắn"
+    }
+
+    ai_recommendations {
+        string id PK "UUID"
+        string userId FK "Người dùng nhận đề xuất"
+        string conversationId FK "Đề xuất sinh ra từ cuộc hội thoại nào"
+        string recommendationType "Loại đề xuất (workout_plan_tweak...)"
+        string status "Trạng thái (pending, applied)"
+    }
+
+    ai_conversations }o--|| users : "belongs to"
+    ai_messages }o--|| ai_conversations : "contains"
+    ai_recommendations }o--|| users : "belongs to"
+    ai_recommendations }o--o| ai_conversations : "generated from"

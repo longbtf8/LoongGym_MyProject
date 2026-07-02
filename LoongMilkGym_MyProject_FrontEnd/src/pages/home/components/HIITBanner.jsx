@@ -35,7 +35,7 @@ function HIITBanner() {
 
           <button
             onClick={handleActionClick}
-            className="flex items-center gap-1.5 px-5 py-3 bg-primary text-black font-extrabold text-xs rounded-xl shadow-lg shadow-primary/15 hover:bg-primary-hover hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer border-0"
+            className="hover-stable-action flex items-center gap-1.5 px-5 py-3 bg-primary text-black font-extrabold text-xs rounded-xl shadow-lg shadow-primary/15 hover:bg-primary-hover active:scale-95 transition-all duration-200 cursor-pointer border-0"
           >
             Đến cộng đồng
             <ArrowRight className="w-4 h-4" />

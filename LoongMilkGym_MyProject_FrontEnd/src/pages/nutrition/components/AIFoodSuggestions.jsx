@@ -3,6 +3,7 @@ import { Sparkles, Plus, Loader2, Check } from "lucide-react";
 import httpRequest from "@/services/api";
 
 function AIFoodSuggestions({
+  userCacheKey,
   calRemaining,
   handleQuickAddFood,
 }) {
@@ -12,8 +13,10 @@ function AIFoodSuggestions({
   const [addingId, setAddingId] = useState(null);
 
   useEffect(() => {
+    if (!userCacheKey) return;
+
     const today = new Date().toISOString().split("T")[0];
-    const cacheKey = `ai_food_suggestions_${today}`;
+    const cacheKey = `ai_food_suggestions_${userCacheKey}_${today}`;
     const cachedData = localStorage.getItem(cacheKey);
     if (cachedData) {
       try {
@@ -21,8 +24,10 @@ function AIFoodSuggestions({
       } catch (e) {
         localStorage.removeItem(cacheKey);
       }
+    } else {
+      setSuggestions(null);
     }
-  }, []);
+  }, [userCacheKey]);
 
   const fetchSuggestions = async () => {
     try {
@@ -32,12 +37,12 @@ function AIFoodSuggestions({
       if (res.success && res.data) {
         setSuggestions(res.data.suggestions);
         const today = new Date().toISOString().split("T")[0];
-        const cacheKey = `ai_food_suggestions_${today}`;
+        const cacheKey = `ai_food_suggestions_${userCacheKey}_${today}`;
         
-        // Clear old keys starting with ai_food_suggestions_
+        // Clear old keys for this account only.
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
-          if (key && key.startsWith("ai_food_suggestions_") && key !== cacheKey) {
+          if (key && key.startsWith(`ai_food_suggestions_${userCacheKey}_`) && key !== cacheKey) {
             localStorage.removeItem(key);
             i--; // Adjust index
           }

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>LoongGym Database Schema</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#dbeef7 0%,#c5e3f0 50%,#b8dce8 100%);padding:30px;min-width:1900px}
+.container{width:1860px;margin:0 auto;background:rgba(255,255,255,0.85);border-radius:16px;padding:30px;border:3px solid #b0d4e8;position:relative}
+
+/* Groups */
+.group{border-radius:10px;padding:18px 14px 14px;position:relative;background:rgba(255,255,255,0.6)}
+.group-label{position:absolute;top:-13px;left:16px;font-weight:800;font-size:13px;padding:3px 14px;border-radius:6px;letter-spacing:0.5px;white-space:nowrap}
+.group-content{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}
+
+/* Table cards */
+.tbl{background:#fff;border-radius:8px;border:2px solid #ddd;min-width:195px;max-width:240px;box-shadow:0 2px 6px rgba(0,0,0,0.07)}
+.tbl-head{padding:7px 10px;font-weight:700;font-size:13px;border-bottom:2px solid #ddd;display:flex;align-items:center;gap:5px;border-radius:6px 6px 0 0;color:#fff}
+.tbl-body{padding:6px 10px}
+.f{font-size:11.5px;padding:1.5px 0;color:#333;display:flex;gap:4px;align-items:center}
+.f .k{font-size:10px}
+.f .t{color:#888;font-size:10.5px;margin-left:auto;white-space:nowrap}
+
+/* Color themes */
+.g-red{border:3px solid #e53935}.g-red .group-label{background:#e53935;color:#fff}
+.g-blue{border:3px solid #1e88e5}.g-blue .group-label{background:#1e88e5;color:#fff}
+.g-purple{border:3px solid #7b1fa2}.g-purple .group-label{background:#7b1fa2;color:#fff}
+.g-green{border:3px solid #43a047}.g-green .group-label{background:#43a047;color:#fff}
+.g-orange{border:3px solid #f57c00}.g-orange .group-label{background:#f57c00;color:#fff}
+.g-pink{border:3px solid #c2185b}.g-pink .group-label{background:#c2185b;color:#fff}
+.g-teal{border:3px solid #00897b}.g-teal .group-label{background:#00897b;color:#fff}
+.g-indigo{border:3px solid #3949ab}.g-indigo .group-label{background:#3949ab;color:#fff}
+
+.h-red{background:#e53935;border-color:#c62828}
+.h-blue{background:#1e88e5;border-color:#1565c0}
+.h-purple{background:#7b1fa2;border-color:#6a1b9a}
+.h-green{background:#43a047;border-color:#2e7d32}
+.h-orange{background:#f57c00;border-color:#e65100}
+.h-pink{background:#c2185b;border-color:#ad1457}
+.h-teal{background:#00897b;border-color:#00695c}
+.h-indigo{background:#3949ab;border-color:#283593}
+
+.h-red2{background:#ef5350;border-color:#e53935}
+.h-blue2{background:#42a5f5;border-color:#1e88e5}
+.h-purple2{background:#ab47bc;border-color:#7b1fa2}
+.h-green2{background:#66bb6a;border-color:#43a047}
+.h-orange2{background:#ffa726;border-color:#f57c00}
+.h-pink2{background:#e91e63;border-color:#c2185b}
+.h-teal2{background:#26a69a;border-color:#00897b}
+.h-indigo2{background:#5c6bc0;border-color:#3949ab}
+
+/* Layout */
+.row{display:flex;gap:16px;margin-bottom:20px}
+.row:last-child{margin-bottom:0}
+
+/* Legend */
+.legend{background:#fafafa;border:2px solid #bdbdbd;border-radius:8px;padding:12px 16px;min-width:180px;max-width:200px;position:absolute;top:30px;right:30px}
+.legend h3{font-size:13px;margin-bottom:8px;text-align:center;border-bottom:1px solid #ddd;padding-bottom:6px}
+.legend .item{font-size:11.5px;padding:2px 0;display:flex;align-items:center;gap:6px}
+
+/* Title */
+.main-title{text-align:center;margin-bottom:24px}
+.main-title h1{font-size:20px;color:#1565c0;background:linear-gradient(135deg,#e3f2fd,#bbdefb);display:inline-block;padding:10px 30px;border-radius:8px;border:2px solid #1565c0}
+.main-title p{font-size:12px;color:#555;margin-top:4px}
+
+/* Relationship labels */
+.rel{font-size:10px;color:#666;background:#f5f5f5;padding:1px 6px;border-radius:3px;border:1px solid #ddd;white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Title -->
+<div class="main-title">
+<h1>📐 LOONGGYM DATABASE ARCHITECTURE</h1>
+<p>Sơ đồ Thiết kế Cơ sở dữ liệu — 8 Phân hệ Nghiệp vụ Chính</p>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+<h3>📌 CHÚ THÍCH</h3>
+<div class="item">🔑 PK : Khóa chính</div>
+<div class="item">🔗 FK : Khóa ngoại</div>
+<div class="item">🔒 Unique : Giá trị duy nhất</div>
+<div class="item">1 : Một</div>
+<div class="item">N : Nhiều</div>
+<div class="item">─── : Quan hệ kết nối</div>
+</div>
+
+<!-- ROW 1: Users -->
+<div class="row">
+<div class="group g-red" style="flex:1;margin-right:220px">
+<div class="group-label">👤 NGƯỜI DÙNG & CẤU HÌNH (USER & CONFIG)</div>
+<div class="group-content">
+
+<div class="tbl">
+<div class="tbl-head h-red">👤 users</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f">email</div>
+<div class="f">password_hash</div>
+<div class="f">role <span class="t">(Enum)</span></div>
+<div class="f">status <span class="t">(Enum)</span></div>
+<div class="f">is_super_admin <span class="t">(Boolean)</span></div>
+<div class="f">last_login_at</div>
+<div class="f">suspended_until</div>
+<div class="f">created_at</div>
+<div class="f">updated_at</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;padding:0 6px">
+<span class="rel">1 ── 1</span>
+<span class="rel">1 ── 1</span>
+</div>
+
+<div class="tbl">
+<div class="tbl-head h-red2">📋 user_profile</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f"><span class="k">🔗</span> user_id <span class="t">(FK)</span></div>
+<div class="f">full_name</div>
+<div class="f">avatar_url</div>
+<div class="f">gender</div>
+<div class="f">birth_date</div>
+<div class="f">height_cm</div>
+<div class="f">weight_kg</div>
+<div class="f">fitness_level</div>
+<div class="f">goal</div>
+<div class="f">bio</div>
+<div class="f">calorie_goal</div>
+<div class="f">total_calories_burned</div>
+<div class="f">total_workout_days</div>
+<div class="f">cover_photo_url</div>
+</div>
+</div>
+
+<div class="tbl">
+<div class="tbl-head h-red">⚙️ user_settings</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f"><span class="k">🔗</span> user_id <span class="t">(FK)</span></div>
+<div class="f">language</div>
+<div class="f">unit_system</div>
+<div class="f">theme</div>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- ROW 2: Exercise, Programs, Training Logs -->
+<div class="row">
+
+<!-- Exercise Library -->
+<div class="group g-blue" style="flex:1">
+<div class="group-label">💪 THƯ VIỆN BÀI TẬP</div>
+<div class="group-content">
+
+<div class="tbl">
+<div class="tbl-head h-blue">🏋️ exercises</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f">name</div>
+<div class="f">slug <span class="t">(Unique)</span></div>
+<div class="f">description</div>
+<div class="f">difficulty <span class="t">(Enum)</span></div>
+<div class="f">exercise_type <span class="t">(Enum)</span></div>
+<div class="f"><span class="k">🔗</span> primary_equipment_id <span class="t">(FK)</span></div>
+<div class="f">estimated_calories</div>
+<div class="f">duration_seconds</div>
+<div class="f">thumbnail_url</div>
+<div class="f">video_url</div>
+</div>
+</div>
+
+<div class="tbl">
+<div class="tbl-head h-blue2">🦴 muscle_groups</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f">name</div>
+<div class="f">slug <span class="t">(Unique)</span></div>
+<div class="f"><span class="k">🔗</span> parent_id <span class="t">(FK)</span></div>
+<div class="f">image_url</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- Programs & Plans -->
+<div class="group g-purple" style="flex:1">
+<div class="group-label">📋 GIÁO ÁN & LỊCH TRÌNH</div>
+<div class="group-content">
+
+<div class="tbl">
+<div class="tbl-head h-purple">📚 workout_programs</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f">title</div>
+<div class="f">slug <span class="t">(Unique)</span></div>
+<div class="f">description</div>
+<div class="f">goal</div>
+<div class="f">difficulty <span class="t">(Enum)</span></div>
+<div class="f">cover_image_url</div>
+<div class="f">price</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 4px">
+<span class="rel">1 ── N</span>
+</div>
+
+<div class="tbl">
+<div class="tbl-head h-purple2">📅 user_training_plans</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f"><span class="k">🔗</span> user_id <span class="t">(FK)</span></div>
+<div class="f"><span class="k">🔗</span> program_id <span class="t">(FK)</span></div>
+<div class="f">title</div>
+<div class="f">start_date</div>
+<div class="f">status <span class="t">(Enum)</span></div>
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- Training Logs -->
+<div class="group g-green" style="flex:1">
+<div class="group-label">📅 THEO DÕI TẬP LUYỆN</div>
+<div class="group-content">
+
+<div class="tbl">
+<div class="tbl-head h-green">🏃 workout_sessions</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f"><span class="k">🔗</span> user_id <span class="t">(FK)</span></div>
+<div class="f"><span class="k">🔗</span> plan_day_id <span class="t">(FK)</span></div>
+<div class="f">title</div>
+<div class="f">started_at</div>
+<div class="f">ended_at</div>
+<div class="f">duration_seconds</div>
+<div class="f">status <span class="t">(Enum)</span></div>
+<div class="f">perceived_effort</div>
+<div class="f">notes</div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 4px">
+<span class="rel">1 ── N</span>
+</div>
+
+<div class="tbl">
+<div class="tbl-head h-green2">🔄 workout_sets</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f"><span class="k">🔗</span> session_exercise_id <span class="t">(FK)</span></div>
+<div class="f">set_number</div>
+<div class="f">set_type <span class="t">(Enum)</span></div>
+<div class="f">reps</div>
+<div class="f">weight_kg</div>
+<div class="f">duration_seconds</div>
+<div class="f">is_completed <span class="t">(Boolean)</span></div>
+<div class="f">completed_at</div>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+
+<!-- ROW 3: Nutrition, Store, Community -->
+<div class="row">
+
+<!-- Nutrition -->
+<div class="group g-orange" style="flex:1">
+<div class="group-label">🥗 DINH DƯỠNG & SỨC KHỎE</div>
+<div class="group-content">
+
+<div class="tbl">
+<div class="tbl-head h-orange">🎯 nutrition_targets</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f"><span class="k">🔗</span> user_id <span class="t">(FK)</span></div>
+<div class="f">target_date <span class="t">(Unique)</span></div>
+<div class="f">calories_target</div>
+<div class="f">protein_g_target</div>
+<div class="f">carbs_g_target</div>
+<div class="f">fat_g_target</div>
+<div class="f">water_ml_target</div>
+</div>
+</div>
+
+<div class="tbl">
+<div class="tbl-head h-orange2">🍽️ meal_logs</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f"><span class="k">🔗</span> user_id <span class="t">(FK)</span></div>
+<div class="f">meal_date</div>
+<div class="f">meal_type <span class="t">(Enum)</span></div>
+<div class="f">note</div>
+</div>
+</div>
+
+<div class="tbl">
+<div class="tbl-head h-orange">📊 body_metrics</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f"><span class="k">🔗</span> user_id <span class="t">(FK)</span></div>
+<div class="f">measured_at</div>
+<div class="f">weight_kg</div>
+<div class="f">body_fat_percent</div>
+<div class="f">muscle_mass_kg</div>
+<div class="f">waist_cm</div>
+<div class="f">chest_cm</div>
+<div class="f">arm_cm</div>
+<div class="f">thigh_cm</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- Store -->
+<div class="group g-pink" style="flex:1">
+<div class="group-label">🛒 CỬA HÀNG & ĐƠN HÀNG</div>
+<div class="group-content">
+
+<div class="tbl">
+<div class="tbl-head h-pink">📦 products</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f"><span class="k">🔗</span> category_id <span class="t">(FK)</span></div>
+<div class="f">title</div>
+<div class="f">slug <span class="t">(Unique)</span></div>
+<div class="f">product_type <span class="t">(Enum)</span></div>
+<div class="f">price</div>
+<div class="f">status <span class="t">(Enum)</span></div>
+</div>
+</div>
+
+<div class="tbl">
+<div class="tbl-head h-pink2">🧾 orders</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f"><span class="k">🔗</span> user_id <span class="t">(FK)</span></div>
+<div class="f">order_number <span class="t">(Unique)</span></div>
+<div class="f">status <span class="t">(Enum)</span></div>
+<div class="f">subtotal</div>
+<div class="f">total</div>
+</div>
+</div>
+
+<div class="tbl">
+<div class="tbl-head h-pink">💳 payments</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f"><span class="k">🔗</span> order_id <span class="t">(FK)</span></div>
+<div class="f">provider</div>
+<div class="f">amount</div>
+<div class="f">status <span class="t">(Enum)</span></div>
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- Community -->
+<div class="group g-teal" style="flex:0.8">
+<div class="group-label">🌐 CỘNG ĐỒNG & TƯƠNG TÁC</div>
+<div class="group-content">
+
+<div class="tbl">
+<div class="tbl-head h-teal">📝 community_posts</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f"><span class="k">🔗</span> user_id <span class="t">(FK)</span></div>
+<div class="f">content</div>
+<div class="f">post_type <span class="t">(Enum)</span></div>
+<div class="f">visibility <span class="t">(Enum)</span></div>
+<div class="f"><span class="k">🔗</span> related_workout_session_id <span class="t">(FK)</span></div>
+<div class="f">moderation_status <span class="t">(Enum)</span></div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 4px">
+<span class="rel">1 ── N</span>
+</div>
+
+<div class="tbl">
+<div class="tbl-head h-teal2">💬 post_comments</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f"><span class="k">🔗</span> post_id <span class="t">(FK)</span></div>
+<div class="f"><span class="k">🔗</span> user_id <span class="t">(FK)</span></div>
+<div class="f"><span class="k">🔗</span> parent_comment_id <span class="t">(FK)</span></div>
+<div class="f">content</div>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+
+<!-- ROW 4: AI Coach -->
+<div class="row">
+
+<div class="group g-indigo" style="flex:0.5">
+<div class="group-label">🤖 TRỢ LÝ ẢO AI COACH</div>
+<div class="group-content">
+
+<div class="tbl">
+<div class="tbl-head h-indigo">🗨️ ai_conversations</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f"><span class="k">🔗</span> user_id <span class="t">(FK)</span></div>
+<div class="f">title</div>
+<div class="f">context_type <span class="t">(Enum)</span></div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 4px">
+<span class="rel">1 ── N</span>
+</div>
+
+<div class="tbl">
+<div class="tbl-head h-indigo2">📨 ai_messages</div>
+<div class="tbl-body">
+<div class="f"><span class="k">🔑</span> id <span class="t">(PK)</span></div>
+<div class="f"><span class="k">🔗</span> conversation_id <span class="t">(FK)</span></div>
+<div class="f">role <span class="t">(Enum)</span></div>
+<div class="f">content</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- Relationship summary box -->
+<div style="flex:1;background:rgba(255,255,255,0.8);border:2px solid #90a4ae;border-radius:10px;padding:14px 18px">
+<h3 style="font-size:13px;color:#37474f;margin-bottom:10px;border-bottom:1px solid #cfd8dc;padding-bottom:6px">🔗 QUAN HỆ CHÍNH GIỮA CÁC BẢNG</h3>
+<div style="display:flex;gap:30px;flex-wrap:wrap;font-size:11.5px;color:#455a64">
+<div>
+<div style="font-weight:700;margin-bottom:4px;color:#e53935">👤 users liên kết:</div>
+<div>→ user_profile <span class="rel">1:1</span></div>
+<div>→ user_settings <span class="rel">1:1</span></div>
+<div>→ user_training_plans <span class="rel">1:N</span></div>
+<div>→ workout_sessions <span class="rel">1:N</span></div>
+<div>→ nutrition_targets <span class="rel">1:N</span></div>
+<div>→ meal_logs <span class="rel">1:N</span></div>
+<div>→ body_metrics <span class="rel">1:N</span></div>
+<div>→ orders <span class="rel">1:N</span></div>
+<div>→ community_posts <span class="rel">1:N</span></div>
+<div>→ ai_conversations <span class="rel">1:N</span></div>
+</div>
+<div>
+<div style="font-weight:700;margin-bottom:4px;color:#7b1fa2">📋 workout_programs:</div>
+<div>→ user_training_plans <span class="rel">1:N</span></div>
+</div>
+<div>
+<div style="font-weight:700;margin-bottom:4px;color:#43a047">📅 workout_sessions:</div>
+<div>→ workout_session_exercises <span class="rel">1:N</span></div>
+<div>workout_session_exercises → workout_sets <span class="rel">1:N</span></div>
+</div>
+<div>
+<div style="font-weight:700;margin-bottom:4px;color:#c2185b">🛒 orders:</div>
+<div>→ order_items <span class="rel">1:N</span></div>
+<div>→ payments <span class="rel">1:N</span></div>
+</div>
+<div>
+<div style="font-weight:700;margin-bottom:4px;color:#00897b">📝 community_posts:</div>
+<div>→ post_comments <span class="rel">1:N</span></div>
+<div>post_comments → post_comments <span class="rel">Self-ref</span></div>
+</div>
+</div>
+</div>
+
+</div>
+
+</div>
+</body>
+</html>

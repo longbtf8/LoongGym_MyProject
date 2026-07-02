@@ -1,0 +1,94 @@
+flowchart TD
+    %% ==========================================
+    %% THIẾT LẬP PHONG CÁCH MÀU SẮC (CSS STYLE CLASSES)
+    %% ==========================================
+    classDef userStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1;
+    classDef workoutStyle fill:#ede7f6,stroke:#5e35b1,stroke-width:2px,color:#4a148c;
+    classDef nutritionStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;
+    classDef storeStyle fill:#fff8e1,stroke:#ff8f00,stroke-width:2px,color:#ff6f00;
+    classDef communityStyle fill:#fbe9e7,stroke:#d84315,stroke-width:2px,color:#bf360c;
+    classDef aiStyle fill:#e0f7fa,stroke:#00838f,stroke-width:2px,color:#006064;
+
+    %% ==========================================
+    %% PHÂN HỆ 1: NGƯỜI DÙNG & HỒ SƠ (XANH DƯƠNG)
+    %% ==========================================
+    subgraph MODULE_USER ["👤 PHÂN HỆ HỒ SƠ & CHỈ SỐ"]
+        pg_login["Trang Đăng Nhập / Đăng Ký<br/>(Xác thực tài khoản)"]
+        pg_profile["Trang Hồ Sơ Học Viên<br/>(Cập nhật Chiều cao, Cân nặng)"]
+        pg_settings["Trang Cấu Hình Cá Nhân<br/>(Calo mục tiêu/ngày, Theme)"]
+        
+        pg_login --> pg_profile
+        pg_profile --> pg_settings
+    end
+    class MODULE_USER,pg_login,pg_profile,pg_settings userStyle;
+
+    %% ==========================================
+    %% PHÂN HỆ 2: TẬP LUYỆN (TÍM)
+    %% ==========================================
+    subgraph MODULE_WORKOUT ["💪 PHÂN HỆ TẬP LUYỆN CÁ NHÂN"]
+        pg_exercises["Trang Thư Viện Bài Tập<br/>(Tra cứu video hướng dẫn kỹ thuật)"]
+        pg_programs["Trang Giáo Án Mẫu<br/>(Danh sách giáo án PPL, Cardio...)"]
+        pg_calendar["Trang Lịch Tập Cá Nhân<br/>(Xem kế hoạch tập theo ngày)"]
+        pg_active_workout["Trang Phòng Tập / Nhật Ký<br/>(Ghi lại Set, Rep, Tạ thực tế)"]
+        
+        pg_programs -->|"Áp dụng giáo án"| pg_calendar
+        pg_calendar -->|"Bắt đầu buổi tập"| pg_active_workout
+    end
+    class MODULE_WORKOUT,pg_exercises,pg_programs,pg_calendar,pg_active_workout workoutStyle;
+
+    %% ==========================================
+    %% PHÂN HỆ 3: DINH DƯỠNG (XANH LÁ)
+    %% ==========================================
+    subgraph MODULE_NUTRITION ["🥗 PHÂN HỆ DINH DƯỠNG"]
+        pg_nutrition["Trang Nhật Ký Ăn Uống<br/>(Báo cáo Calo nạp: Sáng, Trưa, Tối)"]
+        pg_food_library["Trang Thư Viện Thực Phẩm<br/>(Chọn Trứng, Ức gà, Thịt bò...)"]
+        
+        pg_nutrition -->|"Tra cứu món ăn"| pg_food_library
+    end
+    class MODULE_NUTRITION,pg_nutrition,pg_food_library nutritionStyle;
+
+    %% ==========================================
+    %% PHÂN HỆ 4: CỬA HÀNG SỐ (VÀNG)
+    %% ==========================================
+    subgraph MODULE_STORE ["🛒 PHÂN HỆ CỬA HÀNG SẢN PHẨM SỐ"]
+        pg_store["Trang Cửa Hàng Số<br/>(Mua Ebook, Giáo án đặc biệt)"]
+        pg_cart["Trang Giỏ Hàng"]
+        pg_checkout["Trang Thanh Toán<br/>(Cổng Momo, ZaloPay, Stripe)"]
+        
+        pg_store --> pg_cart
+        pg_cart --> pg_checkout
+    end
+    class MODULE_STORE,pg_store,pg_cart,pg_checkout storeStyle;
+
+    %% ==========================================
+    %% PHÂN HỆ 5: CỘNG ĐỒNG (CAM)
+    %% ==========================================
+    subgraph MODULE_COMMUNITY ["🔥 PHÂN HỆ TƯƠNG TÁC CỘNG ĐỒNG"]
+        pg_feed["Trang Bảng Tin Học Viên<br/>(Đăng bài viết chia sẻ, theo dõi)"]
+        pg_comment["Khung Bình Luận / Thả Tim<br/>(Tương tác giữa các học viên)"]
+        
+        pg_feed --> pg_comment
+    end
+    class MODULE_COMMUNITY,pg_feed,pg_comment communityStyle;
+
+    %% ==========================================
+    %% PHÂN HỆ 6: TRỢ LÝ AI (XANH NGỌC)
+    %% ==========================================
+    subgraph MODULE_AI ["🤖 TRỢ LÝ THÔNG MINH AI COACH"]
+        pg_ai_chat["Trang Trò Chuyện AI Coach<br/>(Chat tư vấn sức khỏe)"]
+        pg_ai_recommend["Bảng Đề Xuất AI Coach<br/>(Tự động điều chỉnh kế hoạch)"]
+        
+        pg_ai_chat --> pg_ai_recommend
+    end
+    class MODULE_AI,pg_ai_chat,pg_ai_recommend aiStyle;
+
+    %% ==========================================
+    %% LUỒNG HOẠT ĐỘNG CHÍNH DYNAMIC GIỮA CÁC PHÂN HỆ
+    %% ==========================================
+    pg_settings -.->|"So sánh mục tiêu Calo"| pg_nutrition
+    pg_active_workout -.->|"Chia sẻ kết quả tập luyện"| pg_feed
+    pg_checkout -.->|"Kích hoạt giáo án VIP mua từ Store"| pg_calendar
+    
+    pg_active_workout -.->|"Yêu cầu AI phân tích tiến trình"| pg_ai_chat
+    pg_nutrition -.->|"Yêu cầu AI đánh giá dinh dưỡng"| pg_ai_chat
+    pg_ai_recommend -.->|"AI tự động chèn ngày tập đề xuất"| pg_calendar

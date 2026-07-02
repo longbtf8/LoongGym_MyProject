@@ -82,6 +82,7 @@ export default function NutritionPage() {
     isSavingTarget,
     isAddingItem,
     mealLogs,
+    userCacheKey,
   } = useNutritionData();
 
   if (isLoading) {
@@ -157,6 +158,7 @@ export default function NutritionPage() {
 
         {/* AI recommended suggestions section */}
         <AIFoodSuggestions
+          userCacheKey={userCacheKey}
           calRemaining={calRemaining}
           handleQuickAddFood={handleQuickAddFood}
         />

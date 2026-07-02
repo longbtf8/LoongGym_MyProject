@@ -1,8 +1,11 @@
 import { STORAGE_KEYS } from "@/services/api";
 import { useGetUserInfoQuery, useLogoutMutation } from "@/services/auth/authApi";
 import paths from "@/config/path";
+import { useDispatch } from "react-redux";
+import { resetUserScopedApiCaches } from "@/services/cacheUtils";
 
 export function useAuth() {
+  const dispatch = useDispatch();
   const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
   const isLoggedIn = !!accessToken;
 
@@ -24,6 +27,7 @@ export function useAuth() {
     } finally {
       localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
       localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+      resetUserScopedApiCaches(dispatch);
       window.location.href = paths.home;
     }
   };

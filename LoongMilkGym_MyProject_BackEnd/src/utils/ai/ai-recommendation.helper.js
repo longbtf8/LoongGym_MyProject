@@ -33,6 +33,33 @@ const trimText = (value, fallback, maxLength) => {
   return (text || fallback).slice(0, maxLength);
 };
 
+const slugify = (value = "") => {
+  return value
+    .toString()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[đĐ]/g, "d")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
+
+const getUniqueExerciseSlug = async (tx, name) => {
+  const baseSlug = slugify(name) || `ai-exercise-${Date.now()}`;
+  let slug = baseSlug;
+  let suffix = 2;
+
+  while (await tx.exercise.findUnique({ where: { slug } })) {
+    slug = `${baseSlug}-${suffix}`;
+    suffix += 1;
+  }
+
+  return slug;
+};
+
 const buildWeekTemplate = (days) => {
   return days.map((day, index) => ({
     title: day.title,
@@ -81,7 +108,7 @@ const buildAiPlanDays = async (tx, payload) => {
 
   const dbExercises = await tx.exercise.findMany({
     where: { isPublished: true },
-    select: { id: true, name: true }
+    select: { id: true, name: true, slug: true }
   });
 
   const cleanAndNormalize = (str) => {
@@ -117,10 +144,47 @@ const buildAiPlanDays = async (tx, payload) => {
 
   const exerciseById = new Map(dbExercises.map((ex) => [ex.id, ex]));
   const exerciseByNormalizedName = new Map(dbExercises.map((ex) => [cleanAndNormalize(ex.name), ex]));
+  const resolveExercise = async (item) => {
+    const proposedId = item.exerciseId || item.exerciseName || item.name;
+    const proposedName = trimText(item.exerciseName || item.name || item.exerciseId, "Bài tập AI Coach", 150);
+
+    let exercise = exerciseById.get(proposedId);
+    if (!exercise) {
+      exercise = exerciseByNormalizedName.get(cleanAndNormalize(proposedId))
+        || exerciseByNormalizedName.get(cleanAndNormalize(proposedName));
+    }
+
+    if (exercise) return exercise;
+
+    const created = await tx.exercise.create({
+      data: {
+        name: proposedName,
+        slug: await getUniqueExerciseSlug(tx, proposedName),
+        description: "Bài tập được AI Coach tự động thêm từ lịch đề xuất.",
+        difficulty: "beginner",
+        exerciseType: "strength",
+        estimatedCalories: 50,
+        durationSeconds: 300,
+        isPublished: true,
+        tags: {
+          create: [
+            { tag: "ai-coach" },
+            { tag: "auto-created" },
+          ],
+        },
+      },
+      select: { id: true, name: true, slug: true },
+    });
+
+    exerciseById.set(created.id, created);
+    exerciseByNormalizedName.set(cleanAndNormalize(created.name), created);
+    return created;
+  };
 
   const seenDateKeys = new Set();
+  const planDays = [];
 
-  return weekDays.map((day, dayIndex) => {
+  for (const [dayIndex, day] of weekDays.entries()) {
     const scheduledDate = toDateOnly(day.date || getDateKey(addDays(startDate, dayIndex)));
     const dateKey = getDateKey(scheduledDate);
 
@@ -132,39 +196,32 @@ const buildAiPlanDays = async (tx, payload) => {
     const rawExercises = Array.isArray(day.exercises) ? day.exercises.slice(0, MAX_EXERCISES_PER_DAY) : [];
     const status = day.status === "rest" || rawExercises.length === 0 ? "rest" : "pending";
 
-    const customExercises = status === "rest"
-      ? []
-      : rawExercises.map((item, index) => {
-          let exercise = exerciseById.get(item.exerciseId);
-          if (!exercise) {
-            const normProposed = cleanAndNormalize(item.exerciseId);
-            exercise = exerciseByNormalizedName.get(normProposed);
-          }
+    const customExercises = [];
 
-          if (!exercise) {
-            throw new AppError(`Bài tập '${item.exerciseId}' không tồn tại hoặc chưa được xuất bản.`, httpCodes.badRequest);
-          }
+    if (status !== "rest") {
+      for (const [index, item] of rawExercises.entries()) {
+        const exercise = await resolveExercise(item);
+        const resolvedExerciseId = exercise.id;
+        const repsMin = Math.round(clampNumber(item.repsMin, 1, 100, 8));
+        const repsMax = Math.round(clampNumber(item.repsMax, repsMin, 100, Math.max(repsMin, 12)));
 
-          const resolvedExerciseId = exercise.id;
-          const repsMin = Math.round(clampNumber(item.repsMin, 1, 100, 8));
-          const repsMax = Math.round(clampNumber(item.repsMax, repsMin, 100, Math.max(repsMin, 12)));
-
-          return {
-            id: `${resolvedExerciseId}-${dayIndex + 1}-${index + 1}`,
-            exerciseId: resolvedExerciseId,
-            exerciseName: exercise.name,
-            exerciseOrder: index + 1,
-            sets: Math.round(clampNumber(item.sets, 1, 8, 3)),
-            repsMin,
-            repsMax,
-            weightKg: clampNumber(item.weightKg, 0, 500, 0),
-            restSeconds: Math.round(clampNumber(item.restSeconds, 15, 360, 90)),
-            tempo: trimText(item.tempo, "2-0-1-0", 30),
-            note: trimText(item.note, "Bài tập do AI Coach đề xuất", 250),
-          };
+        customExercises.push({
+          id: `${resolvedExerciseId}-${dayIndex + 1}-${index + 1}`,
+          exerciseId: resolvedExerciseId,
+          exerciseName: exercise.name,
+          exerciseOrder: index + 1,
+          sets: Math.round(clampNumber(item.sets, 1, 8, 3)),
+          repsMin,
+          repsMax,
+          weightKg: clampNumber(item.weightKg, 0, 500, 0),
+          restSeconds: Math.round(clampNumber(item.restSeconds, 15, 360, 90)),
+          tempo: trimText(item.tempo, "2-0-1-0", 30),
+          note: trimText(item.note, "Bài tập do AI Coach đề xuất", 250),
         });
+      }
+    }
 
-    return {
+    planDays.push({
       scheduledDate,
       title: trimText(day.title, status === "rest" ? "Nghỉ phục hồi" : `Buổi tập ${dayIndex + 1}`, 150),
       status,
@@ -177,8 +234,10 @@ const buildAiPlanDays = async (tx, payload) => {
         cycleDay: dayIndex + 1,
         cycleOffset: dayIndex,
       },
-    };
-  });
+    });
+  }
+
+  return planDays;
 };
 
 const assertPlanDayOwnership = async (tx, userId, planDayId) => {
@@ -277,6 +336,7 @@ const updateUpcomingAiPlanDays = async (tx, userId, payload, days) => {
   });
   const completedDateKeys = new Set(completedDays.map((day) => getDateKey(day.scheduledDate)));
   const daysToCreate = days.filter((day) => !completedDateKeys.has(getDateKey(day.scheduledDate)));
+  const weekTemplate = buildWeekTemplate(days);
 
   await tx.userTrainingPlanDay.deleteMany({
     where: {
@@ -300,6 +360,8 @@ const updateUpcomingAiPlanDays = async (tx, userId, payload, days) => {
         durationWeeks: clampNumber(payload.durationWeeks, 1, 16, activePlan.metadata?.durationWeeks || Math.ceil(days.length / 7)),
         daysPerWeek: clampNumber(payload.daysPerWeek, 1, 7, activePlan.metadata?.daysPerWeek || 4),
         generatedWindowDays: days.length,
+        cycleLength: weekTemplate.length,
+        weekTemplate,
         updatedByAiAt: new Date().toISOString(),
       },
     },

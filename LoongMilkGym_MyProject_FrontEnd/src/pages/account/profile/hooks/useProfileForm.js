@@ -95,6 +95,28 @@ export function useProfileForm() {
     }
   };
 
+  const buildProfilePayload = () => {
+    const nullableFields = [
+      "phone",
+      "birthDate",
+      "gender",
+      "address",
+      "weight",
+      "height",
+      "fitnessLevel",
+      "goal",
+      "bio",
+      "calorieGoal",
+    ];
+
+    return Object.fromEntries(
+      Object.entries(formData).map(([key, value]) => [
+        key,
+        nullableFields.includes(key) && value === "" ? null : value,
+      ])
+    );
+  };
+
   const handleSave = async () => {
     try {
       setErrorMessage("");
@@ -107,7 +129,7 @@ export function useProfileForm() {
       }
 
       // 2. Lưu các thông tin profile còn lại
-      await updateProfile(formData).unwrap();
+      await updateProfile(buildProfilePayload()).unwrap();
       setIsEditing(false);
 
       // 3. Clean up avatar states

@@ -16,6 +16,13 @@ function ChatFooter({
     setInputValue("");
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key !== "Enter" || e.shiftKey) return;
+
+    e.preventDefault();
+    handleSubmit(e);
+  };
+
   return (
     <div className="flex flex-col">
       {/* Nút hành động nhanh chỉ hiện khi đã bắt đầu chat */}
@@ -43,13 +50,14 @@ function ChatFooter({
       {/* Hộp nhập liệu chính */}
       <footer className="p-4 border-t border-[var(--border-color)] bg-[var(--bg-secondary)]/30 backdrop-blur-md">
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
-          <input
-            type="text"
+          <textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Hỏi LoongMilkAI điều gì đó..."
             disabled={isGenerating}
-            className="flex-1 px-4 py-3 bg-[var(--bg-color)] border border-[var(--border-color)] focus:border-primary/65 rounded-2xl text-xs sm:text-sm font-semibold outline-none transition-all disabled:opacity-60 text-[var(--text-color)]"
+            rows={1}
+            className="flex-1 max-h-32 min-h-11 resize-none px-4 py-3 bg-[var(--bg-color)] border border-[var(--border-color)] focus:border-primary/65 rounded-2xl text-xs sm:text-sm font-semibold leading-relaxed outline-none transition-all disabled:opacity-60 text-[var(--text-color)]"
           />
           <button
             type="submit"

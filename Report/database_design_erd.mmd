@@ -1,0 +1,105 @@
+flowchart TD
+    %% ==========================================
+    %% THIẾT LẬP PHONG CÁCH MÀU SẮC (CSS STYLE CLASSES)
+    %% ==========================================
+    classDef userTable fill:#e3f2fd,stroke:#1565c0,stroke-width:1.5px,color:#0d47a1;
+    classDef workoutTable fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1.5px,color:#4a148c;
+    classDef logsTable fill:#e8f5e9,stroke:#388e3c,stroke-width:1.5px,color:#1b5e20;
+    classDef nutritionTable fill:#fff8e1,stroke:#f57c00,stroke-width:1.5px,color:#e65100;
+    classDef storeTable fill:#fce4ec,stroke:#c2185b,stroke-width:1.5px,color:#880e4f;
+    classDef legendStyle fill:#fafafa,stroke:#9e9e9e,stroke-width:1px,color:#424242;
+
+    %% ==========================================
+    %% KHỐI 1: HỆ THỐNG NGƯỜI DÙNG & CẤU HÌNH (ĐỎ)
+    %% ==========================================
+    subgraph MODULE_USER ["👤 CẤU TRÚC NGƯỜI DÙNG & HỒ SƠ (USER & CONFIG)"]
+        users["<b>users</b><hr/>🔑 id (PK)<br/>email<br/>passwordHash<br/>role (Enum)<br/>status (Enum)<br/>createdAt<br/>updatedAt"]
+        user_profile["<b>user_profile</b><hr/>🔑 id (PK)<br/>🔗 userId (FK)<br/>fullName<br/>gender<br/>heightCm<br/>weightKg<br/>calorieGoal<br/>totalWorkoutDays"]
+        user_settings["<b>user_settings</b><hr/>🔑 id (PK)<br/>🔗 userId (FK)<br/>language<br/>unitSystem<br/>theme"]
+    end
+    class users,user_profile,user_settings userTable;
+    style MODULE_USER fill:#ffffff,stroke:#e53935,stroke-width:3px;
+
+    %% ==========================================
+    %% KHỐI 2: THƯ VIỆN & GIÁO ÁN MẪU (XANH DƯƠNG)
+    %% ==========================================
+    subgraph MODULE_WORKOUT ["💪 THƯ VIỆN & GIÁO ÁN MẪU (PROGRAMS & TEMPLATES)"]
+        exercises["<b>exercises</b><hr/>🔑 id (PK)<br/>name<br/>slug (Unique)<br/>difficulty<br/>exerciseType<br/>estimatedCalories"]
+        workout_programs["<b>workout_programs</b><hr/>🔑 id (PK)<br/>title<br/>slug (Unique)<br/>goal<br/>difficulty<br/>price"]
+        workout_program_days["<b>workout_program_days</b><hr/>🔑 id (PK)<br/>🔗 programId (FK)<br/>title<br/>cycleDay"]
+        workout_templates["<b>workout_templates</b><hr/>🔑 id (PK)<br/>🔗 programDayId (FK)<br/>title<br/>estimatedDurationMinutes"]
+    end
+    class exercises,workout_programs,workout_program_days,workout_templates workoutTable;
+    style MODULE_WORKOUT fill:#ffffff,stroke:#1e88e5,stroke-width:2.5px;
+
+    %% ==========================================
+    %% KHỐI 3: THEO DÕI TẬP LUYỆN CÁ NHÂN (XANH LÁ)
+    %% ==========================================
+    subgraph MODULE_LOGS ["📅 THEO DÕI TẬP LUYỆN THỰC TẾ (TRAINING LOGS)"]
+        user_training_plans["<b>user_training_plans</b><hr/>🔑 id (PK)<br/>🔗 userId (FK)<br/>🔗 programId (FK)<br/>title<br/>startDate<br/>status"]
+        workout_sessions["<b>workout_sessions</b><hr/>🔑 id (PK)<br/>🔗 userId (FK)<br/>🔗 planDayId (FK)<br/>title<br/>startedAt<br/>endedAt<br/>durationSeconds<br/>status"]
+        workout_session_exercises["<b>workout_session_exercises</b><hr/>🔑 id (PK)<br/>🔗 workoutSessionId (FK)<br/>🔗 exerciseId (FK)<br/>status"]
+        workout_sets["<b>workout_sets</b><hr/>🔑 id (PK)<br/>🔗 sessionExerciseId (FK)<br/>setNumber<br/>setType<br/>reps<br/>weightKg<br/>isCompleted"]
+    end
+    class user_training_plans,workout_sessions,workout_session_exercises,workout_sets logsTable;
+    style MODULE_LOGS fill:#ffffff,stroke:#43a047,stroke-width:2.5px;
+
+    %% ==========================================
+    %% KHỐI 4: DINH DƯỠNG & SỨC KHỎE (VÀNG)
+    %% ==========================================
+    subgraph MODULE_NUTRITION ["🥗 DINH DƯỠNG & SỨC KHỎE (NUTRITION & METRICS)"]
+        nutrition_targets["<b>nutrition_targets</b><hr/>🔑 id (PK)<br/>🔗 userId (FK)<br/>targetDate (Unique)<br/>caloriesTarget<br/>proteinGTarget<br/>carbsGTarget<br/>fatGTarget"]
+        meal_logs["<b>meal_logs</b><hr/>🔑 id (PK)<br/>🔗 userId (FK)<br/>mealDate<br/>mealType"]
+    end
+    class nutrition_targets,meal_logs nutritionTable;
+    style MODULE_NUTRITION fill:#ffffff,stroke:#ffb300,stroke-width:2.5px;
+
+    %% ==========================================
+    %% KHỐI 5: CỬA HÀNG SẢN PHẨM SỐ & ĐƠN HÀNG (TÍM)
+    %% ==========================================
+    subgraph MODULE_STORE ["🛒 CỬA HÀNG & ĐƠN HÀNG (STORE & ORDERS)"]
+        products["<b>products</b><hr/>🔑 id (PK)<br/>title<br/>slug (Unique)<br/>productType<br/>price<br/>status"]
+        orders["<b>orders</b><hr/>🔑 id (PK)<br/>🔗 userId (FK)<br/>orderNumber (Unique)<br/>status<br/>subtotal<br/>total"]
+        order_items["<b>order_items</b><hr/>🔑 id (PK)<br/>🔗 orderId (FK)<br/>🔗 productId (FK)<br/>productTitle<br/>quantity<br/>unitPrice<br/>totalPrice"]
+    end
+    class products,orders,order_items storeTable;
+    style MODULE_STORE fill:#ffffff,stroke:#8e24aa,stroke-width:2.5px;
+
+    %% ==========================================
+    %% BẢNG CHÚ THÍCH (LEGEND)
+    %% ==========================================
+    legend["<b>CHÚ THÍCH</b><hr/>🔑 PK : Primary Key (Khóa chính)<br/>🔗 FK : Foreign Key (Khóa ngoại)<br/>1 : Một (One)<br/>N : Nhiều (Many)<br/>── : Quan hệ kết nối"]
+    class legend legendStyle;
+
+    %% ==========================================
+    %% QUAN HỆ KẾT NỐI (RELATIONSHIPS WITH CARDINALITY)
+    %% ==========================================
+    %% Quan hệ trong Khối 1
+    users -- "1 : 1" --> user_profile
+    users -- "1 : 1" --> user_settings
+
+    %% Kết nối từ Khối 1 sang các Khối khác
+    users -- "1 : N" --> user_training_plans
+    users -- "1 : N" --> workout_sessions
+    users -- "1 : N" --> meal_logs
+    users -- "1 : N" --> nutrition_targets
+    users -- "1 : N" --> orders
+
+    %% Quan hệ trong Khối 2
+    workout_programs -- "1 : N" --> workout_program_days
+    workout_program_days -- "1 : N" --> workout_templates
+
+    %% Kết nối từ Khối 2 sang Khối 3
+    workout_programs -- "1 : N" --> user_training_plans
+
+    %% Quan hệ trong Khối 3
+    user_training_plans -- "1 : N" --> workout_sessions
+    workout_sessions -- "1 : N" --> workout_session_exercises
+    workout_session_exercises -- "1 : N" --> workout_sets
+
+    %% Kết nối từ Khối 2 sang Khối 3 (Bảng trung gian)
+    exercises -- "1 : N" --> workout_session_exercises
+
+    %% Quan hệ trong Khối 5
+    orders -- "1 : N" --> order_items
+    products -- "1 : N" --> order_items

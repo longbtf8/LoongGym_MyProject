@@ -722,6 +722,7 @@ export default function MyPlan() {
             dayDetails={dayDetails}
             weekDays={weekDays}
             selectedDayId={selectedDayId}
+            todayStr={todayStr}
             exercises={exercises}
             isCompleting={isCompleting}
             isPending={isPending}

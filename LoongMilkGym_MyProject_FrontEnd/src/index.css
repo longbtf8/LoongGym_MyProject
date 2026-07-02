@@ -56,6 +56,13 @@ a, button, [role="button"], .tap-stable {
   }
 }
 
+.hover-stable-card,
+.hover-stable-action {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: border-color, background-color, box-shadow;
+}
+
 @keyframes slideDown {
   from {
     opacity: 0;

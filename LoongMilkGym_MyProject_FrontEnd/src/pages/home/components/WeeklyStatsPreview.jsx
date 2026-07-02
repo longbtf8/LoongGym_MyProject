@@ -67,7 +67,7 @@ function WeeklyStatsPreview() {
           return (
             <div 
               key={index}
-              className="flex flex-col p-5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300"
+              className="hover-stable-card flex flex-col p-5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl shadow-sm hover:shadow-md transition-all duration-300"
             >
               {/* Header của Card */}
               <div className="flex items-center justify-between mb-4">

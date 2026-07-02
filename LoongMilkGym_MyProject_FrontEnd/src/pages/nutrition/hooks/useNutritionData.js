@@ -22,6 +22,7 @@ const getLocalDateString = (dateInput = new Date()) => {
 export function useNutritionData() {
   const { userInfo } = useAuth();
   const todayStr = getLocalDateString();
+  const userCacheKey = userInfo?.id || userInfo?.email || "guest";
 
   // Queries & Mutations
   const { data: nutritionRes, isLoading } = useGetTodayNutritionQuery(todayStr, {
@@ -120,8 +121,15 @@ export function useNutritionData() {
     const goal = profile.goal;
     const fitnessLevel = profile.fitnessLevel;
 
-    if (!height || !weight || !gender || !birthDate) {
-      showToast("Cần bổ sung Chiều cao, Cân nặng, Giới tính, Ngày sinh ở Hồ sơ cá nhân để tính tự động.");
+    const missingFields = [
+      !height ? "Chiều cao" : null,
+      !weight ? "Cân nặng" : null,
+      !gender ? "Giới tính" : null,
+      !birthDate ? "Ngày sinh" : null,
+    ].filter(Boolean);
+
+    if (missingFields.length > 0) {
+      showToast(`Cần bổ sung ${missingFields.join(", ")} ở Hồ sơ cá nhân để tính tự động.`);
       return;
     }
 
@@ -532,6 +540,7 @@ export function useNutritionData() {
     isSavingTarget,
     isAddingItem,
     userInfo,
+    userCacheKey,
     mealLogs: nutritionData?.mealLogs || [],
   };
 }

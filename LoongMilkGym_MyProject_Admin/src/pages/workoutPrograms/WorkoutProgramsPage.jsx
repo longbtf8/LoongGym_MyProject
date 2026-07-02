@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import {
   useGetAdminWorkoutProgramsQuery,
@@ -42,8 +42,6 @@ export default function WorkoutProgramsPage() {
       page: "1",
       limit: "5",
       search: "",
-      goal: "",
-      difficulty: "",
       published: "",
       sort: "newest",
       programId: "",
@@ -53,8 +51,6 @@ export default function WorkoutProgramsPage() {
   const page = parseInt(params.page) || 1;
   const limit = parseInt(params.limit) || 5;
   const search = params.search || "";
-  const goal = params.goal || "";
-  const difficulty = params.difficulty || "";
   const published = params.published || "";
   const sort = params.sort || "newest";
   const urlProgramId = params.programId || "";
@@ -82,8 +78,6 @@ export default function WorkoutProgramsPage() {
     page,
     limit,
     search,
-    goal,
-    difficulty,
     published,
     sort,
   });
@@ -108,13 +102,16 @@ export default function WorkoutProgramsPage() {
 
   // Auto-open drawer if programId is present in URL
   useEffect(() => {
-    if (urlProgramId) {
-      setDrawerProgramId(urlProgramId);
-      setIsDetailDrawerOpen(true);
-    } else {
-      setIsDetailDrawerOpen(false);
-      setDrawerProgramId(null);
-    }
+    const timer = setTimeout(() => {
+      if (urlProgramId) {
+        setDrawerProgramId(urlProgramId);
+        setIsDetailDrawerOpen(true);
+      } else {
+        setIsDetailDrawerOpen(false);
+        setDrawerProgramId(null);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [urlProgramId]);
 
   // Program general actions
@@ -300,30 +297,7 @@ export default function WorkoutProgramsPage() {
     }
   };
 
-  // Filter toolbar configuration
-  const goalOptions = (filtersData?.goals || []).map((g) => ({
-    label: g === "muscle_gain" ? "Tăng cơ bắp" : g === "fat_loss" ? "Giảm mỡ" : g === "weight_gain" ? "Tăng cân" : g === "toning" ? "Giữ dáng" : g === "fitness" ? "Thể chất" : g === "maintenance" ? "Duy trì" : g === "hypertrophy" ? "Phì đại cơ" : g,
-    value: g,
-  }));
-
-  const diffOptions = (filtersData?.difficulties || []).map((d) => ({
-    label: d === "beginner" ? "Mới bắt đầu" : d === "intermediate" ? "Trung bình" : d === "advanced" ? "Nâng cao" : d,
-    value: d,
-  }));
-
   const filtersConfig = [
-    {
-      type: "select",
-      value: goal,
-      onChange: (val) => updateQueryParam("goal", val),
-      options: [{ label: "Tất cả mục tiêu", value: "" }, ...goalOptions],
-    },
-    {
-      type: "select",
-      value: difficulty,
-      onChange: (val) => updateQueryParam("difficulty", val),
-      options: [{ label: "Tất cả độ khó", value: "" }, ...diffOptions],
-    },
     {
       type: "select",
       value: published,
@@ -334,19 +308,9 @@ export default function WorkoutProgramsPage() {
         { label: "Bản nháp", value: "false" },
       ],
     },
-    {
-      type: "select",
-      value: sort,
-      onChange: (val) => updateQueryParam("sort", val),
-      options: [
-        { label: "Mới nhất", value: "newest" },
-        { label: "Giá tăng dần", value: "price_asc" },
-        { label: "Giá giảm dần", value: "price_desc" },
-      ],
-    },
   ];
 
-  const isFilterActive = !!(search || goal || difficulty || published);
+  const isFilterActive = !!(search || published);
 
   return (
     <>
@@ -369,7 +333,11 @@ export default function WorkoutProgramsPage() {
           </div>
 
           {/* Stats */}
-          <ProgramStats summaryStats={programsData?.data?.stats} />
+          <ProgramStats
+            summaryStats={programsData?.data?.stats}
+            activeStatus={published}
+            onStatusChange={(status) => updateQueryParam("published", status)}
+          />
 
           {/* Filters Toolbar */}
           <FilterToolbar

@@ -45,7 +45,7 @@ function GreetingBanner({ userInfo, userName, userInitial, displayGoal, workout 
       {isCompleted ? (
         <button 
           onClick={() => navigate(`${paths.todayWorkout}?dayId=${workout.id}`)}
-          className="flex items-center justify-center gap-2 px-6 py-3.5 bg-[var(--bg-color)] border border-[var(--border-color)] hover:border-primary/40 text-[var(--text-color)] font-extrabold text-sm rounded-2xl hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shadow-sm cursor-pointer w-full sm:w-auto"
+          className="hover-stable-action flex items-center justify-center gap-2 px-6 py-3.5 bg-[var(--bg-color)] border border-[var(--border-color)] hover:border-primary/40 text-[var(--text-color)] font-extrabold text-sm rounded-2xl active:scale-95 transition-all duration-200 shadow-sm cursor-pointer w-full sm:w-auto"
         >
           <Play className="w-4 h-4 text-primary fill-primary" />
           Tập thêm
@@ -53,7 +53,7 @@ function GreetingBanner({ userInfo, userName, userInitial, displayGoal, workout 
       ) : hasWorkout ? (
         <button 
           onClick={() => navigate(`${paths.todayWorkout}?dayId=${workout.id}`)}
-          className="flex items-center justify-center gap-2 px-6 py-3.5 bg-primary text-black font-extrabold text-sm rounded-2xl hover:bg-primary-hover hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shadow-md shadow-primary/10 cursor-pointer w-full sm:w-auto border-0"
+          className="hover-stable-action flex items-center justify-center gap-2 px-6 py-3.5 bg-primary text-black font-extrabold text-sm rounded-2xl hover:bg-primary-hover active:scale-95 transition-all duration-200 shadow-md shadow-primary/10 cursor-pointer w-full sm:w-auto border-0"
         >
           <Play className="w-4 h-4 fill-current" />
           Bắt đầu tập hôm nay
@@ -61,7 +61,7 @@ function GreetingBanner({ userInfo, userName, userInitial, displayGoal, workout 
       ) : (
         <button 
           onClick={() => navigate(paths.myPlan)}
-          className="flex items-center justify-center gap-2 px-6 py-3.5 bg-[var(--bg-color)] border border-[var(--border-color)] hover:border-primary/40 text-[var(--text-color)] font-extrabold text-sm rounded-2xl hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shadow-sm cursor-pointer w-full sm:w-auto"
+          className="hover-stable-action flex items-center justify-center gap-2 px-6 py-3.5 bg-[var(--bg-color)] border border-[var(--border-color)] hover:border-primary/40 text-[var(--text-color)] font-extrabold text-sm rounded-2xl active:scale-95 transition-all duration-200 shadow-sm cursor-pointer w-full sm:w-auto"
         >
           <CalendarPlus className="w-4 h-4 text-primary" />
           {isRest ? "Xem lộ trình" : "Tạo lịch tập"}
